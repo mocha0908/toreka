@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>トレカキングダム 買取検索</title>
+  <title>トレカキングダム 買取価格検索</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Roboto:wght@500;700;900&display=swap" rel="stylesheet">
   <style>
@@ -27,6 +27,8 @@
 
     /* ヘッダー */
     header { background: #fff; padding: 16px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index: 20; position: relative; }
+    h1 { margin: 0; font-size: 22px; color: var(--primary); font-weight: 900; letter-spacing: 0.05em; }
+    h1 span { color: var(--text); font-size: 15px; font-weight: normal; margin-left: 8px; }
     .site-logo img { max-width: 160px; height: auto; }
 
     /* 検索バー (Sticky) */
@@ -167,7 +169,7 @@
 <body onload="init()">
 
   <header>
-    <div class="site-logo"><img src="https://i.imgur.com/ZXFdMYn.png" alt="LOGO"></div>
+    <h1>TREKA KINGDOM <span>買取価格検索</span></h1>
   </header>
 
   <div class="search-sticky">
