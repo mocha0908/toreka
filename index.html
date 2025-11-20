@@ -7,9 +7,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Roboto:wght@500;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #0056b3; /* メインカラー（青） */
-      --accent: #d0021b;  /* 価格の赤 */
-      --bg: #f9f9f9;      /* 背景色 */
+      --primary: #0056b3;
+      --accent: #d0021b;
+      --bg: #f9f9f9;
       --text: #333;
       --shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
@@ -23,21 +23,22 @@
     }
 
     /* ロゴエリア */
-    .header-area { text-align: center; margin-bottom: 30px; }
-    .header-area img { max-width: 200px; height: auto; }
+    .header-area { text-align: center; margin-bottom: 20px; }
+    .header-area img { max-width: 180px; height: auto; }
 
-    /* === 検索エリア (1枚目の画像のデザイン) === */
+    /* === 検索エリア (2段組み) === */
     .search-wrapper {
-      display: flex; justify-content: center; gap: 10px;
-      max-width: 800px; margin: 0 auto 40px;
+      display: flex; flex-direction: column; gap: 12px;
+      max-width: 800px; margin: 0 auto 30px;
       position: relative; z-index: 10;
     }
 
-    /* 検索バー */
+    /* 1段目：検索バー */
     .search-bar {
-      flex: 1; background: #fff; border-radius: 50px;
+      width: 100%;
+      background: #fff; border-radius: 50px;
       box-shadow: var(--shadow); display: flex; align-items: center;
-      padding: 8px 8px 8px 24px; transition: box-shadow 0.2s;
+      padding: 6px 6px 6px 20px; transition: box-shadow 0.2s;
     }
     .search-bar:focus-within { box-shadow: 0 4px 25px rgba(0,86,179,0.2); }
     
@@ -47,124 +48,123 @@
     }
     .search-bar input::placeholder { color: #ccc; }
 
-    /* 検索ボタン（青い丸） */
     .btn-search {
-      width: 48px; height: 48px; border-radius: 50%;
+      width: 44px; height: 44px; border-radius: 50%;
       background: var(--primary); border: none; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0; transition: transform 0.1s;
     }
     .btn-search:active { transform: scale(0.95); }
-    .btn-search svg { width: 24px; height: 24px; fill: white; }
+    .btn-search svg { width: 22px; height: 22px; fill: white; }
 
-    /* レアリティ選択（ドロップダウン） */
+    /* 2段目：コントロール行（レアリティ・ソート・お気に入り） */
+    .controls-row {
+      display: flex; gap: 10px; justify-content: center;
+      width: 100%;
+    }
+
+    /* ドロップダウン共通 */
     .dropdown-wrapper {
       position: relative; background: #fff; border-radius: 50px;
       box-shadow: var(--shadow); display: flex; align-items: center;
-      padding: 0 20px; cursor: pointer; min-width: 100px;
+      padding: 0 12px; cursor: pointer; height: 46px;
+      flex: 1; /* 横幅いっぱいに広げる */
+      min-width: 0; /* 縮小許可 */
+      justify-content: center;
     }
     .dropdown-wrapper::after {
-      content: "▼"; font-size: 10px; color: #888; margin-left: 8px;
+      content: "▼"; font-size: 8px; color: #888; margin-left: 4px;
     }
     .dropdown-wrapper select {
       appearance: none; border: none; background: transparent;
-      font-size: 14px; font-weight: 700; color: #555;
+      font-size: 12px; font-weight: 700; color: #555;
       outline: none; width: 100%; cursor: pointer;
-      position: absolute; inset: 0; opacity: 0; /* 見た目は隠してクリック判定のみ */
+      position: absolute; inset: 0; opacity: 0;
     }
-    /* 表示用のラベル */
-    .dropdown-label { font-size: 14px; font-weight: 700; color: #555; }
+    .dropdown-label { 
+      font-size: 12px; font-weight: 700; color: #555; 
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+    }
+    .dropdown-icon { font-size: 14px; margin-right: 4px; flex-shrink: 0;}
 
-    /* お気に入りボタン（丸） */
+    /* お気に入りボタン */
     .btn-fav-toggle {
-      width: 64px; height: 64px; border-radius: 50%;
+      width: 46px; height: 46px; border-radius: 50%;
       background: #fff; box-shadow: var(--shadow);
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; border: none; flex-shrink: 0;
     }
-    .btn-fav-toggle svg { width: 24px; height: 24px; fill: #ccc; transition: fill 0.2s; }
+    .btn-fav-toggle svg { width: 22px; height: 22px; fill: #ccc; transition: fill 0.2s; }
     .btn-fav-toggle.active svg { fill: #f1c40f; }
 
     /* 情報テキスト */
-    .info-text { text-align: center; font-size: 13px; color: #888; margin-bottom: 30px; line-height: 1.6; }
+    .info-text { text-align: center; font-size: 12px; color: #888; margin-bottom: 20px; line-height: 1.5; }
     #lastUpdatedDisplay { color: var(--primary); font-weight: 700; }
 
-    /* === 最低保証買取 (横並びカード) === */
+    /* 保証買取 */
     .section-title {
-      font-size: 18px; font-weight: 700; margin-bottom: 15px;
-      border-left: 5px solid var(--primary); padding-left: 12px; color: #222;
+      font-size: 16px; font-weight: 700; margin-bottom: 12px;
+      border-left: 4px solid var(--primary); padding-left: 10px; color: #222;
     }
     .guarantee-scroll {
-      display: flex; gap: 12px; overflow-x: auto; padding-bottom: 20px;
+      display: flex; gap: 10px; overflow-x: auto; padding-bottom: 16px;
       -webkit-overflow-scrolling: touch; scrollbar-width: none;
     }
     .guarantee-scroll::-webkit-scrollbar { display: none; }
 
     .g-card {
-      background: #fff; border-radius: 16px; padding: 16px 0;
-      min-width: 100px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+      background: #fff; border-radius: 12px; padding: 12px 0;
+      min-width: 90px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
       border: 1px solid #eee; flex-shrink: 0;
     }
-    .g-label { display: block; font-size: 12px; color: #888; margin-bottom: 8px; font-weight: 500; }
-    .g-price { display: block; font-family: 'Roboto', sans-serif; font-size: 18px; font-weight: 700; color: #333; }
+    .g-label { display: block; font-size: 11px; color: #888; margin-bottom: 4px; font-weight: 500; }
+    .g-price { display: block; font-family: 'Roboto', sans-serif; font-size: 16px; font-weight: 700; color: #333; }
 
-    /* === ピックアップ買取 (リスト) === */
+    /* リスト */
     .list-container { max-width: 900px; margin: 0 auto; }
     
     .item-row {
-      background: #fff; border-radius: 16px; padding: 16px;
-      margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-      display: flex; align-items: center; gap: 16px;
+      background: #fff; border-radius: 12px; padding: 12px;
+      margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      display: flex; align-items: center; gap: 12px;
       transition: transform 0.1s; border: 1px solid transparent;
     }
     .item-row:active { transform: scale(0.98); }
-    /* お気に入り時のスタイル */
     .item-row.is-favorite { border-color: #f1c40f; background: #fffdf5; }
 
-    /* 画像 */
     .item-img {
-      width: 80px; height: 80px; flex-shrink: 0;
+      width: 70px; height: 70px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
       background: #f9f9f9; border-radius: 8px;
     }
     .item-img img { width: 100%; height: 100%; object-fit: contain; }
 
-    /* 情報 */
     .item-info { flex: 1; min-width: 0; }
     
-    /* タイトル + 星 */
-    .item-title-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
-    .star-btn {
-      font-size: 20px; color: #ddd; cursor: pointer; line-height: 1; margin-top: 2px;
-    }
+    .item-title-row { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 6px; }
+    .star-btn { font-size: 18px; color: #ddd; cursor: pointer; line-height: 1; margin-top: 2px; }
     .star-btn.active { color: #f1c40f; }
     
     .item-title {
-      font-size: 15px; font-weight: 700; line-height: 1.5; color: #333;
+      font-size: 14px; font-weight: 700; line-height: 1.4; color: #333;
       word-break: break-all;
     }
 
-    /* 価格 */
     .item-price-row { text-align: right; }
-    .price-label { font-size: 11px; color: #999; margin-right: 4px; }
-    .price-val {
-      font-family: 'Roboto', sans-serif; font-size: 20px; font-weight: 900; color: var(--accent);
-    }
+    .price-label { font-size: 10px; color: #999; margin-right: 4px; }
+    .price-val { font-family: 'Roboto', sans-serif; font-size: 18px; font-weight: 900; color: var(--accent); }
 
-    /* ローディング */
-    .spinner { display: none; text-align: center; padding: 40px; color: #999; }
+    .spinner { display: none; text-align: center; padding: 40px; color: #999; font-size: 13px; }
     .spinner-circle {
-      width: 30px; height: 30px; border: 3px solid #eee;
+      width: 26px; height: 26px; border: 3px solid #eee;
       border-top-color: var(--primary); border-radius: 50%;
-      animation: spin 0.8s linear infinite; margin: 0 auto 10px;
+      animation: spin 0.8s linear infinite; margin: 0 auto 8px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* モーダル */
     #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; }
     #modal img { max-width: 90%; max-height: 90%; border-radius: 8px; }
     
-    /* トースト通知 */
     #toast {
       position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
       background: #222; color: #fff; padding: 10px 20px; border-radius: 30px;
@@ -172,6 +172,13 @@
     }
     #toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
 
+    /* PC向け調整 */
+    @media (min-width: 600px) {
+      .search-wrapper { flex-direction: row; flex-wrap: wrap; }
+      .search-bar { width: 100%; margin-bottom: 0; }
+      .controls-row { width: auto; flex: 1; }
+      .btn-fav-toggle { margin-left: auto; }
+    }
   </style>
 </head>
 <body onload="init()">
@@ -181,6 +188,7 @@
   </div>
 
   <div class="search-wrapper">
+    
     <div class="search-bar">
       <input type="text" id="keyword" placeholder="カード名・型番" enterkeyhint="search" />
       <button class="btn-search" onclick="search()">
@@ -188,16 +196,32 @@
       </button>
     </div>
 
-    <div class="dropdown-wrapper">
-      <span class="dropdown-label" id="rarityLabel">全て</span>
-      <select id="raritySelect" onchange="onRarityChange()">
-        <option value="">全て</option>
-        </select>
-    </div>
+    <div class="controls-row">
+      
+      <div class="dropdown-wrapper">
+        <span class="dropdown-icon">💎</span>
+        <span class="dropdown-label" id="rarityLabel">全て</span>
+        <select id="raritySelect" onchange="onRarityChange()">
+          <option value="">全て</option>
+          </select>
+      </div>
 
-    <button class="btn-fav-toggle" id="favFilterBtn" onclick="toggleFavFilter()" title="お気に入りのみ表示">
-      <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-    </button>
+      <div class="dropdown-wrapper">
+        <span class="dropdown-icon">⇅</span>
+        <span class="dropdown-label" id="sortLabel">高い順</span>
+        <select id="sortSelect" onchange="onSortChange()">
+          <option value="priceDesc" selected>価格高い順</option>
+          <option value="priceAsc">価格低い順</option>
+          <option value="nameAsc">名前順(A-Z)</option>
+          <option value="nameDesc">名前順(Z-A)</option>
+        </select>
+      </div>
+
+      <button class="btn-fav-toggle" id="favFilterBtn" onclick="toggleFavFilter()" title="お気に入りのみ表示">
+        <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+      </button>
+
+    </div>
   </div>
 
   <div class="info-text">
@@ -229,18 +253,19 @@
   <div id="toast">✅ <span id="toastMsg"></span></div>
 
   <script>
-    // ★★★ ここにGASのURLを貼ってください ★★★
+    // ★★★ ご指定のURLに変更済み ★★★
     const API_URL = "https://script.google.com/macros/s/AKfycbzszLt8yC8AhwjyS6E3ZzsqTFMcMVUOP3Pj50wnEpLlDFG2-bTEiRYhvUSiNjNYUY7WKA/exec";
 
-    let allData = []; // 全データを保持
+    let allData = []; 
     let favorites = new Set();
     let isFavMode = false;
+    let currentSort = "priceDesc"; 
 
     function init() {
       loadFavorites();
       loadRarityList();
       loadGuarantee();
-      loadData(); // ピックアップ読み込み
+      loadData();
 
       document.getElementById('keyword').addEventListener('keydown', e => {
         if (e.key === 'Enter') search();
@@ -262,7 +287,6 @@
     // --- データ読み込み ---
     function loadData() {
       showSpinner(true);
-      // 初回はピックアップ
       fetchData({ action: 'pickup' }).then(data => {
         showSpinner(false);
         if (!data) return;
@@ -279,7 +303,6 @@
       showSpinner(true);
       document.getElementById('resultList').innerHTML = "";
 
-      // 検索実行
       fetchData({ action: 'search', keyword: kw, rarity: rar }).then(data => {
         showSpinner(false);
         if (!data) return;
@@ -293,9 +316,7 @@
       fetchData({ action: 'rarityList' }).then(list => {
         if (!list) return;
         const sel = document.getElementById('raritySelect');
-        // 既存オプション削除（全て以外）
         while(sel.options.length > 1) sel.remove(1);
-        
         list.forEach(r => {
           const opt = document.createElement('option');
           opt.value = r; opt.innerText = r;
@@ -305,13 +326,11 @@
     }
 
     function loadGuarantee() {
-      // 既にHTMLにあるので、APIから最新が取れれば上書きする形
       fetchData({ action: 'guarantee' }).then(rows => {
         if(!rows || rows.length===0) return;
         const cont = document.getElementById('guaranteeContainer');
         let html = "";
         rows.forEach(r => {
-          // r[0]=Label, r[1]=Price
           html += `<div class="g-card"><span class="g-label">${r[0]}</span><span class="g-price">${fmtPrice(r[1])}</span></div>`;
         });
         cont.innerHTML = html;
@@ -323,14 +342,24 @@
       const container = document.getElementById('resultList');
       let html = "";
       
-      // フィルタリング
       let rows = allData.filter(row => {
-        // お気に入りモードならお気に入りのみ
         if (isFavMode && !favorites.has(row[0])) return false;
-        // 0円除外
         const p = parseFloat(String(row[2]).replace(/,/g, ''));
         if (isNaN(p) || p <= 0) return false;
         return true;
+      });
+
+      rows.sort((a, b) => {
+        const pA = parseFloat(String(a[2]).replace(/,/g, '')) || 0;
+        const pB = parseFloat(String(b[2]).replace(/,/g, '')) || 0;
+        const nA = String(a[0]);
+        const nB = String(b[0]);
+
+        if (currentSort === "priceDesc") return pB - pA;
+        if (currentSort === "priceAsc") return pA - pB;
+        if (currentSort === "nameAsc") return nA.localeCompare(nB, 'ja');
+        if (currentSort === "nameDesc") return nB.localeCompare(nA, 'ja');
+        return 0;
       });
 
       if (rows.length === 0) {
@@ -341,14 +370,13 @@
       rows.forEach(row => {
         const name = row[0];
         const img = row[1];
-        const price = row[2]; // 状態A
+        const price = row[2]; 
 
         const isFav = favorites.has(name);
         const imgTag = (img && /^http/.test(img))
           ? `<img src="${img}" loading="lazy" onclick="showModal('${img}')">`
           : `<span style="font-size:10px;color:#ccc;">No Img</span>`;
 
-        // 型番抽出
         const mm = name.match(/\{(.+?)\}/);
         const copyTxt = mm ? mm[1] : name;
         
@@ -375,10 +403,16 @@
     // --- UI操作 ---
     function onRarityChange() {
       const sel = document.getElementById('raritySelect');
-      const label = document.getElementById('rarityLabel');
-      // 選択されたテキストを表示
-      label.innerText = sel.value || "全て";
+      document.getElementById('rarityLabel').innerText = sel.value || "全て";
       search();
+    }
+
+    function onSortChange() {
+      const sel = document.getElementById('sortSelect');
+      const txt = sel.options[sel.selectedIndex].text;
+      document.getElementById('sortLabel').innerText = txt.replace("価格","").replace("名前順","名"); // ラベルを短く表示
+      currentSort = sel.value;
+      renderList();
     }
 
     function toggleFavFilter() {
@@ -402,10 +436,9 @@
         el.closest('.item-row').classList.add('is-favorite');
       }
       localStorage.setItem('tk_favorites', JSON.stringify([...favorites]));
-      if (isFavMode) renderList(); // フィルタ中なら即反映
+      if (isFavMode) renderList();
     }
 
-    // --- ユーティリティ ---
     function loadFavorites() {
       const s = localStorage.getItem('tk_favorites');
       if (s) favorites = new Set(JSON.parse(s));
