@@ -7,347 +7,432 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Roboto:wght@500;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #0056b3;
-      --primary-light: #eef4ff;
-      --accent: #e60012;
-      --bg: #f4f7f6;
-      --card-bg: #ffffff;
-      --text: #222;
-      --text-sub: #666;
-      --border: #dfe3e8;
-      --radius: 12px;
-      --gold: #f1c40f;
-      --shadow: 0 2px 8px rgba(0,0,0,0.06);
-      --f-size: 15px;
-      --search-height: 76px;
+      --primary: #0056b3; /* メインカラー（青） */
+      --accent: #d0021b;  /* 価格の赤 */
+      --bg: #f9f9f9;      /* 背景色 */
+      --text: #333;
+      --shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Noto Sans JP', sans-serif; margin: 0; background: var(--bg); color: var(--text); padding-bottom: 80px; }
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      margin: 0; padding: 20px;
+      background: var(--bg); color: var(--text);
+      padding-bottom: 80px;
+    }
 
-    /* ヘッダー */
-    header { background: #fff; padding: 16px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index: 20; position: relative; }
-    .site-logo img { max-width: 160px; height: auto; }
+    /* ロゴエリア */
+    .header-area { text-align: center; margin-bottom: 30px; }
+    .header-area img { max-width: 200px; height: auto; }
 
-    /* 検索バー (Sticky) */
-    .search-sticky {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(244, 247, 246, 0.95); backdrop-filter: blur(10px);
-      padding: 12px 16px; border-bottom: 1px solid rgba(0,0,0,0.05);
-      height: var(--search-height); display: flex; align-items: center; justify-content: center; gap: 8px;
+    /* === 検索エリア (1枚目の画像のデザイン) === */
+    .search-wrapper {
+      display: flex; justify-content: center; gap: 10px;
+      max-width: 800px; margin: 0 auto 40px;
+      position: relative; z-index: 10;
     }
-    .search-box {
-      flex: 1; max-width: 800px; display: flex; align-items: center;
-      background: #fff; border-radius: 50px; border: 1px solid var(--border);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05); padding-right: 6px;
+
+    /* 検索バー */
+    .search-bar {
+      flex: 1; background: #fff; border-radius: 50px;
+      box-shadow: var(--shadow); display: flex; align-items: center;
+      padding: 8px 8px 8px 24px; transition: box-shadow 0.2s;
     }
-    .search-box input {
-      border: none; background: transparent; padding: 12px 20px;
-      font-size: 16px; flex: 1; outline: none; border-radius: 50px;
-    }
-    .btn-circle {
-      width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      transition: transform 0.1s;
-    }
-    .btn-circle:active { transform: scale(0.95); }
-    .btn-search { background: var(--primary); color: white; box-shadow: 0 2px 6px rgba(0,86,179,0.3); }
-    .btn-search svg { width: 22px; height: 22px; fill: white; }
+    .search-bar:focus-within { box-shadow: 0 4px 25px rgba(0,86,179,0.2); }
     
-    .btn-fav-filter { background: #fff; border: 1px solid #ddd; color: #ccc; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-    .btn-fav-filter.active { background: var(--gold); border-color: var(--gold); color: #fff; }
-    .btn-fav-filter svg { width: 24px; height: 24px; fill: currentColor; }
+    .search-bar input {
+      border: none; background: transparent; font-size: 16px;
+      flex: 1; outline: none; color: #333; font-weight: 500;
+    }
+    .search-bar input::placeholder { color: #ccc; }
 
-    /* コントロール */
-    .controls-area { max-width: 1000px; margin: 0 auto; padding: 16px; }
-    .filter-scroll {
-      display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px;
-      -webkit-overflow-scrolling: touch; scrollbar-width: none; align-items: center;
+    /* 検索ボタン（青い丸） */
+    .btn-search {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: var(--primary); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: transform 0.1s;
     }
-    .filter-scroll::-webkit-scrollbar { display: none; }
-    
-    .chip {
-      white-space: nowrap; padding: 0 16px; border-radius: 24px;
-      background: #fff; border: 1px solid var(--border); color: var(--text-sub);
-      font-size: 14px; font-weight: 500; cursor: pointer;
-      display: flex; align-items: center; gap: 6px; height: 44px; flex-shrink: 0;
-    }
-    .chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-    .chip select, .chip input { border: none; background: transparent; color: inherit; font: inherit; outline: none; height: 100%; }
-    .chip select { cursor: pointer; padding-right: 4px; }
-    .chip input.direct-input { width: 90px; }
-    .chip input::placeholder { color: #aaa; }
-    .chip.active input::placeholder { color: rgba(255,255,255,0.7); }
+    .btn-search:active { transform: scale(0.95); }
+    .btn-search svg { width: 24px; height: 24px; fill: white; }
 
-    /* 保証表 */
-    details.guarantee-box { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; }
-    details.guarantee-box summary {
-      padding: 14px 20px; font-weight: 700; color: var(--primary); cursor: pointer; outline: none;
-      display: flex; align-items: center; justify-content: space-between;
+    /* レアリティ選択（ドロップダウン） */
+    .dropdown-wrapper {
+      position: relative; background: #fff; border-radius: 50px;
+      box-shadow: var(--shadow); display: flex; align-items: center;
+      padding: 0 20px; cursor: pointer; min-width: 100px;
     }
-    .guarantee-scroller { overflow-x: auto; white-space: nowrap; padding: 0 16px 20px; -webkit-overflow-scrolling: touch; }
-    .guarantee-card { display: inline-block; background: #fff; padding: 10px 16px; border-radius: 12px; margin-right: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; min-width: 80px; }
-    .guarantee-card .g-label { font-size: 11px; color: #888; display: block; margin-bottom: 4px; }
-    .guarantee-card .g-price { font-family: 'Roboto', sans-serif; font-weight: 700; color: #333; font-size: 16px; }
+    .dropdown-wrapper::after {
+      content: "▼"; font-size: 10px; color: #888; margin-left: 8px;
+    }
+    .dropdown-wrapper select {
+      appearance: none; border: none; background: transparent;
+      font-size: 14px; font-weight: 700; color: #555;
+      outline: none; width: 100%; cursor: pointer;
+      position: absolute; inset: 0; opacity: 0; /* 見た目は隠してクリック判定のみ */
+    }
+    /* 表示用のラベル */
+    .dropdown-label { font-size: 14px; font-weight: 700; color: #555; }
 
-    /* リスト */
-    #result-container { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
-    
-    /* カードスタイル (Mobile) */
-    .card-grid { display: grid; gap: 12px; }
-    .card {
-      background: #fff; border-radius: var(--radius); box-shadow: var(--shadow);
-      display: grid; grid-template-columns: 80px 1fr; position: relative; overflow: hidden;
-      transition: border 0.2s;
+    /* お気に入りボタン（丸） */
+    .btn-fav-toggle {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: #fff; box-shadow: var(--shadow);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border: none; flex-shrink: 0;
     }
-    .card.is-favorite { border: 2px solid var(--gold); }
-    
-    .card-img {
-      background: #fafafa; display: flex; align-items: center; justify-content: center; cursor: zoom-in;
-    }
-    .card-img img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
-    
-    .card-body { padding: 12px; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
-    .card-title {
-      font-size: var(--f-size); font-weight: 700; line-height: 1.4;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .card-price-area { margin-top: 4px; }
-    .main-price {
-      font-family: 'Roboto', sans-serif; font-weight: 900; color: var(--accent);
-      font-size: calc(var(--f-size) + 6px);
-    }
-    .main-price::before { content: '買取'; font-size: 11px; color: #888; font-weight: normal; margin-right: 4px; }
+    .btn-fav-toggle svg { width: 24px; height: 24px; fill: #ccc; transition: fill 0.2s; }
+    .btn-fav-toggle.active svg { fill: #f1c40f; }
 
-    /* スターアイコン */
-    .star-icon { font-size: 22px; color: #ddd; cursor: pointer; line-height: 1; }
-    .star-icon.active { color: var(--gold); }
-    
-    /* テーブルスタイル (Desktop) */
-    @media (min-width: 768px) {
-      .card-grid { display: none; }
-      .desktop-table-wrap {
-        display: block !important; background: #fff; border-radius: var(--radius);
-        box-shadow: var(--shadow); overflow: visible; border: 1px solid #eee;
-      }
-      table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--f-size); }
-      th {
-        background: #f8f9fa; padding: 14px; text-align: center; font-weight: 700; color: #555;
-        border-bottom: 2px solid #ddd; position: sticky; top: var(--search-height); z-index: 10; white-space: nowrap;
-      }
-      td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; vertical-align: middle; }
-      tr:hover { background: #f0f7ff; }
-      tr.is-favorite { background: #fffdf0; }
-      th:first-child { text-align: left; min-width: 300px; }
-      td:first-child { text-align: left; font-weight: bold; }
-      img.tbl-thumb { width: 50px; height: 50px; object-fit: contain; }
-    }
-    .desktop-table-wrap { display: none; }
+    /* 情報テキスト */
+    .info-text { text-align: center; font-size: 13px; color: #888; margin-bottom: 30px; line-height: 1.6; }
+    #lastUpdatedDisplay { color: var(--primary); font-weight: 700; }
 
-    /* その他 */
-    .spinner { display: none; flex-direction: column; align-items: center; padding: 40px; color: #888; gap:10px;}
-    .spinner-circle { width: 30px; height: 30px; border: 3px solid #eee; border-top-color: var(--primary); border-radius: 50%; animation: spin .8s linear infinite; }
-    @keyframes spin{to{transform:rotate(360deg)}}
-    
-    .pager { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
-    .pager btn {
-      width: 36px; height: 36px; border-radius: 8px; border: 1px solid #ddd; background: #fff;
-      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    /* === 最低保証買取 (横並びカード) === */
+    .section-title {
+      font-size: 18px; font-weight: 700; margin-bottom: 15px;
+      border-left: 5px solid var(--primary); padding-left: 12px; color: #222;
     }
-    .pager btn:hover { background: #eee; }
-    .pager btn.disabled { opacity: 0.4; pointer-events: none; }
+    .guarantee-scroll {
+      display: flex; gap: 12px; overflow-x: auto; padding-bottom: 20px;
+      -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    }
+    .guarantee-scroll::-webkit-scrollbar { display: none; }
 
-    mark { background: rgba(255, 213, 0, 0.4); padding: 0; }
-    #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 9999; align-items: center; justify-content: center; }
+    .g-card {
+      background: #fff; border-radius: 16px; padding: 16px 0;
+      min-width: 100px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+      border: 1px solid #eee; flex-shrink: 0;
+    }
+    .g-label { display: block; font-size: 12px; color: #888; margin-bottom: 8px; font-weight: 500; }
+    .g-price { display: block; font-family: 'Roboto', sans-serif; font-size: 18px; font-weight: 700; color: #333; }
+
+    /* === ピックアップ買取 (リスト) === */
+    .list-container { max-width: 900px; margin: 0 auto; }
+    
+    .item-row {
+      background: #fff; border-radius: 16px; padding: 16px;
+      margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+      display: flex; align-items: center; gap: 16px;
+      transition: transform 0.1s; border: 1px solid transparent;
+    }
+    .item-row:active { transform: scale(0.98); }
+    /* お気に入り時のスタイル */
+    .item-row.is-favorite { border-color: #f1c40f; background: #fffdf5; }
+
+    /* 画像 */
+    .item-img {
+      width: 80px; height: 80px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: #f9f9f9; border-radius: 8px;
+    }
+    .item-img img { width: 100%; height: 100%; object-fit: contain; }
+
+    /* 情報 */
+    .item-info { flex: 1; min-width: 0; }
+    
+    /* タイトル + 星 */
+    .item-title-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+    .star-btn {
+      font-size: 20px; color: #ddd; cursor: pointer; line-height: 1; margin-top: 2px;
+    }
+    .star-btn.active { color: #f1c40f; }
+    
+    .item-title {
+      font-size: 15px; font-weight: 700; line-height: 1.5; color: #333;
+      word-break: break-all;
+    }
+
+    /* 価格 */
+    .item-price-row { text-align: right; }
+    .price-label { font-size: 11px; color: #999; margin-right: 4px; }
+    .price-val {
+      font-family: 'Roboto', sans-serif; font-size: 20px; font-weight: 900; color: var(--accent);
+    }
+
+    /* ローディング */
+    .spinner { display: none; text-align: center; padding: 40px; color: #999; }
+    .spinner-circle {
+      width: 30px; height: 30px; border: 3px solid #eee;
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* モーダル */
+    #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; }
     #modal img { max-width: 90%; max-height: 90%; border-radius: 8px; }
+    
+    /* トースト通知 */
     #toast {
       position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
       background: #222; color: #fff; padding: 10px 20px; border-radius: 30px;
-      font-size: 13px; opacity: 0; visibility: hidden; transition: all .3s; z-index: 10000;
+      font-size: 13px; opacity: 0; visibility: hidden; transition: all 0.3s; z-index: 10000;
     }
     #toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+
   </style>
 </head>
 <body onload="init()">
 
-  <header>
-    <div class="site-logo"><img src="https://i.imgur.com/ZXFdMYn.png" alt="LOGO"></div>
-  </header>
-
-  <div class="search-sticky">
-    <div class="search-box">
-      <input type="text" id="keyword" placeholder="カード名・型番" enterkeyhint="search">
-    </div>
-    <div class="btn-circle btn-search" onclick="search()"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 3 13.09 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
-    <div class="btn-circle btn-fav-filter" id="favFilterBtn" onclick="toggleFavFilter()" title="お気に入りのみ表示"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div>
+  <div class="header-area">
+    <img src="https://i.imgur.com/ZXFdMYn.png" alt="トレカキングダム">
   </div>
 
-  <div class="controls-area">
-    <p style="text-align:center;font-size:12px;color:#666;margin-top:-5px;">※価格は在庫状況等により変動します <span id="lastUpdatedDisplay" style="color:#0056b3;font-weight:bold;"></span></p>
-    
-    <div class="filter-scroll" style="margin-bottom: 12px;">
-      <div class="chip" id="rarChip"><span>💎</span><select id="raritySelect"><option value="">全レアリティ</option></select></div>
-      <div class="chip" onclick="toggleSort()"><span id="sortIcon">⇅</span><span id="sortLabel">価格順(高)</span></div>
+  <div class="search-wrapper">
+    <div class="search-bar">
+      <input type="text" id="keyword" placeholder="カード名・型番" enterkeyhint="search" />
+      <button class="btn-search" onclick="search()">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 3 13.09 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      </button>
     </div>
 
-    <h3>最低保証買取</h3>
-    <div class="guarantee-scroller">
-      <div class="guarantee-card"><span class="g-label">PSA10</span><div class="g-price">¥5,000</div></div>
-      <div class="guarantee-card"><span class="g-label">SAR</span><div class="g-price">¥400</div></div>
-      <div class="guarantee-card"><span class="g-label">SR</span><div class="g-price">¥250</div></div>
-      <div class="guarantee-card"><span class="g-label">AR</span><div class="g-price">¥220</div></div>
-      <div class="guarantee-card"><span class="g-label">RR</span><div class="g-price">¥10</div></div>
+    <div class="dropdown-wrapper">
+      <span class="dropdown-label" id="rarityLabel">全て</span>
+      <select id="raritySelect" onchange="onRarityChange()">
+        <option value="">全て</option>
+        </select>
     </div>
 
-    <div id="spinner" class="spinner"><div class="spinner-circle"></div><span>読み込み中...</span></div>
-    
-    <div id="result-container">
-      <div id="cardView" class="card-grid"></div>
-      <div id="tableView" class="desktop-table-wrap"></div>
-      <div id="pager" class="pager"></div>
-    </div>
+    <button class="btn-fav-toggle" id="favFilterBtn" onclick="toggleFavFilter()" title="お気に入りのみ表示">
+      <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+    </button>
   </div>
+
+  <div class="info-text">
+    <div id="lastUpdatedDisplay"></div>
+    ※価格は在庫状況等により変動します
+  </div>
+
+  <div class="section-title">最低保証買取</div>
+  <div class="guarantee-scroll" id="guaranteeContainer">
+    <div class="g-card"><span class="g-label">PSA10</span><span class="g-price">¥5,000</span></div>
+    <div class="g-card"><span class="g-label">SAR</span><span class="g-price">¥400</span></div>
+    <div class="g-card"><span class="g-label">SR</span><span class="g-price">¥250</span></div>
+    <div class="g-card"><span class="g-label">AR</span><span class="g-price">¥220</span></div>
+    <div class="g-card"><span class="g-label">RR</span><span class="g-price">¥10</span></div>
+  </div>
+
+  <br><br>
+
+  <div class="section-title" id="listTitle">ピックアップ買取</div>
+  
+  <div id="spinner" class="spinner">
+    <div class="spinner-circle"></div>
+    読み込み中...
+  </div>
+
+  <div class="list-container" id="resultList"></div>
 
   <div id="modal" onclick="this.style.display='none'"><img id="modalImage" src=""></div>
   <div id="toast">✅ <span id="toastMsg"></span></div>
 
   <script>
-    // ★★★ ご指定のURLを設定済み ★★★
+    // ★★★ ここにGASのURLを貼ってください ★★★
     const API_URL = "https://script.google.com/macros/s/AKfycbw-P6xNeIAaiD32vlVFDHR4p6T8_snDuJwRaGfGoE6k6uJSDsyk_1z2Pl220oA8pxV5mA/exec";
 
-    const state = { rows:[], page:1, pageSize:100, sort:{idx:2,dir:'desc'}, terms:{andTerms:[],orTerms:[]}, initialKey:'ALL' };
+    let allData = []; // 全データを保持
     let favorites = new Set();
-    let isFavFilterMode = false;
+    let isFavMode = false;
 
     function init() {
-      loadFavorites(); loadRarityList(); loadPickupTable();
-      setupEvents();
-    }
+      loadFavorites();
+      loadRarityList();
+      loadGuarantee();
+      loadData(); // ピックアップ読み込み
 
-    function setupEvents(){
-      document.getElementById('keyword').addEventListener('keydown', e=>{if(e.key==='Enter')search()});
-      document.getElementById('raritySelect').addEventListener('change', ()=>search());
-    }
-
-    async function fetchData(p) {
-      const u = new URL(API_URL); Object.keys(p).forEach(k=>u.searchParams.append(k,p[k]));
-      try { const r=await fetch(u); return await r.json(); } catch(e){ return null; }
-    }
-
-    function loadRarityList(){
-      fetchData({action:'rarityList'}).then(list=>{
-        if(!list)return;
-        const rSel=document.getElementById('raritySelect');
-        list.forEach(r=>{const o=document.createElement('option');o.value=r;o.innerText=r;rSel.appendChild(o)});
+      document.getElementById('keyword').addEventListener('keydown', e => {
+        if (e.key === 'Enter') search();
       });
     }
 
-    function loadPickupTable(){
-      document.getElementById('spinner').style.display="flex";
-      fetchData({action:'pickup'}).then(d=>{
-        document.getElementById('spinner').style.display="none";
-        if(d){ state.rows=d.rows||[]; if(d.lastUpdated) document.getElementById('lastUpdatedDisplay').innerText=`(${formatDate(d.lastUpdated)})`; render(); }
-      });
-    }
-
-    function search(){
-      const k=document.getElementById('keyword').value.trim();
-      const r=document.getElementById('raritySelect').value;
-      document.getElementById('spinner').style.display="flex";
-      document.getElementById('cardView').innerHTML=""; document.getElementById('tableView').innerHTML="";
-      
-      state.terms = parseQuery(k);
-      // 買取検索なので、カテゴリや価格下限などは不要。シンプルにレアリティとキーワードで検索
-      fetchData({action:'search', keyword:k, rarity:r}).then(d=>{
-        document.getElementById('spinner').style.display="none";
-        if(d){ state.rows=d.rows||[]; state.page=1; state.sort={idx:2,dir:'desc'}; render(); }
-      });
-    }
-
-    function filterRows(){
-      let res = state.rows;
-      if(isFavFilterMode) res = res.filter(r => favorites.has(r[0]));
-      
-      // 0円除外
-      res = res.filter(r => { const p = Number(r[2]); return !isNaN(p) && p > 0; });
-      
-      const { idx, dir } = state.sort;
-      res.sort((a,b) => {
-        const va = a[idx], vb = b[idx];
-        const isNum = idx >= 2; 
-        if(isNum) return ( (Number(va)||0) - (Number(vb)||0) ) * (dir==='asc'?1:-1);
-        return String(va||"").localeCompare(String(vb||""), 'ja') * (dir==='asc'?1:-1);
-      });
-      return res;
-    }
-
-    function render(){
-      const all = filterRows();
-      if(all.length===0) {
-        const msg = `<div style="text-align:center;padding:40px;color:#999;">条件に一致するカードが見つかりませんでした</div>`;
-        document.getElementById('cardView').innerHTML=msg; document.getElementById('tableView').innerHTML=msg; document.getElementById('pager').innerHTML=""; return;
+    // --- API通信 ---
+    async function fetchData(params) {
+      const url = new URL(API_URL);
+      Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+      try {
+        const res = await fetch(url);
+        return await res.json();
+      } catch (e) {
+        return null;
       }
-      const start = (state.page-1)*state.pageSize;
-      const view = all.slice(start, Math.min(start+state.pageSize, all.length));
-      renderMobile(view); renderDesktop(view);
-      renderPager(state.page, Math.ceil(all.length/state.pageSize));
     }
 
-    function renderMobile(rows){
-      let h="";
-      rows.forEach(r=>{
-        const [n,img,pA]=r;
-        const isFav = favorites.has(n);
-        const imTag = (img&&/^http/.test(img))?`<img src="${img}" loading="lazy" onclick="showModal('${img}')">`:`<span style="color:#ccc;font-size:10px">NO IMG</span>`;
-        const nameH = highlight(n);
-        h+=`<div class="card ${isFav?'is-favorite':''}"><div class="card-img">${imTag}</div><div class="card-body">
-            <div class="card-title"><span class="star-icon ${isFav?'active':''}" onclick="toggleFav('${n.replace(/'/g,"\\'")} ',this)">★</span> ${nameH}</div>
-            <div class="card-price-area"><div class="main-price">¥${Number(pA).toLocaleString()}</div></div>
-            </div></div>`;
+    // --- データ読み込み ---
+    function loadData() {
+      showSpinner(true);
+      // 初回はピックアップ
+      fetchData({ action: 'pickup' }).then(data => {
+        showSpinner(false);
+        if (!data) return;
+        if (data.lastUpdated) displayDate(data.lastUpdated);
+        allData = data.rows || [];
+        renderList();
       });
-      document.getElementById('cardView').innerHTML=h;
     }
 
-    function renderDesktop(rows){
-      let h=`<table><thead><tr>`;
-      [{n:"カード名",w:"auto"},{n:"画像",w:"70px"},{n:"状態A",w:""}].forEach(x=>h+=`<th width="${x.w}">${x.n}</th>`);
-      h+=`</tr></thead><tbody>`;
-      rows.forEach(r=>{
-        const [n,img,pA]=r;
-        const isFav = favorites.has(n);
-        const imTag = (img&&/^http/.test(img))?`<img class="tbl-thumb" src="${img}" onclick="showModal('${img}')">`:"";
-        h+=`<tr class="${isFav?'is-favorite':''}"><td><span class="star-icon ${isFav?'active':''}" onclick="toggleFav('${n.replace(/'/g,"\\'")} ',this)">★</span> ${highlight(n)}</td>
-            <td>${imTag}</td><td class="price">¥${Number(pA).toLocaleString()}</td></tr>`;
+    function search() {
+      const kw = document.getElementById('keyword').value.trim();
+      const rar = document.getElementById('raritySelect').value;
+      
+      showSpinner(true);
+      document.getElementById('resultList').innerHTML = "";
+
+      // 検索実行
+      fetchData({ action: 'search', keyword: kw, rarity: rar }).then(data => {
+        showSpinner(false);
+        if (!data) return;
+        allData = data.rows || [];
+        document.getElementById('listTitle').innerText = (kw || rar) ? "検索結果" : "ピックアップ買取";
+        renderList();
       });
-      document.getElementById('tableView').innerHTML=h+'</tbody></table>';
     }
 
-    function renderPager(cur,max){
-      const p=document.getElementById('pager'); if(max<=1){p.innerHTML="";return;}
-      const b=(l,t,d)=>`<btn onclick="state.page=${t};render();window.scrollTo({top:0,behavior:'smooth'})" class="${d?'disabled':''}">${l}</btn>`;
-      p.innerHTML=`${b('«',1,cur===1)}${b('‹',cur-1,cur===1)}<span style="display:flex;align-items:center;font-size:14px;color:#666;">${cur}/${max}</span>${b('›',cur+1,cur===max)}${b('»',max,cur===max)}`;
+    function loadRarityList() {
+      fetchData({ action: 'rarityList' }).then(list => {
+        if (!list) return;
+        const sel = document.getElementById('raritySelect');
+        // 既存オプション削除（全て以外）
+        while(sel.options.length > 1) sel.remove(1);
+        
+        list.forEach(r => {
+          const opt = document.createElement('option');
+          opt.value = r; opt.innerText = r;
+          sel.appendChild(opt);
+        });
+      });
     }
 
-    // Helper functions
-    function toggleFav(n,el){
-      if(event)event.stopPropagation(); n=n.trim();
-      if(favorites.has(n)) { favorites.delete(n); if(el)el.classList.remove('active'); }
-      else { favorites.add(n); if(el)el.classList.add('active'); }
-      localStorage.setItem('tk_favorites',JSON.stringify([...favorites]));
-      if(isFavFilterMode) render(); else { const tr=el.closest('tr'); if(tr) favorites.has(n)?tr.classList.add('is-favorite'):tr.classList.remove('is-favorite'); const cd=el.closest('.card'); if(cd) favorites.has(n)?cd.classList.add('is-favorite'):cd.classList.remove('is-favorite');}
+    function loadGuarantee() {
+      // 既にHTMLにあるので、APIから最新が取れれば上書きする形
+      fetchData({ action: 'guarantee' }).then(rows => {
+        if(!rows || rows.length===0) return;
+        const cont = document.getElementById('guaranteeContainer');
+        let html = "";
+        rows.forEach(r => {
+          // r[0]=Label, r[1]=Price
+          html += `<div class="g-card"><span class="g-label">${r[0]}</span><span class="g-price">${fmtPrice(r[1])}</span></div>`;
+        });
+        cont.innerHTML = html;
+      });
     }
-    function toggleFavFilter(){
-      isFavFilterMode=!isFavFilterMode;
-      const b=document.getElementById('favFilterBtn');
-      if(isFavFilterMode) b.classList.add('active'); else b.classList.remove('active');
-      render();
+
+    // --- 描画 ---
+    function renderList() {
+      const container = document.getElementById('resultList');
+      let html = "";
+      
+      // フィルタリング
+      let rows = allData.filter(row => {
+        // お気に入りモードならお気に入りのみ
+        if (isFavMode && !favorites.has(row[0])) return false;
+        // 0円除外
+        const p = parseFloat(String(row[2]).replace(/,/g, ''));
+        if (isNaN(p) || p <= 0) return false;
+        return true;
+      });
+
+      if (rows.length === 0) {
+        container.innerHTML = `<p style="text-align:center;color:#999;padding:40px;">該当するカードがありません</p>`;
+        return;
+      }
+
+      rows.forEach(row => {
+        const name = row[0];
+        const img = row[1];
+        const price = row[2]; // 状態A
+
+        const isFav = favorites.has(name);
+        const imgTag = (img && /^http/.test(img))
+          ? `<img src="${img}" loading="lazy" onclick="showModal('${img}')">`
+          : `<span style="font-size:10px;color:#ccc;">No Img</span>`;
+
+        // 型番抽出
+        const mm = name.match(/\{(.+?)\}/);
+        const copyTxt = mm ? mm[1] : name;
+        
+        html += `
+          <div class="item-row ${isFav ? 'is-favorite' : ''}">
+            <div class="item-img">${imgTag}</div>
+            <div class="item-info">
+              <div class="item-title-row">
+                <span class="star-btn ${isFav ? 'active' : ''}" onclick="toggleFav('${name.replace(/'/g,"\\'")} ', this)">★</span>
+                <div class="item-title" onclick="copyText('${copyTxt.replace(/'/g,"\\'")}','型番をコピー')">${name}</div>
+              </div>
+              <div class="item-price-row" onclick="copyText('${price}','価格をコピー')">
+                <span class="price-label">買取</span>
+                <span class="price-val">¥${Number(price).toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
     }
-    function loadFavorites(){ const s=localStorage.getItem('tk_favorites'); if(s) favorites=new Set(JSON.parse(s)); }
-    function highlight(s){ let h=String(s); [...state.terms.andTerms,...state.terms.orTerms].forEach(k=>{if(k)h=h.replace(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"gi"),m=>`<mark>${m}</mark>`);}); return h; }
-    function parseQuery(r){ const n=(r||"").replace(/[\u3041-\u3096]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60)).toLowerCase().trim(); if(!n)return{andTerms:[],orTerms:[]}; const o=n.split('|').map(s=>s.trim()).filter(Boolean); return o.length>1?{andTerms:[],orTerms:o}:{andTerms:n.split(/\s+/).map(s=>s.trim()).filter(Boolean),orTerms:[]}; }
-    function toggleSort(){ const l=document.getElementById('sortLabel'), c=document.getElementById('sortIcon').parentElement; if(state.sort.idx===2 && state.sort.dir==='desc'){state.sort={idx:0,dir:'asc'};l.innerText="標準(名前順)";c.classList.remove('active');}else{state.sort={idx:2,dir:'desc'};l.innerText="価格順(高)";c.classList.add('active');} render(); }
-    function formatDate(iso){ const d=new Date(iso); return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
-    function showModal(s){ document.getElementById('modalImage').src=s; document.getElementById('modal').style.display='flex'; }
+
+    // --- UI操作 ---
+    function onRarityChange() {
+      const sel = document.getElementById('raritySelect');
+      const label = document.getElementById('rarityLabel');
+      // 選択されたテキストを表示
+      label.innerText = sel.value || "全て";
+      search();
+    }
+
+    function toggleFavFilter() {
+      isFavMode = !isFavMode;
+      const btn = document.getElementById('favFilterBtn');
+      if (isFavMode) btn.classList.add('active');
+      else btn.classList.remove('active');
+      renderList();
+    }
+
+    function toggleFav(name, el) {
+      event.stopPropagation();
+      name = name.trim();
+      if (favorites.has(name)) {
+        favorites.delete(name);
+        if (el) el.classList.remove('active');
+        el.closest('.item-row').classList.remove('is-favorite');
+      } else {
+        favorites.add(name);
+        if (el) el.classList.add('active');
+        el.closest('.item-row').classList.add('is-favorite');
+      }
+      localStorage.setItem('tk_favorites', JSON.stringify([...favorites]));
+      if (isFavMode) renderList(); // フィルタ中なら即反映
+    }
+
+    // --- ユーティリティ ---
+    function loadFavorites() {
+      const s = localStorage.getItem('tk_favorites');
+      if (s) favorites = new Set(JSON.parse(s));
+    }
+    function showSpinner(b) { document.getElementById('spinner').style.display = b ? 'block' : 'none'; }
+    function displayDate(iso) {
+      const d = new Date(iso);
+      const s = `最終更新: ${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      document.getElementById('lastUpdatedDisplay').innerText = s;
+    }
+    function fmtPrice(v) {
+      if (!v || isNaN(v)) return v;
+      return "¥" + Number(v).toLocaleString();
+    }
+    function copyText(txt, msg) {
+      navigator.clipboard.writeText(txt).then(() => {
+        const t = document.getElementById('toast');
+        document.getElementById('toastMsg').innerText = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2000);
+      });
+    }
+    function showModal(src) {
+      document.getElementById('modalImage').src = src;
+      document.getElementById('modal').style.display = 'flex';
+    }
+    window.onload = init;
   </script>
 </body>
 </html>
