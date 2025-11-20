@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>トレカキングダム 買取価格検索</title>
+  <title>トレカキングダム 買取検索</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Roboto:wght@500;700;900&display=swap" rel="stylesheet">
   <style>
@@ -27,8 +27,6 @@
 
     /* ヘッダー */
     header { background: #fff; padding: 16px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index: 20; position: relative; }
-    h1 { margin: 0; font-size: 22px; color: var(--primary); font-weight: 900; letter-spacing: 0.05em; }
-    h1 span { color: var(--text); font-size: 15px; font-weight: normal; margin-left: 8px; }
     .site-logo img { max-width: 160px; height: auto; }
 
     /* 検索バー (Sticky) */
@@ -87,6 +85,10 @@
       padding: 14px 20px; font-weight: 700; color: var(--primary); cursor: pointer; outline: none;
       display: flex; align-items: center; justify-content: space-between;
     }
+    .guarantee-scroller { overflow-x: auto; white-space: nowrap; padding: 0 16px 20px; -webkit-overflow-scrolling: touch; }
+    .guarantee-card { display: inline-block; background: #fff; padding: 10px 16px; border-radius: 12px; margin-right: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; min-width: 80px; }
+    .guarantee-card .g-label { font-size: 11px; color: #888; display: block; margin-bottom: 4px; }
+    .guarantee-card .g-price { font-family: 'Roboto', sans-serif; font-weight: 700; color: #333; font-size: 16px; }
 
     /* リスト */
     #result-container { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
@@ -169,7 +171,7 @@
 <body onload="init()">
 
   <header>
-    <h1>TREKA KINGDOM <span>買取価格検索</span></h1>
+    <div class="site-logo"><img src="https://i.imgur.com/ZXFdMYn.png" alt="LOGO"></div>
   </header>
 
   <div class="search-sticky">
@@ -177,23 +179,25 @@
       <input type="text" id="keyword" placeholder="カード名・型番" enterkeyhint="search">
     </div>
     <div class="btn-circle btn-search" onclick="search()"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 3 13.09 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
-    <div class="btn-circle btn-fav-filter" id="favFilterBtn" onclick="toggleFavFilter()"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div>
+    <div class="btn-circle btn-fav-filter" id="favFilterBtn" onclick="toggleFavFilter()" title="お気に入りのみ表示"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div>
   </div>
 
   <div class="controls-area">
     <p style="text-align:center;font-size:12px;color:#666;margin-top:-5px;">※価格は在庫状況等により変動します <span id="lastUpdatedDisplay" style="color:#0056b3;font-weight:bold;"></span></p>
     
     <div class="filter-scroll" style="margin-bottom: 12px;">
-      <div class="chip" id="catChip"><span>📂</span><select id="categorySelect"><option value="">全カテゴリ</option></select></div>
       <div class="chip" id="rarChip"><span>💎</span><select id="raritySelect"><option value="">全レアリティ</option></select></div>
-      <div class="chip" id="thresholdChip"><span>🚫</span><input type="number" id="thresholdInput" class="direct-input" placeholder="下限なし"></div>
       <div class="chip" onclick="toggleSort()"><span id="sortIcon">⇅</span><span id="sortLabel">価格順(高)</span></div>
-      <div class="chip"><span>Aa</span><select id="fontSizeSelect"><option value="13px">小</option><option value="15px" selected>中</option><option value="17px">大</option><option value="20px">特大</option></select></div>
-      <div class="chip"><span>📄</span><select id="pageSizeSelect"><option value="50">50件</option><option value="100" selected>100件</option><option value="all">全件</option></select></div>
     </div>
 
-    <div class="filter-scroll" id="initialBar"></div>
-    <details class="guarantee-box"><summary>⚡ 最低保証価格表を確認する</summary><div id="guaranteeTableBox" style="overflow-x:auto;padding:0 16px 16px;"></div></details>
+    <h3>最低保証買取</h3>
+    <div class="guarantee-scroller">
+      <div class="guarantee-card"><span class="g-label">PSA10</span><div class="g-price">¥5,000</div></div>
+      <div class="guarantee-card"><span class="g-label">SAR</span><div class="g-price">¥400</div></div>
+      <div class="guarantee-card"><span class="g-label">SR</span><div class="g-price">¥250</div></div>
+      <div class="guarantee-card"><span class="g-label">AR</span><div class="g-price">¥220</div></div>
+      <div class="guarantee-card"><span class="g-label">RR</span><div class="g-price">¥10</div></div>
+    </div>
 
     <div id="spinner" class="spinner"><div class="spinner-circle"></div><span>読み込み中...</span></div>
     
@@ -208,35 +212,21 @@
   <div id="toast">✅ <span id="toastMsg"></span></div>
 
   <script>
-    // ★★★ここにGASのURLを貼ってください★★★
+    // ★★★ ご指定のURLを設定済み ★★★
     const API_URL = "https://script.google.com/macros/s/AKfycbw-P6xNeIAaiD32vlVFDHR4p6T8_snDuJwRaGfGoE6k6uJSDsyk_1z2Pl220oA8pxV5mA/exec";
 
-    const state = { rows:[], page:1, pageSize:100, sort:{idx:2,dir:'desc'}, terms:{andTerms:[],orTerms:[]}, thresholdA:null, initialKey:'ALL' };
-    const INITIALS = [{k:'ALL',l:'全て'},{k:'A',l:'あ'},{k:'K',l:'か'},{k:'S',l:'さ'},{k:'T',l:'た'},{k:'N',l:'な'},{k:'H',l:'は'},{k:'M',l:'ま'},{k:'Y',l:'や'},{k:'R',l:'ら'},{k:'W',l:'わ'},{k:'MISC',l:'他'}];
+    const state = { rows:[], page:1, pageSize:100, sort:{idx:2,dir:'desc'}, terms:{andTerms:[],orTerms:[]}, initialKey:'ALL' };
     let favorites = new Set();
     let isFavFilterMode = false;
 
     function init() {
-      loadFavorites(); loadFilterOptions(); loadGuarantee(); buildInitialBar(); loadPickupTable();
-      const fSize = localStorage.getItem("tk_f")||"15px";
-      document.documentElement.style.setProperty('--f-size', fSize);
-      document.getElementById('fontSizeSelect').value = fSize;
-      
+      loadFavorites(); loadRarityList(); loadPickupTable();
       setupEvents();
     }
 
     function setupEvents(){
       document.getElementById('keyword').addEventListener('keydown', e=>{if(e.key==='Enter')search()});
-      document.getElementById('categorySelect').addEventListener('change', ()=>search());
       document.getElementById('raritySelect').addEventListener('change', ()=>search());
-      document.getElementById('pageSizeSelect').addEventListener('change', e=>{state.pageSize=e.target.value==='all'?Infinity:Number(e.target.value);state.page=1;render()});
-      document.getElementById('fontSizeSelect').addEventListener('change', e=>{document.documentElement.style.setProperty('--f-size', e.target.value);localStorage.setItem("tk_f", e.target.value)});
-      document.getElementById('thresholdInput').addEventListener('input', e=>{
-         const v=e.target.value;
-         if(v && Number(v)>0){state.thresholdA=Number(v);document.getElementById('thresholdChip').classList.add('active');}
-         else{state.thresholdA=null;document.getElementById('thresholdChip').classList.remove('active');}
-         render();
-      });
     }
 
     async function fetchData(p) {
@@ -244,23 +234,11 @@
       try { const r=await fetch(u); return await r.json(); } catch(e){ return null; }
     }
 
-    function loadFilterOptions(){
-      fetchData({action:'filters'}).then(d=>{
-        if(!d)return;
-        const cSel=document.getElementById('categorySelect'), rSel=document.getElementById('raritySelect');
-        d.categories.forEach(c=>{const o=document.createElement('option');o.value=c;o.innerText=c;cSel.appendChild(o)});
-        d.rarities.forEach(r=>{const o=document.createElement('option');o.value=r;o.innerText=r;rSel.appendChild(o)});
-      });
-    }
-
-    function loadGuarantee(){
-      fetchData({action:'guarantee'}).then(rows=>{
-        if(!rows)return;
-        let h='<table style="width:100%;font-size:13px;border-collapse:collapse;text-align:center;white-space:nowrap;"><thead><tr style="background:#f0f2f5;">';
-        ["カード","A","A-","B","C","D"].forEach(x=>h+=`<th style="padding:10px;border:1px solid #eee;">${x}</th>`);
-        h+='</tr></thead><tbody>';
-        rows.forEach(r=>{ h+='<tr>'; r.forEach((c,i)=>h+=`<td style="padding:10px;border:1px solid #eee;">${(i>0&&!isNaN(c)&&c!=="")?"¥"+Number(c).toLocaleString():c}</td>`); h+='</tr>'; });
-        document.getElementById('guaranteeTableBox').innerHTML=h+'</tbody></table>';
+    function loadRarityList(){
+      fetchData({action:'rarityList'}).then(list=>{
+        if(!list)return;
+        const rSel=document.getElementById('raritySelect');
+        list.forEach(r=>{const o=document.createElement('option');o.value=r;o.innerText=r;rSel.appendChild(o)});
       });
     }
 
@@ -274,13 +252,13 @@
 
     function search(){
       const k=document.getElementById('keyword').value.trim();
-      const c=document.getElementById('categorySelect').value;
       const r=document.getElementById('raritySelect').value;
       document.getElementById('spinner').style.display="flex";
       document.getElementById('cardView').innerHTML=""; document.getElementById('tableView').innerHTML="";
       
       state.terms = parseQuery(k);
-      fetchData({action:'search', keyword:k, category:c, rarity:r}).then(d=>{
+      // 買取検索なので、カテゴリや価格下限などは不要。シンプルにレアリティとキーワードで検索
+      fetchData({action:'search', keyword:k, rarity:r}).then(d=>{
         document.getElementById('spinner').style.display="none";
         if(d){ state.rows=d.rows||[]; state.page=1; state.sort={idx:2,dir:'desc'}; render(); }
       });
@@ -289,8 +267,7 @@
     function filterRows(){
       let res = state.rows;
       if(isFavFilterMode) res = res.filter(r => favorites.has(r[0]));
-      if(state.thresholdA !== null) res = res.filter(r => { const p = Number(r[2]); return isNaN(p) || p >= state.thresholdA; });
-      if(state.initialKey !== 'ALL') res = res.filter(r => getInitialGroup(r[0]) === state.initialKey);
+      
       // 0円除外
       res = res.filter(r => { const p = Number(r[2]); return !isNaN(p) && p > 0; });
       
@@ -368,8 +345,6 @@
     function loadFavorites(){ const s=localStorage.getItem('tk_favorites'); if(s) favorites=new Set(JSON.parse(s)); }
     function highlight(s){ let h=String(s); [...state.terms.andTerms,...state.terms.orTerms].forEach(k=>{if(k)h=h.replace(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"gi"),m=>`<mark>${m}</mark>`);}); return h; }
     function parseQuery(r){ const n=(r||"").replace(/[\u3041-\u3096]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60)).toLowerCase().trim(); if(!n)return{andTerms:[],orTerms:[]}; const o=n.split('|').map(s=>s.trim()).filter(Boolean); return o.length>1?{andTerms:[],orTerms:o}:{andTerms:n.split(/\s+/).map(s=>s.trim()).filter(Boolean),orTerms:[]}; }
-    function getInitialGroup(n){ const c=(n||"").charAt(0); if(/[あ-おア-オ]/.test(c))return'A'; if(/[か-こカ-コ]/.test(c))return'K'; if(/[さ-そサ-ソ]/.test(c))return'S'; if(/[た-とタ-ト]/.test(c))return'T'; if(/[な-のナ-ノ]/.test(c))return'N'; if(/[は-ほハ-ホ]/.test(c))return'H'; if(/[ま-もマ-モ]/.test(c))return'M'; if(/[や-よヤ-ヨ]/.test(c))return'Y'; if(/[ら-ろラ-ロ]/.test(c))return'R'; if(/[わ-んワ-ン]/.test(c))return'W'; return'MISC'; }
-    function buildInitialBar(){ const b=document.getElementById('initialBar'); b.innerHTML=""; INITIALS.forEach(i=>{ const d=document.createElement('div'); d.className=`chip ${state.initialKey===i.k?'active':''}`; d.innerText=i.l; d.onclick=()=>{state.initialKey=i.k;buildInitialBar();render()}; b.appendChild(d); }); }
     function toggleSort(){ const l=document.getElementById('sortLabel'), c=document.getElementById('sortIcon').parentElement; if(state.sort.idx===2 && state.sort.dir==='desc'){state.sort={idx:0,dir:'asc'};l.innerText="標準(名前順)";c.classList.remove('active');}else{state.sort={idx:2,dir:'desc'};l.innerText="価格順(高)";c.classList.add('active');} render(); }
     function formatDate(iso){ const d=new Date(iso); return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
     function showModal(s){ document.getElementById('modalImage').src=s; document.getElementById('modal').style.display='flex'; }
