@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>トレカキングダム 買取比較</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Roboto:wght@500;700;900&display=swap" rel="stylesheet">
+  <style>
+    /* CSS全文 */
+    :root{--primary:#0066cc;--primary-light:#e6f0ff;--accent:#e60012;--accent-bg:#fff0f0;--bg:#f0f2f5;--card-bg:#ffffff;--text:#222;--text-sub:#555;--border:#dfe3e8;--radius:12px;--shadow:0 2px 8px rgba(0,0,0,0.06);--f-size:15px;--search-height:76px;}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}body{font-family:'Noto Sans JP',sans-serif;margin:0;padding:0;background:var(--bg);color:var(--text);padding-bottom:80px;}
+    header{background:#fff;padding:16px 20px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:relative;z-index:20;}
+    h1{margin:0;font-size:22px;color:var(--primary);font-weight:900;letter-spacing:.05em;}h1 span{color:var(--text);font-size:15px;font-weight:normal;margin-left:8px;}
+    .search-sticky{position:sticky;top:0;z-index:100;background:rgba(240,242,245,.95);backdrop-filter:blur(10px);padding:12px 16px;border-bottom:1px solid rgba(0,0,0,.05);height:var(--search-height);display:flex;align-items:center;justify-content:center;}
+    .search-bar{display:flex;gap:8px;width:100%;max-width:900px;margin:0 auto;}
+    .input-wrapper{position:relative;flex:1;display:flex;align-items:center;background:#fff;border-radius:50px;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,.05);padding-right:6px;}
+    .input-wrapper:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,102,204,.1);}
+    .input-wrapper input{border:none;background:transparent;padding:12px 20px;font-size:16px;flex:1;outline:none;border-radius:50px;}
+    .btn-copy-input{border:none;background:transparent;cursor:pointer;font-size:20px;padding:8px 14px;color:#bbb;display:flex;align-items:center;}
+    .btn-copy-input:hover{color:var(--primary);}
+    .btn-search{width:48px;height:48px;border-radius:50%;border:none;background:var(--primary);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 6px rgba(0,102,204,.3);}
+    .btn-search:active{transform:scale(.95);}
+    .btn-search svg{width:24px;height:24px;fill:white;}
+    .controls-area{max-width:1200px;margin:0 auto;padding:16px;}
+    .filter-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;white-space:nowrap;}
+    .filter-scroll::-webkit-scrollbar{display:none;}
+    .chip{white-space:nowrap;padding:0 16px;border-radius:24px;background:#fff;border:1px solid var(--border);color:var(--text-sub);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;height:44px;flex-shrink:0;}
+    .chip.active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 2px 6px rgba(0,102,204,.25);}
+    .chip select{border:none;background:transparent;color:inherit;font:inherit;outline:none;padding-right:4px;cursor:pointer;height:100%;font-size:14px;}
+    .chip input.direct-input{border:none;background:transparent;outline:none;color:inherit;width:90px;font-size:14px;font-weight:500;height:100%;}
+    .chip input.direct-input::placeholder{color:#aaa;font-weight:normal;}
+    .chip.active input.direct-input::placeholder{color:rgba(255,255,255,.7);}
+    details.guarantee-box{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px;}
+    details.guarantee-box summary{padding:14px 20px;font-weight:700;font-size:14px;color:var(--primary);cursor:pointer;outline:none;display:flex;align-items:center;justify-content:space-between;}
+    #result-container{max-width:1200px;margin:0 auto;padding:0 16px;}
+    .spinner{display:none;flex-direction:column;align-items:center;gap:12px;padding:40px;color:var(--text-sub);font-size:14px;}
+    .spinner-circle{width:40px;height:40px;border:4px solid #eee;border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .price{font-family:'Roboto',sans-serif;font-weight:700;letter-spacing:-.5px;font-size:calc(var(--f-size) + 2px);}
+    .btn-copy{display:inline-flex;align-items:center;justify-content:center;margin-left:8px;padding:4px 10px;border-radius:6px;background:#f0f2f5;color:#0066cc;border:1px solid #ccd;font-size:12px;cursor:pointer;user-select:none;white-space:nowrap;font-weight:500;}
+    .btn-copy:active{transform:scale(.95);background:#eef;}
+    .clickable-price{cursor:pointer;position:relative;transition:color .1s;}
+    .clickable-price:hover{color:var(--primary);text-decoration:underline;}
+    .card-grid{display:grid;gap:16px;}
+    .card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:grid;grid-template-columns:90px 1fr;grid-template-rows:auto auto;position:relative;}
+    .card-img{grid-row:1/-1;width:100%;height:100%;background:#fafafa;display:flex;align-items:center;justify-content:center;cursor:zoom-in;}
+    .card-img img{width:100%;height:100%;object-fit:contain;padding:6px;}
+    .card-body{padding:12px 16px;display:flex;flex-direction:column;gap:10px;}
+    .card-title{font-size:var(--f-size);font-weight:700;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+    .king-prices{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:var(--primary-light);border-radius:8px;padding:8px;}
+    .kp-item{text-align:center;display:flex;flex-direction:column;}
+    .kp-label{font-size:10px;color:var(--primary);font-weight:bold;margin-bottom:2px;}
+    .kp-val{font-size:calc(var(--f-size) - 2px);color:#333;font-weight:700;}
+    .rush-row{grid-column:1/-1;border-top:1px dashed var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;background:#fffbfc;}
+    .rush-label{font-size:calc(var(--f-size) - 3px);color:var(--accent);font-weight:bold;display:flex;align-items:center;gap:4px;}
+    .rush-val{font-size:calc(var(--f-size) + 4px);color:var(--accent);font-weight:900;}
+    @media(min-width:768px){.card-grid{display:none;}.desktop-table-wrap{display:block!important;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:visible;border:1px solid #eee;}table{width:100%;border-collapse:separate;border-spacing:0;font-size:var(--f-size);}th{background:#f8f9fa;padding:16px 12px;text-align:center;font-weight:700;color:#555;border-bottom:2px solid #ddd;position:sticky;top:var(--search-height);z-index:10;white-space:nowrap;}td{padding:14px 12px;text-align:center;border-bottom:1px solid #eee;vertical-align:middle;}tr:hover{background:#f0f7ff;}th:first-child{text-align:left;min-width:320px;width:auto;}td:first-child{text-align:left;font-weight:bold;color:#333;line-height:1.6;}.rush-col{background:var(--accent-bg);border-left:2px solid #ffdede;color:var(--accent);font-weight:bold;font-size:calc(var(--f-size) + 2px);}th.rush-header{background:#ffebeb;color:var(--accent);border-left:2px solid #ffdede;}img.tbl-thumb{width:50px;height:50px;object-fit:contain;border-radius:4px;border:1px solid #eee;}}.desktop-table-wrap{display:none;}
+    .pager{display:flex;justify-content:center;gap:10px;margin-top:30px;}
+    .pager btn{width:40px;height:40px;border-radius:10px;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-sub);font-size:16px;}
+    .pager btn:hover{background:#f0f0f0;}.pager btn.disabled{opacity:.4;pointer-events:none;}
+    #modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+    #modal img{max-width:90%;max-height:90%;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.5);}
+    #toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:#222;color:#fff;padding:12px 24px;border-radius:30px;font-size:14px;opacity:0;visibility:hidden;transition:all .3s;z-index:10000;box-shadow:0 6px 16px rgba(0,0,0,.3);display:flex;align-items:center;gap:8px;font-weight:500;}#toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+  <header><h1>TREKA KINGDOM <span>買取比較検索</span></h1></header>
+  <div class="search-sticky">
+    <div class="search-bar">
+      <div class="input-wrapper">
+        <input type="text" id="keyword" placeholder="カード名・型番 (スペース=AND)" enterkeyhint="search">
+        <button class="btn-copy-input" onclick="copyKeyword()" title="入力文字をコピー">📋</button>
+      </div>
+      <button class="btn-search" onclick="search()" title="検索"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 3 13.09 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></button>
+    </div>
+  </div>
+  <div class="controls-area">
+    <div class="filter-scroll" style="margin-bottom:12px;">
+      <div class="chip" id="catChip"><span>📂</span><select id="categorySelect"><option value="">全カテゴリ</option></select></div>
+      <div class="chip" id="rarChip"><span>💎</span><select id="raritySelect"><option value="">全レアリティ</option></select></div>
+      <div class="chip" id="thresholdChip"><span>🚫</span><input type="number" id="thresholdInput" class="direct-input" placeholder="下限なし"></div>
+      <div class="chip" onclick="toggleSort()"><span id="sortIcon">⇅</span><span id="sortLabel">標準(名前順)</span></div>
+      <div class="chip"><span>Aa</span><select id="fontSizeSelect"><option value="13px">小</option><option value="15px" selected>中</option><option value="17px">大</option><option value="20px">特大</option></select></div>
+      <div class="chip"><span>📄</span><select id="pageSizeSelect"><option value="50">50件</option><option value="100" selected>100件</option><option value="all">全件</option></select></div>
+    </div>
+    <div class="filter-scroll" id="initialBar"></div>
+    <details class="guarantee-box"><summary>⚡ 最低保証価格表を確認する</summary><div id="guaranteeTableBox" style="overflow-x:auto;padding:0 16px 16px;"></div></details>
+    <div id="spinner" class="spinner"><div class="spinner-circle"></div><span>データを取得しています...</span></div>
+    <div id="result-container">
+      <div id="cardView" class="card-grid"></div>
+      <div id="tableView" class="desktop-table-wrap"></div>
+      <div id="pager" class="pager"></div>
+    </div>
+  </div>
+  <div id="modal" onclick="this.style.display='none'"><img id="modalImage" src=""></div>
+  <div id="toast">✅ <span id="toastMsg"></span></div>
+
+  <script>
+    // ★ここにGASのURLを貼る (例: "https://script.google.com/.../exec")
+    const API_URL = "https://script.google.com/macros/s/AKfycbwMJhqYHomNTfPTTKwuHQY7dJasdAySObACEO3nOLOkQkuNVXwsRQMHQu3GfrbDCSK5RQ/exec";
+
+    const state = { rows:[], page:1, pageSize:100, sort:{idx:0,dir:'asc'}, terms:{andTerms:[],orTerms:[]}, thresholdA:null, initialKey:'ALL' };
+    const INITIALS = [{k:'ALL',l:'全て'},{k:'A',l:'あ'},{k:'K',l:'か'},{k:'S',l:'さ'},{k:'T',l:'た'},{k:'N',l:'な'},{k:'H',l:'は'},{k:'M',l:'ま'},{k:'Y',l:'や'},{k:'R',l:'ら'},{k:'W',l:'わ'},{k:'MISC',l:'他'}];
+
+    function init() {
+      const tInput = document.getElementById('thresholdInput');
+      loadFilterOptions(); loadGuarantee(); buildInitialBar(); loadPickupTable();
+      
+      const fSize = localStorage.getItem("tk_f")||"15px";
+      document.documentElement.style.setProperty('--f-size', fSize);
+      document.getElementById('fontSizeSelect').value = fSize;
+
+      const sThr = localStorage.getItem("tk_t");
+      if(sThr) { tInput.value = sThr; state.thresholdA = Number(sThr); document.getElementById('thresholdChip').classList.add('active'); }
+
+      setupEvents(tInput);
+    }
+    
+    function setupEvents(tInput){
+      document.getElementById('keyword').addEventListener('keydown', e=>{if(e.key==='Enter')search()});
+      document.getElementById('categorySelect').addEventListener('change', ()=>search());
+      document.getElementById('raritySelect').addEventListener('change', ()=>search());
+      document.getElementById('pageSizeSelect').addEventListener('change', e=>{state.pageSize=e.target.value==='all'?Infinity:Number(e.target.value);state.page=1;render();});
+      document.getElementById('fontSizeSelect').addEventListener('change', e=>{document.documentElement.style.setProperty('--f-size', e.target.value);localStorage.setItem("tk_f", e.target.value);});
+      tInput.addEventListener('input', e=>{
+         const v=e.target.value;
+         if(v && Number(v)>0){state.thresholdA=Number(v);document.getElementById('thresholdChip').classList.add('active');}
+         else{state.thresholdA=null;document.getElementById('thresholdChip').classList.remove('active');}
+         localStorage.setItem("tk_t",v); render();
+      });
+    }
+
+    async function fetchData(p) {
+      const u = new URL(API_URL); Object.keys(p).forEach(k=>u.searchParams.append(k,p[k]));
+      try { const r=await fetch(u); return await r.json(); } 
+      catch(e){ alert("通信エラー: " + e.message); return null; }
+    }
+
+    function loadFilterOptions(){
+      fetchData({action:'filters'}).then(d=>{
+        if(!d)return;
+        const cSel=document.getElementById('categorySelect'), rSel=document.getElementById('raritySelect');
+        d.categories.forEach(c=>{const o=document.createElement('option');o.value=c;o.innerText=c;cSel.appendChild(o)});
+        d.rarities.forEach(r=>{const o=document.createElement('option');o.value=r;o.innerText=r;rSel.appendChild(o)});
+      });
+    }
+
+    function loadGuarantee(){
+      fetchData({action:'guarantee'}).then(rows=>{
+        if(!rows)return;
+        let h='<table style="width:100%;font-size:13px;border-collapse:collapse;text-align:center;white-space:nowrap;"><thead><tr style="background:#f0f2f5;">';
+        ["カード","A","A-","B","C","D"].forEach(x=>h+=`<th style="padding:10px;border:1px solid #eee;">${x}</th>`);
+        h+='</tr></thead><tbody>';
+        rows.forEach(r=>{ h+='<tr>'; r.forEach((c,i)=>h+=`<td style="padding:10px;border:1px solid #eee;">${(i>0&&!isNaN(c)&&c!=="")?"¥"+Number(c).toLocaleString():c}</td>`); h+='</tr>'; });
+        document.getElementById('guaranteeTableBox').innerHTML=h+'</tbody></table>';
+      });
+    }
+
+    function loadPickupTable(){
+      document.getElementById('spinner').style.display="flex";
+      fetchData({action:'pickup'}).then(d=>{
+        document.getElementById('spinner').style.display="none";
+        if(d){ state.rows=d.rows||[]; render(); }
+      });
+    }
+
+    function search(){
+      const k=document.getElementById('keyword').value.trim();
+      const c=document.getElementById('categorySelect').value;
+      const r=document.getElementById('raritySelect').value;
+      document.getElementById('spinner').style.display="flex";
+      document.getElementById('cardView').innerHTML=""; document.getElementById('tableView').innerHTML="";
+      
+      state.terms = parseQuery(k);
+      fetchData({action:'search', keyword:k, category:c, rarity:r}).then(d=>{
+        document.getElementById('spinner').style.display="none";
+        if(d){ state.rows=d.rows||[]; state.page=1; state.sort={idx:0,dir:'asc'}; render(); }
+      });
+    }
+
+    function filterRows(){
+      let res = state.rows;
+      if(state.thresholdA !== null) res = res.filter(r => { const p = Number(r[2]); return isNaN(p) || p >= state.thresholdA; });
+      if(state.initialKey !== 'ALL') res = res.filter(r => getInitialGroup(r[0]) === state.initialKey);
+      const { idx, dir } = state.sort;
+      res.sort((a,b) => {
+        const va = a[idx], vb = b[idx];
+        const isNum = idx >= 2; 
+        if(isNum) return ( (Number(va)||0) - (Number(vb)||0) ) * (dir==='asc'?1:-1);
+        return String(va||"").localeCompare(String(vb||""), 'ja') * (dir==='asc'?1:-1);
+      });
+      return res;
+    }
+
+    function render(){
+      const all = filterRows();
+      const start = (state.page-1)*state.pageSize;
+      const view = all.slice(start, Math.min(start+state.pageSize, all.length));
+      
+      if(all.length===0) {
+        const msg = `<div style="text-align:center;padding:40px;color:#999;">条件に一致するカードが見つかりませんでした</div>`;
+        document.getElementById('cardView').innerHTML=msg;
+        document.getElementById('tableView').innerHTML=msg;
+        document.getElementById('pager').innerHTML="";
+        return;
+      }
+
+      renderMobile(view); renderDesktop(view);
+      renderPager(state.page, Math.ceil(all.length/state.pageSize));
+    }
+
+    function renderMobile(rows){
+      let h="";
+      rows.forEach(r=>{
+        const [n,img,pA,pAm,pB,pC,pD,pR]=r;
+        const imTag = (img&&/^http/.test(img))?`<img src="${img}" loading="lazy" onclick="showModal('${img}')">`:`<span style="color:#ccc;font-size:10px">NO IMG</span>`;
+        const nameH = highlight(n);
+        const mm = n.match(/\{(.+?)\}/);
+        const cpTxt = mm?mm[1]:n, cpLbl=mm?"型番":"名";
+        
+        let pGrid="";
+        [{l:'A',v:pA},{l:'A-',v:pAm},{l:'B',v:pB},{l:'C',v:pC},{l:'D',v:pD}].forEach(p=>{
+           const v=fmtPrice(p.v), cl=p.v&&!isNaN(p.v)?"clickable-price":"", ck=cl?`onclick="copyText('${p.v}','金額コピー')"`:"";
+           pGrid+=`<div class="kp-item" ${ck}><span class="kp-label">${p.l}</span><span class="kp-val ${cl}">${v}</span></div>`;
+        });
+        
+        const rV=fmtPrice(pR), rCk=(pR&&!isNaN(pR))?`onclick="copyText('${pR}','ラッシュ価格コピー')"`:"", rCl=(pR&&!isNaN(pR))?"clickable-price":"";
+        const rRow=pR?`<div class="rush-row" ${rCk}><span class="rush-label">🔥 ラッシュ(A)</span><span class="rush-val ${rCl}">${rV}</span></div>`:"";
+
+        h+=`<div class="card"><div class="card-img">${imTag}</div><div class="card-body">
+            <div class="card-title">${nameH}<span class="btn-copy" onclick="copyText('${cpTxt.replace(/'/g,"\\'")}','${cpLbl}コピー')">${cpLbl}</span></div>
+            <div class="king-prices">${pGrid}</div></div>${rRow}</div>`;
+      });
+      document.getElementById('cardView').innerHTML=h;
+    }
+
+    function renderDesktop(rows){
+      let h=`<table><thead><tr>`;
+      [{n:"カード名",w:"auto"},{n:"画像",w:"70px"},{n:"状態A",w:""},{n:"状態A-",w:""},{n:"状態B",w:""},{n:"状態C",w:""},{n:"状態D",w:""},{n:"ラッシュA",w:"",c:"rush-header"}].forEach(x=>h+=`<th class="${x.c||''}" width="${x.w}">${x.n}</th>`);
+      h+=`</tr></thead><tbody>`;
+      
+      rows.forEach(r=>{
+        const [n,img,pA,pAm,pB,pC,pD,pR]=r;
+        const imTag = (img&&/^http/.test(img))?`<img class="tbl-thumb" src="${img}" onclick="showModal('${img}')">`:"";
+        const mm = n.match(/\{(.+?)\}/);
+        const cpTxt = mm?mm[1]:n, cpLbl=mm?"型番":"名";
+        const mkTd=(v,xc="")=>`<td class="price ${xc} ${v&&!isNaN(v)?'clickable-price':''}" ${v&&!isNaN(v)?`onclick="copyText('${v}','金額コピー')"`:''}>${fmtPrice(v)}</td>`;
+
+        h+=`<tr><td>${highlight(n)}<span class="btn-copy" onclick="copyText('${cpTxt.replace(/'/g,"\\'")}','${cpLbl}コピー')">${cpLbl}</span></td>
+            <td>${imTag}</td>${mkTd(pA)}${mkTd(pAm)}${mkTd(pB)}${mkTd(pC)}${mkTd(pD)}${mkTd(pR,"rush-col")}</tr>`;
+      });
+      document.getElementById('tableView').innerHTML=h+'</tbody></table>';
+    }
+
+    function renderPager(cur,max){
+      const p=document.getElementById('pager'); if(max<=1){p.innerHTML="";return;}
+      const b=(l,t,d)=>`<btn onclick="state.page=${t};render();window.scrollTo({top:0,behavior:'smooth'})" class="${d?'disabled':''}">${l}</btn>`;
+      p.innerHTML=`${b('«',1,cur===1)}${b('‹',cur-1,cur===1)}<span style="display:flex;align-items:center;font-size:14px;color:#666;">${cur}/${max}</span>${b('›',cur+1,cur===max)}${b('»',max,cur===max)}`;
+    }
+
+    function fmtPrice(v){ return (v===""||v==null)?"-":(!isNaN(v)?`<span class="price-yen">¥</span>${Number(v).toLocaleString()}`:v); }
+    function highlight(s){ let h=String(s); [...state.terms.andTerms,...state.terms.orTerms].forEach(k=>{if(k)h=h.replace(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"gi"),m=>`<mark>${m}</mark>`);}); return h; }
+    function parseQuery(r){ const n=(r||"").replace(/[\u3041-\u3096]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60)).toLowerCase().trim(); if(!n)return{andTerms:[],orTerms:[]}; const o=n.split('|').map(s=>s.trim()).filter(Boolean); return o.length>1?{andTerms:[],orTerms:o}:{andTerms:n.split(/\s+/).map(s=>s.trim()).filter(Boolean),orTerms:[]}; }
+    function getInitialGroup(n){ const c=(n||"").charAt(0); if(/[あ-おア-オ]/.test(c))return'A'; if(/[か-こカ-コ]/.test(c))return'K'; if(/[さ-そサ-ソ]/.test(c))return'S'; if(/[た-とタ-ト]/.test(c))return'T'; if(/[な-のナ-ノ]/.test(c))return'N'; if(/[は-ほハ-ホ]/.test(c))return'H'; if(/[ま-もマ-モ]/.test(c))return'M'; if(/[や-よヤ-ヨ]/.test(c))return'Y'; if(/[ら-ろラ-ロ]/.test(c))return'R'; if(/[わ-んワ-ン]/.test(c))return'W'; return'MISC'; }
+    function buildInitialBar(){ const b=document.getElementById('initialBar'); b.innerHTML=""; INITIALS.forEach(i=>{ const d=document.createElement('div'); d.className=`chip ${state.initialKey===i.k?'active':''}`; d.innerText=i.l; d.onclick=()=>{state.initialKey=i.k;buildInitialBar();render()}; b.appendChild(d); }); }
+    function toggleSort(){ const l=document.getElementById('sortLabel'), c=document.getElementById('sortIcon').parentElement; if(state.sort.idx===0){state.sort={idx:2,dir:'desc'};l.innerText="価格順(高)";c.classList.add('active');}else{state.sort={idx:0,dir:'asc'};l.innerText="標準(名前順)";c.classList.remove('active');} render(); }
+    function copyKeyword(){ const v=document.getElementById('keyword').value; if(!v)return copyText(" ","空です"); copyText(v,"検索ワードコピー"); }
+    function copyText(t,m){ navigator.clipboard.writeText(t).then(()=>{ const el=document.getElementById('toast'), msg=document.getElementById('toastMsg'); msg.innerText=m; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2000); }); }
+    function showModal(s){ document.getElementById('modalImage').src=s; document.getElementById('modal').style.display='flex'; }
+    let rT; window.addEventListener('resize', ()=>{ clearTimeout(rT); rT=setTimeout(()=>render(),200); });
+    window.onload = init;
+  </script>
+</body>
+</html>
