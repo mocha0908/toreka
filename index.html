@@ -292,14 +292,14 @@
     let currentSort = "priceDesc"; 
     let currentRarityFilter = null;
     
-    // ★鉄壁の競合防止：リクエストID（整理券番号）
+    // 競合防止用の整理券番号
     let currentRequestId = 0;
 
     function init() {
       loadFavorites();
       loadRarityList();
       loadGuarantee();
-      loadData(); // ここで最初のデータ取得
+      loadData(); // 初期ロード
 
       document.getElementById('keyword').addEventListener('keydown', e => {
         if (e.key === 'Enter') search();
@@ -318,19 +318,13 @@
       }
     }
 
-    // --- データ読み込み（初期・ピックアップ） ---
+    // --- データ読み込み（初期） ---
     function loadData() {
-      // 1. 新しい整理券を発行
       const myRequestId = ++currentRequestId;
       showSpinner(true);
       
       fetchData({ action: 'pickup' }).then(data => {
-        // 2. データが届いたとき、整理券が最新かチェック
-        // もし「最新弾ボタン」などを押していたら、currentRequestIdが進んでいるので、ここはfalseになり無視される
-        if (myRequestId !== currentRequestId) {
-          console.log("古いリクエストなので破棄しました: ID " + myRequestId);
-          return;
-        }
+        if (myRequestId !== currentRequestId) return; // 古いリクエストは無視
 
         showSpinner(false);
         if (!data) return;
@@ -342,11 +336,12 @@
 
     // --- 通常検索 ---
     function search() {
-      const myRequestId = ++currentRequestId; // 新しい整理券
+      const myRequestId = ++currentRequestId;
       
       const kw = document.getElementById('keyword').value.trim();
       const rar = document.getElementById('raritySelect').value;
       
+      // 検索時はボタンエリアを隠す
       document.getElementById('rarityButtonArea').style.display = 'none';
       currentRarityFilter = null;
 
@@ -354,7 +349,7 @@
       document.getElementById('resultList').innerHTML = "";
 
       fetchData({ action: 'search', keyword: kw, rarity: rar }).then(data => {
-        if (myRequestId !== currentRequestId) return; // 古ければ無視
+        if (myRequestId !== currentRequestId) return;
 
         showSpinner(false);
         if (!data) return;
@@ -366,16 +361,20 @@
 
     // --- 最新弾取得 ---
     function fetchLatest() {
-      const myRequestId = ++currentRequestId; // 新しい整理券（これで前の読込は全て無効化）
+      const myRequestId = ++currentRequestId;
 
       showSpinner(true);
       document.getElementById('resultList').innerHTML = "";
       document.getElementById('keyword').value = "";
-      document.getElementById('raritySelect').value = "";
-      onRarityChange();
+      
+      // ★修正: search()を誘発しないように、見た目だけ静かにリセットする
+      const sel = document.getElementById('raritySelect');
+      sel.value = "";
+      document.getElementById('rarityLabel').innerText = "全て";
+      // ※ onRarityChange() は呼びません！
 
       fetchData({ action: 'latest' }).then(data => {
-        if (myRequestId !== currentRequestId) return; // 古ければ無視
+        if (myRequestId !== currentRequestId) return;
 
         showSpinner(false);
         if (!data) return;
@@ -389,8 +388,7 @@
       });
     }
 
-    // --- 以下、表示ロジック ---
-
+    // --- レアリティボタン生成 ---
     function generateRarityButtons(rows) {
       const area = document.getElementById('rarityButtonArea');
       const rarities = new Set();
@@ -421,6 +419,7 @@
       renderList();
     }
 
+    // --- その他UI関連 ---
     function loadRarityList() {
       fetchData({ action: 'rarityList' }).then(list => {
         if (!list) return;
