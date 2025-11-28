@@ -29,7 +29,7 @@
     /* === 検索エリア (2段組み) === */
     .search-wrapper {
       display: flex; flex-direction: column; gap: 12px;
-      max-width: 800px; margin: 0 auto 15px; /* 下マージンを少し調整 */
+      max-width: 800px; margin: 0 auto 15px;
       position: relative; z-index: 10;
     }
 
@@ -57,7 +57,7 @@
     .btn-search:active { transform: scale(0.95); }
     .btn-search svg { width: 22px; height: 22px; fill: white; }
 
-    /* 2段目：コントロール行（レアリティ・ソート・お気に入り） */
+    /* 2段目：コントロール行 */
     .controls-row {
       display: flex; gap: 10px; justify-content: center;
       width: 100%;
@@ -68,9 +68,7 @@
       position: relative; background: #fff; border-radius: 50px;
       box-shadow: var(--shadow); display: flex; align-items: center;
       padding: 0 12px; cursor: pointer; height: 46px;
-      flex: 1; /* 横幅いっぱいに広げる */
-      min-width: 0; /* 縮小許可 */
-      justify-content: center;
+      flex: 1; min-width: 0; justify-content: center;
     }
     .dropdown-wrapper::after {
       content: "▼"; font-size: 8px; color: #888; margin-left: 4px;
@@ -97,7 +95,7 @@
     .btn-fav-toggle svg { width: 22px; height: 22px; fill: #ccc; transition: fill 0.2s; }
     .btn-fav-toggle.active svg { fill: #f1c40f; }
 
-    /* === 新機能: クイックアクション（最新弾ボタンなど） === */
+    /* === クイックアクション（最新弾ボタン） === */
     .quick-actions {
       display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;
     }
@@ -111,11 +109,10 @@
     }
     .btn-latest:active { transform: scale(0.96); }
 
-    /* === 新機能: レアリティ絞り込みボタンエリア === */
+    /* === レアリティ絞り込みボタンエリア === */
     .rarity-scroll-area {
       display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
-      margin-bottom: 20px;
-      padding: 0 10px;
+      margin-bottom: 20px; padding: 0 10px;
       max-width: 800px; margin-left: auto; margin-right: auto;
     }
     .btn-rarity-tag {
@@ -263,6 +260,7 @@
   </div>
   
   <div id="rarityButtonArea" class="rarity-scroll-area" style="display:none;"></div>
+
   <div class="info-text">
     <div id="lastUpdatedDisplay"></div>
     ※価格は在庫状況等により変動します
@@ -292,20 +290,21 @@
   <div id="toast">✅ <span id="toastMsg"></span></div>
 
   <script>
-    // ★★★ GASのデプロイURL ★★★
+    // ★★★ あなたのデプロイURLを設定済みです ★★★
     const API_URL = "https://script.google.com/macros/s/AKfycbzszLt8yC8AhwjyS6E3ZzsqTFMcMVUOP3Pj50wnEpLlDFG2-bTEiRYhvUSiNjNYUY7WKA/exec";
 
     let allData = []; 
     let favorites = new Set();
     let isFavMode = false;
     let currentSort = "priceDesc"; 
-    let currentRarityFilter = null; // ローカル絞り込み用
+    let currentRarityFilter = null;
+    let ignoreInitialLoad = false; // 初期ロード無視フラグ
 
     function init() {
       loadFavorites();
       loadRarityList();
       loadGuarantee();
-      loadData();
+      loadData(); // 初期ロード開始
 
       document.getElementById('keyword').addEventListener('keydown', e => {
         if (e.key === 'Enter') search();
@@ -324,10 +323,15 @@
       }
     }
 
-    // --- データ読み込み ---
+    // --- データ読み込み（初期） ---
     function loadData() {
       showSpinner(true);
       fetchData({ action: 'pickup' }).then(data => {
+        // もし既に他のアクションが開始されていたら、この結果を無視する
+        if (ignoreInitialLoad) {
+          return;
+        }
+
         showSpinner(false);
         if (!data) return;
         if (data.lastUpdated) displayDate(data.lastUpdated);
@@ -338,10 +342,11 @@
 
     // 通常検索
     function search() {
+      ignoreInitialLoad = true; // 初期ロードを無効化
+      
       const kw = document.getElementById('keyword').value.trim();
       const rar = document.getElementById('raritySelect').value;
       
-      // ボタンエリアを隠す＆フィルタ解除
       document.getElementById('rarityButtonArea').style.display = 'none';
       currentRarityFilter = null;
 
@@ -357,8 +362,10 @@
       });
     }
 
-    // ★追加: 最新弾取得
+    // 最新弾取得
     function fetchLatest() {
+      ignoreInitialLoad = true; // 初期ロードを無効化
+
       showSpinner(true);
       document.getElementById('resultList').innerHTML = "";
       document.getElementById('keyword').value = "";
@@ -372,21 +379,16 @@
         allData = data.rows || [];
         document.getElementById('listTitle').innerText = "最新弾 (M2a) 買取表";
         
-        // レアリティボタン生成
         generateRarityButtons(allData);
-        
-        // フィルタ初期化して描画
         currentRarityFilter = null;
         renderList();
       });
     }
 
-    // ★追加: レアリティボタン生成
+    // レアリティボタン生成
     function generateRarityButtons(rows) {
       const area = document.getElementById('rarityButtonArea');
       const rarities = new Set();
-      
-      // D列(index 3)を収集
       rows.forEach(r => {
         if(r[3]) rarities.add(String(r[3]).trim());
       });
@@ -396,10 +398,7 @@
         return;
       }
 
-      // ソートしてボタン配置
-      // 順番を固定したい場合は配列で指定 (例: ['RR','AR','SR','SAR','UR'])
       const sorted = Array.from(rarities).sort();
-      
       let html = `<button class="btn-rarity-tag active" onclick="filterByLocalRarity(null, this)">全て</button>`;
       sorted.forEach(rar => {
         html += `<button class="btn-rarity-tag" onclick="filterByLocalRarity('${rar}', this)">${rar}</button>`;
@@ -409,15 +408,11 @@
       area.style.display = 'flex';
     }
 
-    // ★追加: ローカル絞り込み
     function filterByLocalRarity(rarity, btn) {
       currentRarityFilter = rarity;
-      
-      // ボタンの見た目更新
       const btns = document.querySelectorAll('.btn-rarity-tag');
       btns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-
       renderList();
     }
 
@@ -446,7 +441,6 @@
       });
     }
 
-    // --- 描画 ---
     function renderList() {
       const container = document.getElementById('resultList');
       let html = "";
@@ -454,7 +448,6 @@
       let rows = allData.filter(row => {
         if (isFavMode && !favorites.has(row[0])) return false;
         
-        // ★追加: レアリティボタンフィルタ
         if (currentRarityFilter) {
           const r = String(row[3] || "").trim();
           if (r !== currentRarityFilter) return false;
@@ -516,7 +509,6 @@
       container.innerHTML = html;
     }
 
-    // --- UI操作 ---
     function onRarityChange() {
       const sel = document.getElementById('raritySelect');
       document.getElementById('rarityLabel').innerText = sel.value || "全て";
