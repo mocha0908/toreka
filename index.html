@@ -26,14 +26,14 @@
     .header-area { text-align: center; margin-bottom: 20px; }
     .header-area img { max-width: 180px; height: auto; }
 
-    /* === 検索エリア (2段組み) === */
+    /* === 検索エリア === */
     .search-wrapper {
       display: flex; flex-direction: column; gap: 12px;
       max-width: 800px; margin: 0 auto 15px;
       position: relative; z-index: 10;
     }
 
-    /* 1段目：検索バー */
+    /* 検索バー */
     .search-bar {
       width: 100%;
       background: #fff; border-radius: 50px;
@@ -57,13 +57,12 @@
     .btn-search:active { transform: scale(0.95); }
     .btn-search svg { width: 22px; height: 22px; fill: white; }
 
-    /* 2段目：コントロール行 */
+    /* コントロール行 */
     .controls-row {
       display: flex; gap: 10px; justify-content: center;
       width: 100%;
     }
 
-    /* ドロップダウン共通 */
     .dropdown-wrapper {
       position: relative; background: #fff; border-radius: 50px;
       box-shadow: var(--shadow); display: flex; align-items: center;
@@ -85,7 +84,6 @@
     }
     .dropdown-icon { font-size: 14px; margin-right: 4px; flex-shrink: 0;}
 
-    /* お気に入りボタン */
     .btn-fav-toggle {
       width: 46px; height: 46px; border-radius: 50%;
       background: #fff; box-shadow: var(--shadow);
@@ -95,7 +93,7 @@
     .btn-fav-toggle svg { width: 22px; height: 22px; fill: #ccc; transition: fill 0.2s; }
     .btn-fav-toggle.active svg { fill: #f1c40f; }
 
-    /* === クイックアクション（最新弾ボタン） === */
+    /* === 最新弾ボタン === */
     .quick-actions {
       display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;
     }
@@ -109,7 +107,7 @@
     }
     .btn-latest:active { transform: scale(0.96); }
 
-    /* === レアリティ絞り込みボタンエリア === */
+    /* === レアリティボタンエリア === */
     .rarity-scroll-area {
       display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
       margin-bottom: 20px; padding: 0 10px;
@@ -126,11 +124,10 @@
       background: #333; color: #fff; border-color: #333;
     }
 
-    /* 情報テキスト */
     .info-text { text-align: center; font-size: 12px; color: #888; margin-bottom: 20px; line-height: 1.5; }
     #lastUpdatedDisplay { color: var(--primary); font-weight: 700; }
 
-    /* 保証買取 */
+    /* 保証買取・リスト */
     .section-title {
       font-size: 16px; font-weight: 700; margin-bottom: 12px;
       border-left: 4px solid var(--primary); padding-left: 10px; color: #222;
@@ -149,7 +146,6 @@
     .g-label { display: block; font-size: 11px; color: #888; margin-bottom: 4px; font-weight: 500; }
     .g-price { display: block; font-family: 'Roboto', sans-serif; font-size: 16px; font-weight: 700; color: #333; }
 
-    /* リスト */
     .list-container { max-width: 900px; margin: 0 auto; }
     
     .item-row {
@@ -169,7 +165,6 @@
     .item-img img { width: 100%; height: 100%; object-fit: contain; }
 
     .item-info { flex: 1; min-width: 0; }
-    
     .item-title-row { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 6px; }
     .star-btn { font-size: 18px; color: #ddd; cursor: pointer; line-height: 1; margin-top: 2px; }
     .star-btn.active { color: #f1c40f; }
@@ -226,7 +221,6 @@
     </div>
 
     <div class="controls-row">
-      
       <div class="dropdown-wrapper">
         <span class="dropdown-icon">💎</span>
         <span class="dropdown-label" id="rarityLabel">全て</span>
@@ -249,7 +243,6 @@
       <button class="btn-fav-toggle" id="favFilterBtn" onclick="toggleFavFilter()" title="お気に入りのみ表示">
         <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
       </button>
-
     </div>
   </div>
 
@@ -290,7 +283,7 @@
   <div id="toast">✅ <span id="toastMsg"></span></div>
 
   <script>
-    // ★★★ あなたのデプロイURLを設定済みです ★★★
+    // ★★★ あなたのデプロイURL ★★★
     const API_URL = "https://script.google.com/macros/s/AKfycbzszLt8yC8AhwjyS6E3ZzsqTFMcMVUOP3Pj50wnEpLlDFG2-bTEiRYhvUSiNjNYUY7WKA/exec";
 
     let allData = []; 
@@ -298,13 +291,15 @@
     let isFavMode = false;
     let currentSort = "priceDesc"; 
     let currentRarityFilter = null;
-    let ignoreInitialLoad = false; // 初期ロード無視フラグ
+    
+    // ★鉄壁の競合防止：リクエストID（整理券番号）
+    let currentRequestId = 0;
 
     function init() {
       loadFavorites();
       loadRarityList();
       loadGuarantee();
-      loadData(); // 初期ロード開始
+      loadData(); // ここで最初のデータ取得
 
       document.getElementById('keyword').addEventListener('keydown', e => {
         if (e.key === 'Enter') search();
@@ -323,12 +318,17 @@
       }
     }
 
-    // --- データ読み込み（初期） ---
+    // --- データ読み込み（初期・ピックアップ） ---
     function loadData() {
+      // 1. 新しい整理券を発行
+      const myRequestId = ++currentRequestId;
       showSpinner(true);
+      
       fetchData({ action: 'pickup' }).then(data => {
-        // もし既に他のアクションが開始されていたら、この結果を無視する
-        if (ignoreInitialLoad) {
+        // 2. データが届いたとき、整理券が最新かチェック
+        // もし「最新弾ボタン」などを押していたら、currentRequestIdが進んでいるので、ここはfalseになり無視される
+        if (myRequestId !== currentRequestId) {
+          console.log("古いリクエストなので破棄しました: ID " + myRequestId);
           return;
         }
 
@@ -340,9 +340,9 @@
       });
     }
 
-    // 通常検索
+    // --- 通常検索 ---
     function search() {
-      ignoreInitialLoad = true; // 初期ロードを無効化
+      const myRequestId = ++currentRequestId; // 新しい整理券
       
       const kw = document.getElementById('keyword').value.trim();
       const rar = document.getElementById('raritySelect').value;
@@ -354,6 +354,8 @@
       document.getElementById('resultList').innerHTML = "";
 
       fetchData({ action: 'search', keyword: kw, rarity: rar }).then(data => {
+        if (myRequestId !== currentRequestId) return; // 古ければ無視
+
         showSpinner(false);
         if (!data) return;
         allData = data.rows || [];
@@ -362,9 +364,9 @@
       });
     }
 
-    // 最新弾取得
+    // --- 最新弾取得 ---
     function fetchLatest() {
-      ignoreInitialLoad = true; // 初期ロードを無効化
+      const myRequestId = ++currentRequestId; // 新しい整理券（これで前の読込は全て無効化）
 
       showSpinner(true);
       document.getElementById('resultList').innerHTML = "";
@@ -373,6 +375,8 @@
       onRarityChange();
 
       fetchData({ action: 'latest' }).then(data => {
+        if (myRequestId !== currentRequestId) return; // 古ければ無視
+
         showSpinner(false);
         if (!data) return;
         
@@ -385,7 +389,8 @@
       });
     }
 
-    // レアリティボタン生成
+    // --- 以下、表示ロジック ---
+
     function generateRarityButtons(rows) {
       const area = document.getElementById('rarityButtonArea');
       const rarities = new Set();
