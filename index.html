@@ -48,31 +48,20 @@
     }
     .search-bar input::placeholder { color: #ccc; }
 
-    /* 検索ボタン（デザイン変更） */
+    /* 検索ボタン */
     .btn-search {
-      height: 44px;
-      padding: 0 24px;
-      border-radius: 22px;
-      background: var(--primary);
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      flex-shrink: 0;
-      transition: transform 0.1s;
-      color: white;
-      font-weight: 700;
-      font-size: 14px;
+      height: 44px; padding: 0 24px; border-radius: 22px;
+      background: var(--primary); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; flex-shrink: 0; transition: transform 0.1s;
+      color: white; font-weight: 700; font-size: 14px;
     }
     .btn-search:active { transform: scale(0.95); }
     .btn-search svg { width: 18px; height: 18px; fill: white; }
 
     /* コントロール行 */
     .controls-row {
-      display: flex; gap: 10px; justify-content: center;
-      width: 100%;
+      display: flex; gap: 10px; justify-content: center; width: 100%;
     }
 
     .dropdown-wrapper {
@@ -81,9 +70,7 @@
       padding: 0 12px; cursor: pointer; height: 46px;
       flex: 1; min-width: 0; justify-content: center;
     }
-    .dropdown-wrapper::after {
-      content: "▼"; font-size: 8px; color: #888; margin-left: 4px;
-    }
+    .dropdown-wrapper::after { content: "▼"; font-size: 8px; color: #888; margin-left: 4px; }
     .dropdown-wrapper select {
       appearance: none; border: none; background: transparent;
       font-size: 12px; font-weight: 700; color: #555;
@@ -96,8 +83,9 @@
     }
     .dropdown-icon { font-size: 14px; margin-right: 4px; flex-shrink: 0;}
 
-    .btn-fav-toggle {
-      width: 46px; height: 46px; border-radius: 50%;
+    /* 各種トグルボタン */
+    .btn-fav-toggle, .btn-view-toggle {
+      width: 46px; height: 46px; border-radius: 50%; /* ここは後で上書きされるかも */
       background: #fff; box-shadow: var(--shadow);
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; border: none; flex-shrink: 0;
@@ -105,17 +93,42 @@
     .btn-fav-toggle svg { width: 22px; height: 22px; fill: #ccc; transition: fill 0.2s; }
     .btn-fav-toggle.active svg { fill: #f1c40f; }
 
+    .btn-view-toggle {
+      border-radius: 12px; /* 少し四角く */
+      font-size: 20px; color: #555;
+    }
+    .btn-view-toggle.active { background: #333; color: #fff; }
+
+    /* === 価格フィルタ & ビュー切替 === */
+    .filter-row {
+      display: flex; gap: 8px; justify-content: center; align-items: center;
+      margin-top: 4px; width: 100%;
+    }
+    .price-input-wrapper {
+      display: flex; align-items: center; background: #fff;
+      border-radius: 20px; padding: 0 12px; box-shadow: var(--shadow);
+      height: 40px; flex: 1;
+    }
+    .price-input-wrapper span { font-size: 10px; color: #888; margin-right: 4px; white-space: nowrap; }
+    .price-input-wrapper input {
+      border: none; outline: none; background: transparent;
+      width: 100%; font-size: 13px; font-weight: 700; color: #333;
+      text-align: right; -moz-appearance: textfield;
+    }
+    .price-input-wrapper input::-webkit-outer-spin-button,
+    .price-input-wrapper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+
     /* === 最新弾ボタン === */
     .quick-actions {
-      display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;
+      display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; margin-top: 15px;
     }
     .btn-latest {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white; border: none; padding: 10px 24px;
       border-radius: 50px; font-weight: 700; font-size: 14px;
       cursor: pointer; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
-      transition: transform 0.1s;
-      display: flex; align-items: center; gap: 6px;
+      transition: transform 0.1s; display: flex; align-items: center; gap: 6px;
     }
     .btn-latest:active { transform: scale(0.96); }
 
@@ -132,9 +145,7 @@
       transition: all 0.2s;
     }
     .btn-rarity-tag:hover { background: #f0f0f0; }
-    .btn-rarity-tag.active {
-      background: #333; color: #fff; border-color: #333;
-    }
+    .btn-rarity-tag.active { background: #333; color: #fff; border-color: #333; }
 
     .info-text { text-align: center; font-size: 12px; color: #888; margin-bottom: 20px; line-height: 1.5; }
     #lastUpdatedDisplay { color: var(--primary); font-weight: 700; }
@@ -160,6 +171,7 @@
 
     .list-container { max-width: 900px; margin: 0 auto; }
     
+    /* === リスト表示スタイル === */
     .item-row {
       background: #fff; border-radius: 12px; padding: 12px;
       margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
@@ -205,6 +217,41 @@
     .btn-mercari { background: #ea352d; }
     .btn-share { background: #000; }
 
+    /* === グリッド表示モード === */
+    .list-container.grid-mode {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    
+    .list-container.grid-mode .item-row {
+      flex-direction: column; padding: 10px; gap: 8px;
+      text-align: center; height: 100%; margin-bottom: 0;
+    }
+    .list-container.grid-mode .item-img {
+      width: 100%; height: 120px;
+    }
+    .list-container.grid-mode .item-info {
+      width: 100%; display: flex; flex-direction: column; justify-content: space-between; flex: 1;
+    }
+    .list-container.grid-mode .item-title-row {
+      justify-content: center; margin-bottom: 4px; height: 40px; overflow: hidden;
+    }
+    .list-container.grid-mode .item-title {
+      font-size: 12px; line-height: 1.3;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .list-container.grid-mode .item-price-row {
+      text-align: center; margin-top: auto;
+    }
+    .list-container.grid-mode .item-actions {
+      justify-content: center; flex-wrap: wrap; margin-top: 6px;
+    }
+    .list-container.grid-mode .btn-action {
+      font-size: 10px; padding: 3px 8px;
+    }
+
+    /* その他ツール */
     .spinner { display: none; text-align: center; padding: 40px; color: #999; font-size: 13px; }
     .spinner-circle {
       width: 26px; height: 26px; border: 3px solid #eee;
@@ -228,7 +275,7 @@
       .search-wrapper { flex-direction: row; flex-wrap: wrap; }
       .search-bar { width: 100%; margin-bottom: 0; }
       .controls-row { width: auto; flex: 1; }
-      .btn-fav-toggle { margin-left: auto; }
+      .filter-row { width: auto; margin-top: 0; margin-left: 10px; max-width: 300px;}
     }
   </style>
 </head>
@@ -270,9 +317,25 @@
         </select>
       </div>
 
+      <button class="btn-view-toggle" id="viewToggleBtn" onclick="toggleViewMode()" title="表示切替">
+        ⊞
+      </button>
+
       <button class="btn-fav-toggle" id="favFilterBtn" onclick="toggleFavFilter()" title="お気に入りのみ表示">
         <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
       </button>
+    </div>
+
+    <div class="filter-row">
+      <div class="price-input-wrapper">
+        <span>MIN</span>
+        <input type="number" id="minPrice" placeholder="0" onchange="search()" enterkeyhint="search">
+      </div>
+      <span style="color:#ccc">〜</span>
+      <div class="price-input-wrapper">
+        <span>MAX</span>
+        <input type="number" id="maxPrice" placeholder="上限なし" onchange="search()" enterkeyhint="search">
+      </div>
     </div>
   </div>
 
@@ -321,6 +384,7 @@
     let isFavMode = false;
     let currentSort = "priceDesc"; 
     let currentRarityFilter = null;
+    let isGridMode = false; // グリッドモード用
     
     // 競合防止用
     let currentRequestId = 0;
@@ -335,13 +399,20 @@
 
     function init() {
       loadFavorites();
-      loadSearchHistory(); // 履歴読み込み
+      loadSearchHistory(); 
       loadRarityList();
       loadGuarantee();
+      loadViewMode(); // 表示モード読み込み
       loadData(); // 初期ロード
 
       document.getElementById('keyword').addEventListener('keydown', e => {
         if (e.key === 'Enter') search();
+      });
+      // 価格入力でEnter
+      ['minPrice', 'maxPrice'].forEach(id => {
+        document.getElementById(id).addEventListener('keydown', e => {
+          if (e.key === 'Enter') search();
+        });
       });
     }
 
@@ -369,7 +440,7 @@
         if (!data) return;
         if (data.lastUpdated) displayDate(data.lastUpdated);
         allData = data.rows || [];
-        renderList(); // 初回描画
+        renderList(); 
       });
     }
 
@@ -428,12 +499,18 @@
       });
     }
 
-    // --- renderList (ページング・メルカリボタン対応版) ---
+    // --- renderList (ページング・価格フィルタ対応) ---
     function renderList(isLoadMore = false) {
       const container = document.getElementById('resultList');
 
       // 1. 新規検索・ソート変更のとき（リセット処理）
       if (!isLoadMore) {
+        // 価格フィルタ
+        const minInput = document.getElementById('minPrice').value;
+        const maxInput = document.getElementById('maxPrice').value;
+        const minP = minInput ? parseInt(minInput) : 0;
+        const maxP = maxInput ? parseInt(maxInput) : Infinity;
+
         // フィルタリング
         currentFilteredRows = allData.filter(row => {
           if (isFavMode && !favorites.has(row[0])) return false;
@@ -443,6 +520,11 @@
           }
           const p = parseFloat(String(row[2]).replace(/,/g, ''));
           if (isNaN(p) || p <= 0) return false;
+
+          // 金額チェック
+          if (p < minP) return false;
+          if (p > maxP) return false;
+
           return true;
         });
 
@@ -493,7 +575,7 @@
         const safeName = name.replace(/'/g, "\\'");
         const safeCopy = copyTxt.replace(/'/g, "\\'");
 
-        // メルカリ検索用クエリ
+        // メルカリ検索用クエリ (最適化済み)
         const cleanName = getCleanQuery(name);
         const mercariUrl = `https://jp.mercari.com/search?keyword=${encodeURIComponent(cleanName)}`;
 
@@ -515,7 +597,7 @@
                   メルカリ
                 </a>
                 <button onclick="shareOnX('${safeName}', '${price}')" class="btn-action btn-share">
-                  Xでシェア
+                  Share
                 </button>
               </div>
             </div>
@@ -545,10 +627,38 @@
       }
     }
 
-    // --- 検索用文字列クリーニング ---
+    // --- 表示モード切替 ---
+    function toggleViewMode() {
+      isGridMode = !isGridMode;
+      applyViewMode();
+      localStorage.setItem('tk_view_mode', isGridMode ? 'grid' : 'list');
+    }
+
+    function applyViewMode() {
+      const container = document.getElementById('resultList');
+      const btn = document.getElementById('viewToggleBtn');
+      
+      if (isGridMode) {
+        container.classList.add('grid-mode');
+        btn.innerText = "≣"; 
+        btn.classList.add('active');
+      } else {
+        container.classList.remove('grid-mode');
+        btn.innerText = "⊞"; 
+        btn.classList.remove('active');
+      }
+    }
+
+    function loadViewMode() {
+      const mode = localStorage.getItem('tk_view_mode');
+      isGridMode = (mode === 'grid');
+      applyViewMode();
+    }
+
+    // --- 検索用文字列クリーニング (完全版) ---
     function getCleanQuery(name) {
       if (!name) return "";
-
+      
       // 1. {}の中身（型番）を抽出
       const match = name.match(/\{(.+?)\}/);
       const code = match ? match[1] : "";
@@ -556,7 +666,7 @@
       // 2. 「【」より前の部分を取得
       let base = name.split('【')[0];
 
-      // 3. 名前側に残った {xxx} を削除
+      // 3. 残った {xxx} を削除
       base = base.replace(/\{.+?\}/g, '');
 
       // 4. 記号をスペース置換
@@ -569,8 +679,8 @@
     // --- X シェア ---
     function shareOnX(name, price) {
       const text = `【買取価格 ¥${Number(price).toLocaleString()}】\n${name}\n#トレカキングダム`;
-      // 実際のサイトURLを入れてください
-      const url = "https://x.gd/TCKkaitori"; 
+      // ★あなたのサイトURLに変えてください
+      const url = "https://example.com"; 
       const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
       window.open(shareUrl, '_blank');
     }
@@ -592,7 +702,6 @@
       if (!keyword) return;
       let history = JSON.parse(localStorage.getItem('tk_search_history') || '[]');
       
-      // 重複削除・先頭追加
       history = history.filter(w => w !== keyword);
       history.unshift(keyword);
       
