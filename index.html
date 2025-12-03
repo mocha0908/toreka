@@ -515,7 +515,7 @@
                   メルカリ
                 </a>
                 <button onclick="shareOnX('${safeName}', '${price}')" class="btn-action btn-share">
-                  Share
+                  Xでシェア
                 </button>
               </div>
             </div>
@@ -570,7 +570,7 @@
     function shareOnX(name, price) {
       const text = `【買取価格 ¥${Number(price).toLocaleString()}】\n${name}\n#トレカキングダム`;
       // 実際のサイトURLを入れてください
-      const url = "https://example.com"; 
+      const url = "https://x.gd/TCKkaitori"; 
       const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
       window.open(shareUrl, '_blank');
     }
