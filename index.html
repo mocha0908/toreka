@@ -48,14 +48,26 @@
     }
     .search-bar input::placeholder { color: #ccc; }
 
+    /* 検索ボタン（デザイン変更） */
     .btn-search {
-      width: 44px; height: 44px; border-radius: 50%;
-      background: var(--primary); border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; transition: transform 0.1s;
+      height: 44px;
+      padding: 0 24px;
+      border-radius: 22px;
+      background: var(--primary);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex-shrink: 0;
+      transition: transform 0.1s;
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
     }
     .btn-search:active { transform: scale(0.95); }
-    .btn-search svg { width: 22px; height: 22px; fill: white; }
+    .btn-search svg { width: 18px; height: 18px; fill: white; }
 
     /* コントロール行 */
     .controls-row {
@@ -154,7 +166,7 @@
       display: flex; align-items: center; gap: 12px;
       transition: transform 0.1s; border: 1px solid transparent;
     }
-    .item-row:active { transform: scale(0.98); }
+    .item-row:active { transform: scale(0.99); }
     .item-row.is-favorite { border-color: #f1c40f; background: #fffdf5; }
 
     .item-img {
@@ -177,6 +189,21 @@
     .item-price-row { text-align: right; }
     .price-label { font-size: 10px; color: #999; margin-right: 4px; }
     .price-val { font-family: 'Roboto', sans-serif; font-size: 18px; font-weight: 900; color: var(--accent); }
+
+    /* アクションボタン群 */
+    .item-actions {
+      display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end;
+    }
+    .btn-action {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: 4px;
+      text-decoration: none; font-size: 11px; font-weight: 700;
+      color: white; cursor: pointer; border: none;
+      transition: opacity 0.2s;
+    }
+    .btn-action:hover { opacity: 0.8; }
+    .btn-mercari { background: #ea352d; }
+    .btn-share { background: #000; }
 
     .spinner { display: none; text-align: center; padding: 40px; color: #999; font-size: 13px; }
     .spinner-circle {
@@ -214,9 +241,12 @@
   <div class="search-wrapper">
     
     <div class="search-bar">
-      <input type="text" id="keyword" placeholder="カード名・型番" enterkeyhint="search" />
+      <input type="text" id="keyword" list="search-history" placeholder="カード名・型番" enterkeyhint="search" />
+      <datalist id="search-history"></datalist>
+
       <button class="btn-search" onclick="search()">
         <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 3 13.09 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <span>検索</span>
       </button>
     </div>
 
@@ -292,11 +322,20 @@
     let currentSort = "priceDesc"; 
     let currentRarityFilter = null;
     
-    // 競合防止用の整理券番号
+    // 競合防止用
     let currentRequestId = 0;
+
+    // ページング用変数
+    const PAGE_SIZE = 50;
+    let currentFilteredRows = [];
+    let displayedCount = 0;
+
+    // 検索履歴用定数
+    const MAX_HISTORY = 10;
 
     function init() {
       loadFavorites();
+      loadSearchHistory(); // 履歴読み込み
       loadRarityList();
       loadGuarantee();
       loadData(); // 初期ロード
@@ -324,13 +363,13 @@
       showSpinner(true);
       
       fetchData({ action: 'pickup' }).then(data => {
-        if (myRequestId !== currentRequestId) return; // 古いリクエストは無視
+        if (myRequestId !== currentRequestId) return;
 
         showSpinner(false);
         if (!data) return;
         if (data.lastUpdated) displayDate(data.lastUpdated);
         allData = data.rows || [];
-        renderList();
+        renderList(); // 初回描画
       });
     }
 
@@ -341,6 +380,9 @@
       const kw = document.getElementById('keyword').value.trim();
       const rar = document.getElementById('raritySelect').value;
       
+      // 履歴保存
+      if (kw) saveSearchHistory(kw);
+
       // 検索時はボタンエリアを隠す
       document.getElementById('rarityButtonArea').style.display = 'none';
       currentRarityFilter = null;
@@ -367,11 +409,9 @@
       document.getElementById('resultList').innerHTML = "";
       document.getElementById('keyword').value = "";
       
-      // ★修正: search()を誘発しないように、見た目だけ静かにリセットする
       const sel = document.getElementById('raritySelect');
       sel.value = "";
       document.getElementById('rarityLabel').innerText = "全て";
-      // ※ onRarityChange() は呼びません！
 
       fetchData({ action: 'latest' }).then(data => {
         if (myRequestId !== currentRequestId) return;
@@ -386,6 +426,180 @@
         currentRarityFilter = null;
         renderList();
       });
+    }
+
+    // --- renderList (ページング・メルカリボタン対応版) ---
+    function renderList(isLoadMore = false) {
+      const container = document.getElementById('resultList');
+
+      // 1. 新規検索・ソート変更のとき（リセット処理）
+      if (!isLoadMore) {
+        // フィルタリング
+        currentFilteredRows = allData.filter(row => {
+          if (isFavMode && !favorites.has(row[0])) return false;
+          if (currentRarityFilter) {
+            const r = String(row[3] || "").trim();
+            if (r !== currentRarityFilter) return false;
+          }
+          const p = parseFloat(String(row[2]).replace(/,/g, ''));
+          if (isNaN(p) || p <= 0) return false;
+          return true;
+        });
+
+        // ソート
+        currentFilteredRows.sort((a, b) => {
+          const pA = parseFloat(String(a[2]).replace(/,/g, '')) || 0;
+          const pB = parseFloat(String(b[2]).replace(/,/g, '')) || 0;
+          const nA = String(a[0]);
+          const nB = String(b[0]);
+
+          if (currentSort === "priceDesc") return pB - pA;
+          if (currentSort === "priceAsc") return pA - pB;
+          if (currentSort === "nameAsc") return nA.localeCompare(nB, 'ja');
+          if (currentSort === "nameDesc") return nB.localeCompare(nA, 'ja');
+          return 0;
+        });
+
+        container.innerHTML = "";
+        displayedCount = 0;
+        
+        if (currentFilteredRows.length === 0) {
+          container.innerHTML = `<p style="text-align:center;color:#999;padding:40px;">該当するカードがありません</p>`;
+          return;
+        }
+      }
+
+      // 2. 「もっと見る」ボタンがあれば削除
+      const existingBtn = document.getElementById('btnLoadMore');
+      if (existingBtn) existingBtn.remove();
+
+      // 3. 次の50件を取得
+      const nextRows = currentFilteredRows.slice(displayedCount, displayedCount + PAGE_SIZE);
+      let html = "";
+
+      nextRows.forEach(row => {
+        const name = row[0];
+        const img = row[1];
+        const price = row[2]; 
+
+        const isFav = favorites.has(name);
+        const imgTag = (img && /^http/.test(img))
+          ? `<img src="${img}" loading="lazy" onclick="showModal('${img}')">`
+          : `<span style="font-size:10px;color:#ccc;">No Img</span>`;
+
+        const mm = name.match(/\{(.+?)\}/);
+        const copyTxt = mm ? mm[1] : name;
+        
+        const safeName = name.replace(/'/g, "\\'");
+        const safeCopy = copyTxt.replace(/'/g, "\\'");
+
+        // メルカリ検索用クエリ
+        const cleanName = getCleanQuery(name);
+        const mercariUrl = `https://jp.mercari.com/search?keyword=${encodeURIComponent(cleanName)}`;
+
+        html += `
+          <div class="item-row ${isFav ? 'is-favorite' : ''}">
+            <div class="item-img">${imgTag}</div>
+            <div class="item-info">
+              <div class="item-title-row">
+                <span class="star-btn ${isFav ? 'active' : ''}" onclick="toggleFav('${safeName} ', this)">★</span>
+                <div class="item-title" onclick="copyText('${safeCopy}','型番をコピー')">${name}</div>
+              </div>
+              <div class="item-price-row" onclick="copyText('${price}','価格をコピー')">
+                <span class="price-label">買取</span>
+                <span class="price-val">¥${Number(price).toLocaleString()}</span>
+              </div>
+              
+              <div class="item-actions">
+                <a href="${mercariUrl}" target="_blank" class="btn-action btn-mercari">
+                  メルカリ
+                </a>
+                <button onclick="shareOnX('${safeName}', '${price}')" class="btn-action btn-share">
+                  Share
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.insertAdjacentHTML('beforeend', html);
+      displayedCount += nextRows.length;
+
+      // 4. まだ残りがあれば「もっと見る」ボタン表示
+      if (displayedCount < currentFilteredRows.length) {
+        const remaining = currentFilteredRows.length - displayedCount;
+        const btnHtml = `
+          <div id="btnLoadMore" style="text-align:center; margin: 20px 0 40px;">
+            <button onclick="renderList(true)" 
+              style="
+                background: #eee; border: none; padding: 12px 40px; 
+                border-radius: 30px; font-weight: 700; color: #555; cursor: pointer;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+              ">
+              もっと見る (あと ${remaining} 件)
+            </button>
+          </div>
+        `;
+        container.insertAdjacentHTML('beforeend', btnHtml);
+      }
+    }
+
+    // --- 検索用文字列クリーニング ---
+    function getCleanQuery(name) {
+      if (!name) return "";
+
+      // 1. {}の中身（型番）を抽出
+      const match = name.match(/\{(.+?)\}/);
+      const code = match ? match[1] : "";
+
+      // 2. 「【」より前の部分を取得
+      let base = name.split('【')[0];
+
+      // 3. 名前側に残った {xxx} を削除
+      base = base.replace(/\{.+?\}/g, '');
+
+      // 4. 記号をスペース置換
+      base = base.replace(/[\(\)\[\]]/g, ' ').trim();
+
+      // 5. 結合
+      return (base + " " + code).trim();
+    }
+
+    // --- X シェア ---
+    function shareOnX(name, price) {
+      const text = `【買取価格 ¥${Number(price).toLocaleString()}】\n${name}\n#トレカキングダム`;
+      // 実際のサイトURLを入れてください
+      const url = "https://example.com"; 
+      const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+      window.open(shareUrl, '_blank');
+    }
+
+    // --- 検索履歴管理 ---
+    function loadSearchHistory() {
+      const history = JSON.parse(localStorage.getItem('tk_search_history') || '[]');
+      const datalist = document.getElementById('search-history');
+      datalist.innerHTML = ""; 
+      
+      history.forEach(word => {
+        const opt = document.createElement('option');
+        opt.value = word;
+        datalist.appendChild(opt);
+      });
+    }
+
+    function saveSearchHistory(keyword) {
+      if (!keyword) return;
+      let history = JSON.parse(localStorage.getItem('tk_search_history') || '[]');
+      
+      // 重複削除・先頭追加
+      history = history.filter(w => w !== keyword);
+      history.unshift(keyword);
+      
+      if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
+      
+      localStorage.setItem('tk_search_history', JSON.stringify(history));
+      loadSearchHistory();
     }
 
     // --- レアリティボタン生成 ---
@@ -443,74 +657,6 @@
         });
         cont.innerHTML = html;
       });
-    }
-
-    function renderList() {
-      const container = document.getElementById('resultList');
-      let html = "";
-      
-      let rows = allData.filter(row => {
-        if (isFavMode && !favorites.has(row[0])) return false;
-        
-        if (currentRarityFilter) {
-          const r = String(row[3] || "").trim();
-          if (r !== currentRarityFilter) return false;
-        }
-
-        const p = parseFloat(String(row[2]).replace(/,/g, ''));
-        if (isNaN(p) || p <= 0) return false;
-        return true;
-      });
-
-      rows.sort((a, b) => {
-        const pA = parseFloat(String(a[2]).replace(/,/g, '')) || 0;
-        const pB = parseFloat(String(b[2]).replace(/,/g, '')) || 0;
-        const nA = String(a[0]);
-        const nB = String(b[0]);
-
-        if (currentSort === "priceDesc") return pB - pA;
-        if (currentSort === "priceAsc") return pA - pB;
-        if (currentSort === "nameAsc") return nA.localeCompare(nB, 'ja');
-        if (currentSort === "nameDesc") return nB.localeCompare(nA, 'ja');
-        return 0;
-      });
-
-      if (rows.length === 0) {
-        container.innerHTML = `<p style="text-align:center;color:#999;padding:40px;">該当するカードがありません</p>`;
-        return;
-      }
-
-      rows.forEach(row => {
-        const name = row[0];
-        const img = row[1];
-        const price = row[2]; 
-
-        const isFav = favorites.has(name);
-        const imgTag = (img && /^http/.test(img))
-          ? `<img src="${img}" loading="lazy" onclick="showModal('${img}')">`
-          : `<span style="font-size:10px;color:#ccc;">No Img</span>`;
-
-        const mm = name.match(/\{(.+?)\}/);
-        const copyTxt = mm ? mm[1] : name;
-        
-        html += `
-          <div class="item-row ${isFav ? 'is-favorite' : ''}">
-            <div class="item-img">${imgTag}</div>
-            <div class="item-info">
-              <div class="item-title-row">
-                <span class="star-btn ${isFav ? 'active' : ''}" onclick="toggleFav('${name.replace(/'/g,"\\'")} ', this)">★</span>
-                <div class="item-title" onclick="copyText('${copyTxt.replace(/'/g,"\\'")}','型番をコピー')">${name}</div>
-              </div>
-              <div class="item-price-row" onclick="copyText('${price}','価格をコピー')">
-                <span class="price-label">買取</span>
-                <span class="price-val">¥${Number(price).toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
-        `;
-      });
-
-      container.innerHTML = html;
     }
 
     function onRarityChange() {
