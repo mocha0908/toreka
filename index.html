@@ -29,7 +29,7 @@
     /* === 検索エリア === */
     .search-wrapper {
       display: flex; flex-direction: column; gap: 12px;
-      max-width: 800px; margin: 0 auto 10px; /* 下マージン微調整 */
+      max-width: 800px; margin: 0 auto 10px;
       position: relative; z-index: 10;
     }
 
@@ -83,7 +83,7 @@
     }
     .dropdown-icon { font-size: 14px; margin-right: 4px; flex-shrink: 0;}
 
-    /* 各種トグルボタン */
+    /* トグルボタン */
     .btn-fav-toggle, .btn-view-toggle {
       width: 46px; height: 46px; border-radius: 50%;
       background: #fff; box-shadow: var(--shadow);
@@ -96,7 +96,7 @@
     .btn-view-toggle { border-radius: 12px; font-size: 20px; color: #555; }
     .btn-view-toggle.active { background: #333; color: #fff; }
 
-    /* === 価格フィルタ & ビュー切替 === */
+    /* 価格フィルタ */
     .filter-row {
       display: flex; gap: 8px; justify-content: center; align-items: center;
       margin-top: 4px; width: 100%;
@@ -115,7 +115,7 @@
     .price-input-wrapper input::-webkit-outer-spin-button,
     .price-input-wrapper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-    /* === ★新規: クイックタグエリア === */
+    /* 人気タグエリア */
     .quick-tags-wrapper {
       max-width: 800px; margin: 0 auto 20px;
       overflow-x: auto; white-space: nowrap;
@@ -136,7 +136,7 @@
     .tag-chip:hover { background: #dde4ed; }
     .tag-chip::before { content: "#"; color: var(--primary); font-weight: 900; }
 
-    /* === 最新弾ボタン === */
+    /* 最新弾ボタン */
     .quick-actions {
       display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;
     }
@@ -149,7 +149,7 @@
     }
     .btn-latest:active { transform: scale(0.96); }
 
-    /* === レアリティボタンエリア === */
+    /* レアリティボタン */
     .rarity-scroll-area {
       display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
       margin-bottom: 20px; padding: 0 10px;
@@ -167,7 +167,7 @@
     .info-text { text-align: center; font-size: 12px; color: #888; margin-bottom: 20px; line-height: 1.5; }
     #lastUpdatedDisplay { color: var(--primary); font-weight: 700; }
 
-    /* 保証買取・リスト */
+    /* 保証買取 */
     .section-title {
       font-size: 16px; font-weight: 700; margin-bottom: 12px;
       border-left: 4px solid var(--primary); padding-left: 10px; color: #222;
@@ -188,7 +188,7 @@
 
     .list-container { max-width: 900px; margin: 0 auto; }
     
-    /* === リスト表示スタイル === */
+    /* リスト表示 */
     .item-row {
       background: #fff; border-radius: 12px; padding: 12px;
       margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
@@ -219,7 +219,7 @@
     .price-label { font-size: 10px; color: #999; margin-right: 4px; }
     .price-val { font-family: 'Roboto', sans-serif; font-size: 18px; font-weight: 900; color: var(--accent); }
 
-    /* アクションボタン群 */
+    /* アクションボタン */
     .item-actions {
       display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end;
     }
@@ -234,7 +234,7 @@
     .btn-mercari { background: #ea352d; }
     .btn-share { background: #000; }
 
-    /* === グリッド表示モード === */
+    /* グリッド表示 */
     .list-container.grid-mode {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -268,7 +268,7 @@
       font-size: 10px; padding: 3px 8px;
     }
 
-    /* その他ツール */
+    /* ツール類 */
     .spinner { display: none; text-align: center; padding: 40px; color: #999; font-size: 13px; }
     .spinner-circle {
       width: 26px; height: 26px; border: 3px solid #eee;
@@ -287,7 +287,7 @@
     }
     #toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
 
-    /* PC向け調整 */
+    /* PC調整 */
     @media (min-width: 600px) {
       .search-wrapper { flex-direction: row; flex-wrap: wrap; }
       .search-bar { width: 100%; margin-bottom: 0; }
@@ -405,15 +405,10 @@
     let currentRarityFilter = null;
     let isGridMode = false;
     
-    // 競合防止用
     let currentRequestId = 0;
-
-    // ページング用変数
     const PAGE_SIZE = 50;
     let currentFilteredRows = [];
     let displayedCount = 0;
-
-    // 検索履歴用定数
     const MAX_HISTORY = 10;
 
     function init() {
@@ -422,13 +417,12 @@
       loadRarityList();
       loadGuarantee();
       loadViewMode(); 
-      loadPopularTags(); // ★新規: 人気タグ読み込み
+      loadPopularTags(); // 人気タグ読み込み
       loadData(); 
 
       document.getElementById('keyword').addEventListener('keydown', e => {
         if (e.key === 'Enter') search();
       });
-      // 価格入力でEnter
       ['minPrice', 'maxPrice'].forEach(id => {
         document.getElementById(id).addEventListener('keydown', e => {
           if (e.key === 'Enter') search();
@@ -448,14 +442,12 @@
       }
     }
 
-    // --- データ読み込み（初期） ---
+    // --- データ読み込み ---
     function loadData() {
       const myRequestId = ++currentRequestId;
       showSpinner(true);
-      
       fetchData({ action: 'pickup' }).then(data => {
         if (myRequestId !== currentRequestId) return;
-
         showSpinner(false);
         if (!data) return;
         if (data.lastUpdated) displayDate(data.lastUpdated);
@@ -467,23 +459,17 @@
     // --- 通常検索 ---
     function search() {
       const myRequestId = ++currentRequestId;
-      
       const kw = document.getElementById('keyword').value.trim();
       const rar = document.getElementById('raritySelect').value;
-      
-      // 履歴保存
       if (kw) saveSearchHistory(kw);
 
-      // 検索時はボタンエリアを隠す
       document.getElementById('rarityButtonArea').style.display = 'none';
       currentRarityFilter = null;
-
       showSpinner(true);
       document.getElementById('resultList').innerHTML = "";
 
       fetchData({ action: 'search', keyword: kw, rarity: rar }).then(data => {
         if (myRequestId !== currentRequestId) return;
-
         showSpinner(false);
         if (!data) return;
         allData = data.rows || [];
@@ -495,43 +481,36 @@
     // --- 最新弾取得 ---
     function fetchLatest() {
       const myRequestId = ++currentRequestId;
-
       showSpinner(true);
       document.getElementById('resultList').innerHTML = "";
       document.getElementById('keyword').value = "";
-      
       const sel = document.getElementById('raritySelect');
       sel.value = "";
       document.getElementById('rarityLabel').innerText = "全て";
 
       fetchData({ action: 'latest' }).then(data => {
         if (myRequestId !== currentRequestId) return;
-
         showSpinner(false);
         if (!data) return;
-        
         allData = data.rows || [];
         document.getElementById('listTitle').innerText = "最新弾 (M2a) 買取表";
-        
         generateRarityButtons(allData);
         currentRarityFilter = null;
         renderList();
       });
     }
 
-    // --- renderList (ページング・価格フィルタ対応) ---
+    // --- リスト描画 ---
     function renderList(isLoadMore = false) {
       const container = document.getElementById('resultList');
 
-      // 1. 新規検索・ソート変更のとき（リセット処理）
       if (!isLoadMore) {
-        // 価格フィルタ
+        // フィルタリング
         const minInput = document.getElementById('minPrice').value;
         const maxInput = document.getElementById('maxPrice').value;
         const minP = minInput ? parseInt(minInput) : 0;
         const maxP = maxInput ? parseInt(maxInput) : Infinity;
 
-        // フィルタリング
         currentFilteredRows = allData.filter(row => {
           if (isFavMode && !favorites.has(row[0])) return false;
           if (currentRarityFilter) {
@@ -540,11 +519,8 @@
           }
           const p = parseFloat(String(row[2]).replace(/,/g, ''));
           if (isNaN(p) || p <= 0) return false;
-
-          // 金額チェック
           if (p < minP) return false;
           if (p > maxP) return false;
-
           return true;
         });
 
@@ -571,11 +547,9 @@
         }
       }
 
-      // 2. 「もっと見る」ボタンがあれば削除
       const existingBtn = document.getElementById('btnLoadMore');
       if (existingBtn) existingBtn.remove();
 
-      // 3. 次の50件を取得
       const nextRows = currentFilteredRows.slice(displayedCount, displayedCount + PAGE_SIZE);
       let html = "";
 
@@ -583,7 +557,6 @@
         const name = row[0];
         const img = row[1];
         const price = row[2]; 
-
         const isFav = favorites.has(name);
         const imgTag = (img && /^http/.test(img))
           ? `<img src="${img}" loading="lazy" onclick="showModal('${img}')">`
@@ -591,11 +564,9 @@
 
         const mm = name.match(/\{(.+?)\}/);
         const copyTxt = mm ? mm[1] : name;
-        
         const safeName = name.replace(/'/g, "\\'");
         const safeCopy = copyTxt.replace(/'/g, "\\'");
 
-        // メルカリ検索用クエリ (最適化済み)
         const cleanName = getCleanQuery(name);
         const mercariUrl = `https://jp.mercari.com/search?keyword=${encodeURIComponent(cleanName)}`;
 
@@ -611,14 +582,9 @@
                 <span class="price-label">買取</span>
                 <span class="price-val">¥${Number(price).toLocaleString()}</span>
               </div>
-              
               <div class="item-actions">
-                <a href="${mercariUrl}" target="_blank" class="btn-action btn-mercari">
-                  メルカリ
-                </a>
-                <button onclick="shareOnX('${safeName}', '${price}')" class="btn-action btn-share">
-                  Share
-                </button>
+                <a href="${mercariUrl}" target="_blank" class="btn-action btn-mercari">メルカリ</a>
+                <button onclick="shareOnX('${safeName}', '${price}')" class="btn-action btn-share">Share</button>
               </div>
             </div>
           </div>
@@ -628,7 +594,6 @@
       container.insertAdjacentHTML('beforeend', html);
       displayedCount += nextRows.length;
 
-      // 4. まだ残りがあれば「もっと見る」ボタン表示
       if (displayedCount < currentFilteredRows.length) {
         const remaining = currentFilteredRows.length - displayedCount;
         const btnHtml = `
@@ -647,35 +612,7 @@
       }
     }
 
-    // --- 表示モード切替 ---
-    function toggleViewMode() {
-      isGridMode = !isGridMode;
-      applyViewMode();
-      localStorage.setItem('tk_view_mode', isGridMode ? 'grid' : 'list');
-    }
-
-    function applyViewMode() {
-      const container = document.getElementById('resultList');
-      const btn = document.getElementById('viewToggleBtn');
-      
-      if (isGridMode) {
-        container.classList.add('grid-mode');
-        btn.innerText = "≣"; 
-        btn.classList.add('active');
-      } else {
-        container.classList.remove('grid-mode');
-        btn.innerText = "⊞"; 
-        btn.classList.remove('active');
-      }
-    }
-
-    function loadViewMode() {
-      const mode = localStorage.getItem('tk_view_mode');
-      isGridMode = (mode === 'grid');
-      applyViewMode();
-    }
-
-    // --- ★新規: 人気タグ機能 ---
+    // --- 人気タグ機能 ---
     function loadPopularTags() {
       fetchData({ action: 'tags' }).then(tags => {
         const area = document.getElementById('popularTagsArea');
@@ -683,7 +620,6 @@
           area.style.display = 'none'; 
           return;
         }
-        
         let html = "";
         tags.forEach(word => {
           const safeWord = word.replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -699,10 +635,30 @@
       search();
     }
 
-    // --- 検索用文字列クリーニング ---
+    // --- 各種ツール ---
+    function toggleViewMode() {
+      isGridMode = !isGridMode;
+      applyViewMode();
+      localStorage.setItem('tk_view_mode', isGridMode ? 'grid' : 'list');
+    }
+    function applyViewMode() {
+      const container = document.getElementById('resultList');
+      const btn = document.getElementById('viewToggleBtn');
+      if (isGridMode) {
+        container.classList.add('grid-mode');
+        btn.innerText = "≣"; btn.classList.add('active');
+      } else {
+        container.classList.remove('grid-mode');
+        btn.innerText = "⊞"; btn.classList.remove('active');
+      }
+    }
+    function loadViewMode() {
+      const mode = localStorage.getItem('tk_view_mode');
+      isGridMode = (mode === 'grid');
+      applyViewMode();
+    }
     function getCleanQuery(name) {
       if (!name) return "";
-      
       const match = name.match(/\{(.+?)\}/);
       const code = match ? match[1] : "";
       let base = name.split('【')[0];
@@ -710,73 +666,50 @@
       base = base.replace(/[\(\)\[\]]/g, ' ').trim();
       return (base + " " + code).trim();
     }
-
-    // --- X シェア ---
     function shareOnX(name, price) {
       const text = `【買取価格 ¥${Number(price).toLocaleString()}】\n${name}\n#トレカキングダム`;
       const url = "https://example.com"; 
       const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
       window.open(shareUrl, '_blank');
     }
-
-    // --- 検索履歴管理 ---
     function loadSearchHistory() {
       const history = JSON.parse(localStorage.getItem('tk_search_history') || '[]');
       const datalist = document.getElementById('search-history');
       datalist.innerHTML = ""; 
-      
       history.forEach(word => {
         const opt = document.createElement('option');
         opt.value = word;
         datalist.appendChild(opt);
       });
     }
-
     function saveSearchHistory(keyword) {
       if (!keyword) return;
       let history = JSON.parse(localStorage.getItem('tk_search_history') || '[]');
-      
       history = history.filter(w => w !== keyword);
       history.unshift(keyword);
-      
       if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
-      
       localStorage.setItem('tk_search_history', JSON.stringify(history));
       loadSearchHistory();
     }
-
-    // --- レアリティボタン生成 ---
     function generateRarityButtons(rows) {
       const area = document.getElementById('rarityButtonArea');
       const rarities = new Set();
-      rows.forEach(r => {
-        if(r[3]) rarities.add(String(r[3]).trim());
-      });
-
-      if (rarities.size === 0) {
-        area.style.display = 'none';
-        return;
-      }
-
+      rows.forEach(r => { if(r[3]) rarities.add(String(r[3]).trim()); });
+      if (rarities.size === 0) { area.style.display = 'none'; return; }
       const sorted = Array.from(rarities).sort();
       let html = `<button class="btn-rarity-tag active" onclick="filterByLocalRarity(null, this)">全て</button>`;
       sorted.forEach(rar => {
         html += `<button class="btn-rarity-tag" onclick="filterByLocalRarity('${rar}', this)">${rar}</button>`;
       });
-
       area.innerHTML = html;
       area.style.display = 'flex';
     }
-
     function filterByLocalRarity(rarity, btn) {
       currentRarityFilter = rarity;
-      const btns = document.querySelectorAll('.btn-rarity-tag');
-      btns.forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.btn-rarity-tag').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       renderList();
     }
-
-    // --- その他UI関連 ---
     function loadRarityList() {
       fetchData({ action: 'rarityList' }).then(list => {
         if (!list) return;
@@ -789,7 +722,6 @@
         });
       });
     }
-
     function loadGuarantee() {
       fetchData({ action: 'guarantee' }).then(rows => {
         if(!rows || rows.length===0) return;
@@ -801,13 +733,11 @@
         cont.innerHTML = html;
       });
     }
-
     function onRarityChange() {
       const sel = document.getElementById('raritySelect');
       document.getElementById('rarityLabel').innerText = sel.value || "全て";
       search();
     }
-
     function onSortChange() {
       const sel = document.getElementById('sortSelect');
       const txt = sel.options[sel.selectedIndex].text;
@@ -815,15 +745,12 @@
       currentSort = sel.value;
       renderList();
     }
-
     function toggleFavFilter() {
       isFavMode = !isFavMode;
       const btn = document.getElementById('favFilterBtn');
-      if (isFavMode) btn.classList.add('active');
-      else btn.classList.remove('active');
+      if (isFavMode) btn.classList.add('active'); else btn.classList.remove('active');
       renderList();
     }
-
     function toggleFav(name, el) {
       event.stopPropagation();
       name = name.trim();
@@ -839,7 +766,6 @@
       localStorage.setItem('tk_favorites', JSON.stringify([...favorites]));
       if (isFavMode) renderList();
     }
-
     function loadFavorites() {
       const s = localStorage.getItem('tk_favorites');
       if (s) favorites = new Set(JSON.parse(s));
