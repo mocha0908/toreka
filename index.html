@@ -29,7 +29,7 @@
     /* === 検索エリア === */
     .search-wrapper {
       display: flex; flex-direction: column; gap: 12px;
-      max-width: 800px; margin: 0 auto 15px;
+      max-width: 800px; margin: 0 auto 10px; /* 下マージン微調整 */
       position: relative; z-index: 10;
     }
 
@@ -85,7 +85,7 @@
 
     /* 各種トグルボタン */
     .btn-fav-toggle, .btn-view-toggle {
-      width: 46px; height: 46px; border-radius: 50%; /* ここは後で上書きされるかも */
+      width: 46px; height: 46px; border-radius: 50%;
       background: #fff; box-shadow: var(--shadow);
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; border: none; flex-shrink: 0;
@@ -93,10 +93,7 @@
     .btn-fav-toggle svg { width: 22px; height: 22px; fill: #ccc; transition: fill 0.2s; }
     .btn-fav-toggle.active svg { fill: #f1c40f; }
 
-    .btn-view-toggle {
-      border-radius: 12px; /* 少し四角く */
-      font-size: 20px; color: #555;
-    }
+    .btn-view-toggle { border-radius: 12px; font-size: 20px; color: #555; }
     .btn-view-toggle.active { background: #333; color: #fff; }
 
     /* === 価格フィルタ & ビュー切替 === */
@@ -118,10 +115,30 @@
     .price-input-wrapper input::-webkit-outer-spin-button,
     .price-input-wrapper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
+    /* === ★新規: クイックタグエリア === */
+    .quick-tags-wrapper {
+      max-width: 800px; margin: 0 auto 20px;
+      overflow-x: auto; white-space: nowrap;
+      padding: 0 10px 10px;
+      display: flex; gap: 8px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .quick-tags-wrapper::-webkit-scrollbar { display: none; }
+    
+    .tag-chip {
+      background: #eef2f6; color: #555;
+      padding: 6px 14px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; border: none;
+      cursor: pointer; display: flex; align-items: center; gap: 4px;
+      transition: background 0.2s; flex-shrink: 0;
+    }
+    .tag-chip:hover { background: #dde4ed; }
+    .tag-chip::before { content: "#"; color: var(--primary); font-weight: 900; }
 
     /* === 最新弾ボタン === */
     .quick-actions {
-      display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; margin-top: 15px;
+      display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;
     }
     .btn-latest {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -339,6 +356,8 @@
     </div>
   </div>
 
+  <div class="quick-tags-wrapper" id="popularTagsArea"></div>
+
   <div class="quick-actions">
     <button class="btn-latest" onclick="fetchLatest()">
       <span>🔥</span> 最新弾『MEGAドリームex』
@@ -384,7 +403,7 @@
     let isFavMode = false;
     let currentSort = "priceDesc"; 
     let currentRarityFilter = null;
-    let isGridMode = false; // グリッドモード用
+    let isGridMode = false;
     
     // 競合防止用
     let currentRequestId = 0;
@@ -402,8 +421,9 @@
       loadSearchHistory(); 
       loadRarityList();
       loadGuarantee();
-      loadViewMode(); // 表示モード読み込み
-      loadData(); // 初期ロード
+      loadViewMode(); 
+      loadPopularTags(); // ★新規: 人気タグ読み込み
+      loadData(); 
 
       document.getElementById('keyword').addEventListener('keydown', e => {
         if (e.key === 'Enter') search();
@@ -655,31 +675,45 @@
       applyViewMode();
     }
 
-    // --- 検索用文字列クリーニング (完全版) ---
+    // --- ★新規: 人気タグ機能 ---
+    function loadPopularTags() {
+      fetchData({ action: 'tags' }).then(tags => {
+        const area = document.getElementById('popularTagsArea');
+        if (!tags || tags.length === 0) {
+          area.style.display = 'none'; 
+          return;
+        }
+        
+        let html = "";
+        tags.forEach(word => {
+          const safeWord = word.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          html += `<button class="tag-chip" onclick="searchByTag('${safeWord}')">${safeWord}</button>`;
+        });
+        area.innerHTML = html;
+        area.style.display = 'flex';
+      });
+    }
+
+    function searchByTag(word) {
+      document.getElementById('keyword').value = word;
+      search();
+    }
+
+    // --- 検索用文字列クリーニング ---
     function getCleanQuery(name) {
       if (!name) return "";
       
-      // 1. {}の中身（型番）を抽出
       const match = name.match(/\{(.+?)\}/);
       const code = match ? match[1] : "";
-
-      // 2. 「【」より前の部分を取得
       let base = name.split('【')[0];
-
-      // 3. 残った {xxx} を削除
       base = base.replace(/\{.+?\}/g, '');
-
-      // 4. 記号をスペース置換
       base = base.replace(/[\(\)\[\]]/g, ' ').trim();
-
-      // 5. 結合
       return (base + " " + code).trim();
     }
 
     // --- X シェア ---
     function shareOnX(name, price) {
       const text = `【買取価格 ¥${Number(price).toLocaleString()}】\n${name}\n#トレカキングダム`;
-      // ★あなたのサイトURLに変えてください
       const url = "https://example.com"; 
       const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
       window.open(shareUrl, '_blank');
