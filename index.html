@@ -584,7 +584,7 @@
               </div>
               <div class="item-actions">
                 <a href="${mercariUrl}" target="_blank" class="btn-action btn-mercari">メルカリ</a>
-                <button onclick="shareOnX('${safeName}', '${price}')" class="btn-action btn-share">Share</button>
+                <button onclick="shareOnX('${safeName}', '${price}')" class="btn-action btn-share">Xでシェア</button>
               </div>
             </div>
           </div>
@@ -668,7 +668,7 @@
     }
     function shareOnX(name, price) {
       const text = `【買取価格 ¥${Number(price).toLocaleString()}】\n${name}\n#トレカキングダム`;
-      const url = "https://example.com"; 
+      const url = " https://x.gd/TCKkaitori"; 
       const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
       window.open(shareUrl, '_blank');
     }
