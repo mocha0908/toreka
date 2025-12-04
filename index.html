@@ -7,389 +7,404 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Roboto:wght@500;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #0056b3;
-      --accent: #d0021b;
-      --bg: #f9f9f9;
-      --text: #333;
-      --shadow: 0 4px 20px rgba(0,0,0,0.08);
+      /* === デザインテーマ: モダン・グラス === */
+      --primary: #4e54c8;
+      --primary-grad: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+      --accent: #ff416c;
+      --accent-grad: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+      --bg: #f4f7f6;
+      --text: #2d3436;
+      --card-bg: #ffffff;
+      
+      /* シャドウとエフェクト */
+      --shadow-soft: 0 10px 20px rgba(0,0,0,0.05);
+      --shadow-hover: 0 15px 30px rgba(0,0,0,0.1);
+      --glass-bg: rgba(244, 247, 246, 0.85);
+      
+      --skel-base: #e0e0e0;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
       font-family: 'Noto Sans JP', sans-serif;
-      margin: 0; padding: 20px;
+      margin: 0; padding: 0;
       background: var(--bg); color: var(--text);
       padding-bottom: 80px;
     }
 
-    /* ロゴエリア */
-    .header-area { text-align: center; margin-bottom: 20px; }
-    .header-area img { max-width: 180px; height: auto; }
-
-    /* === 検索エリア === */
-    .search-wrapper {
-      display: flex; flex-direction: column; gap: 12px;
-      max-width: 800px; margin: 0 auto 10px;
-      position: relative; z-index: 10;
+    /* === 固定ヘッダーエリア === */
+    .sticky-header-wrapper {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      padding: 10px 20px 15px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
     }
+
+    /* ロゴと通販ボタン */
+    .header-area { 
+      position: relative;
+      display: flex; justify-content: center; align-items: center; 
+      max-width: 800px; margin: 0 auto 15px; height: 50px;
+    }
+    .header-area img { max-width: 150px; height: auto; }
+
+    .header-shop-btn {
+      position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+      background: #222; color: #fff; font-size: 11px; font-weight: 700;
+      text-decoration: none; padding: 8px 16px; border-radius: 30px;
+      display: flex; align-items: center; gap: 4px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: opacity 0.2s;
+    }
+    .header-shop-btn:hover { opacity: 0.8; }
+    .header-shop-btn::after { content: " ↗"; font-size: 10px; opacity: 0.7; }
+
+    /* === 検索コントロールラップ === */
+    .search-outer { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
 
     /* 検索バー */
     .search-bar {
-      width: 100%;
-      background: #fff; border-radius: 50px;
-      box-shadow: var(--shadow); display: flex; align-items: center;
-      padding: 6px 6px 6px 20px; transition: box-shadow 0.2s;
+      width: 100%; background: #fff; border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center;
+      padding: 6px 6px 6px 16px; border: 1px solid #eee;
+      transition: all 0.3s ease;
     }
-    .search-bar:focus-within { box-shadow: 0 4px 25px rgba(0,86,179,0.2); }
-    
+    .search-bar:focus-within { 
+      border-color: var(--primary); 
+      box-shadow: 0 4px 15px rgba(78, 84, 200, 0.2); 
+    }
     .search-bar input {
       border: none; background: transparent; font-size: 16px;
       flex: 1; outline: none; color: #333; font-weight: 500;
+      border-radius: 0; -webkit-appearance: none;
     }
+    /* スマホで×ボタンを表示 */
+    .search-bar input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: searchfield-cancel-button; cursor: pointer; }
     .search-bar input::placeholder { color: #ccc; }
 
     /* 検索ボタン */
     .btn-search {
-      height: 44px; padding: 0 24px; border-radius: 22px;
-      background: var(--primary); border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      gap: 6px; flex-shrink: 0; transition: transform 0.1s;
+      height: 40px; padding: 0 20px; border-radius: 8px;
+      background: var(--primary-grad); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
       color: white; font-weight: 700; font-size: 14px;
+      box-shadow: 0 4px 10px rgba(78, 84, 200, 0.3);
+      transition: transform 0.1s;
     }
     .btn-search:active { transform: scale(0.95); }
     .btn-search svg { width: 18px; height: 18px; fill: white; }
 
-    /* コントロール行 */
-    .controls-row {
-      display: flex; gap: 10px; justify-content: center; width: 100%;
-    }
-
+    /* フィルタ行 */
+    .controls-row { display: flex; gap: 8px; width: 100%; }
+    
     .dropdown-wrapper {
-      position: relative; background: #fff; border-radius: 50px;
-      box-shadow: var(--shadow); display: flex; align-items: center;
-      padding: 0 12px; cursor: pointer; height: 46px;
-      flex: 1; min-width: 0; justify-content: center;
+      position: relative; background: #fff; border-radius: 10px;
+      border: 1px solid #eee; display: flex; align-items: center;
+      padding: 0 10px; cursor: pointer; height: 42px; flex: 1;
+      justify-content: center; font-size: 11px;
     }
     .dropdown-wrapper::after { content: "▼"; font-size: 8px; color: #888; margin-left: 4px; }
     .dropdown-wrapper select {
       appearance: none; border: none; background: transparent;
-      font-size: 12px; font-weight: 700; color: #555;
-      outline: none; width: 100%; cursor: pointer;
-      position: absolute; inset: 0; opacity: 0;
+      width: 100%; height: 100%; position: absolute; inset: 0; opacity: 0; cursor: pointer;
     }
-    .dropdown-label { 
-      font-size: 12px; font-weight: 700; color: #555; 
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-    }
-    .dropdown-icon { font-size: 14px; margin-right: 4px; flex-shrink: 0;}
+    .dropdown-label { font-weight: 700; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dropdown-icon { margin-right: 4px; font-size: 14px; }
 
-    /* トグルボタン */
     .btn-fav-toggle, .btn-view-toggle {
-      width: 46px; height: 46px; border-radius: 50%;
-      background: #fff; box-shadow: var(--shadow);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; border: none; flex-shrink: 0;
+      width: 42px; height: 42px; border-radius: 10px;
+      background: #fff; border: 1px solid #eee;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
     }
-    .btn-fav-toggle svg { width: 22px; height: 22px; fill: #ccc; transition: fill 0.2s; }
     .btn-fav-toggle.active svg { fill: #f1c40f; }
+    .btn-view-toggle.active { background: #333; color: #fff; border-color: #333; }
+    .btn-fav-toggle svg { width: 20px; height: 20px; fill: #ccc; transition: fill 0.2s;}
 
-    .btn-view-toggle { border-radius: 12px; font-size: 20px; color: #555; }
-    .btn-view-toggle.active { background: #333; color: #fff; }
-
-    /* 価格フィルタ */
-    .filter-row {
-      display: flex; gap: 8px; justify-content: center; align-items: center;
-      margin-top: 4px; width: 100%;
-    }
+    /* 価格入力 */
+    .filter-row { display: flex; gap: 8px; align-items: center; margin-top: 0; }
     .price-input-wrapper {
       display: flex; align-items: center; background: #fff;
-      border-radius: 20px; padding: 0 12px; box-shadow: var(--shadow);
-      height: 40px; flex: 1;
+      border-radius: 8px; padding: 0 10px; border: 1px solid #eee;
+      height: 38px; flex: 1; font-size: 11px;
     }
-    .price-input-wrapper span { font-size: 10px; color: #888; margin-right: 4px; white-space: nowrap; }
+    .price-input-wrapper span { color: #aaa; margin-right: 4px; }
     .price-input-wrapper input {
-      border: none; outline: none; background: transparent;
-      width: 100%; font-size: 13px; font-weight: 700; color: #333;
-      text-align: right; -moz-appearance: textfield;
+      border: none; outline: none; width: 100%; font-size: 13px; font-weight: 700;
+      text-align: right; color: #333; background: transparent;
     }
-    .price-input-wrapper input::-webkit-outer-spin-button,
-    .price-input-wrapper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-    /* 人気タグエリア */
+    /* === コンテンツエリア === */
+    .content-wrapper { padding: 20px; max-width: 840px; margin: 0 auto; }
+
+    /* タグ */
     .quick-tags-wrapper {
-      max-width: 800px; margin: 0 auto 20px;
-      overflow-x: auto; white-space: nowrap;
-      padding: 0 10px 10px;
-      display: flex; gap: 8px;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
+      display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px;
+      scrollbar-width: none; margin-bottom: 20px;
     }
     .quick-tags-wrapper::-webkit-scrollbar { display: none; }
-    
     .tag-chip {
-      background: #eef2f6; color: #555;
-      padding: 6px 14px; border-radius: 20px;
-      font-size: 11px; font-weight: 700; border: none;
-      cursor: pointer; display: flex; align-items: center; gap: 4px;
-      transition: background 0.2s; flex-shrink: 0;
+      background: #fff; color: #555; padding: 6px 16px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; border: 1px solid #eee;
+      cursor: pointer; white-space: nowrap; transition: all 0.2s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
     }
-    .tag-chip:hover { background: #dde4ed; }
-    .tag-chip::before { content: "#"; color: var(--primary); font-weight: 900; }
+    .tag-chip:hover { border-color: var(--primary); color: var(--primary); }
+    .tag-chip::before { content: "#"; color: var(--primary); font-weight: 900; margin-right: 2px; }
 
     /* 最新弾ボタン */
-    .quick-actions {
-      display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;
-    }
+    .quick-actions { display: flex; justify-content: center; margin-bottom: 25px; }
     .btn-latest {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white; border: none; padding: 10px 24px;
+      color: white; border: none; padding: 12px 30px;
       border-radius: 50px; font-weight: 700; font-size: 14px;
-      cursor: pointer; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
-      transition: transform 0.1s; display: flex; align-items: center; gap: 6px;
+      cursor: pointer; box-shadow: 0 6px 20px rgba(118, 75, 162, 0.4);
+      transition: transform 0.1s; display: flex; align-items: center; gap: 8px;
     }
     .btn-latest:active { transform: scale(0.96); }
 
-    /* レアリティボタン */
-    .rarity-scroll-area {
-      display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
-      margin-bottom: 20px; padding: 0 10px;
-      max-width: 800px; margin-left: auto; margin-right: auto;
-    }
+    /* レアリティエリア */
+    .rarity-scroll-area { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 20px; }
     .btn-rarity-tag {
-      background: #fff; border: 1px solid #ddd;
-      color: #555; padding: 6px 14px; border-radius: 20px;
-      font-size: 12px; font-weight: 700; cursor: pointer;
-      transition: all 0.2s;
+      background: #fff; border: 1px solid #eee; color: #666;
+      padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700;
+      cursor: pointer; transition: all 0.2s;
     }
-    .btn-rarity-tag:hover { background: #f0f0f0; }
+    .btn-rarity-tag:hover { background: #f9f9f9; }
     .btn-rarity-tag.active { background: #333; color: #fff; border-color: #333; }
 
-    .info-text { text-align: center; font-size: 12px; color: #888; margin-bottom: 20px; line-height: 1.5; }
-    #lastUpdatedDisplay { color: var(--primary); font-weight: 700; }
+    /* セクションタイトル */
+    .section-title {
+      font-size: 18px; font-weight: 900; margin: 30px 0 15px;
+      display: flex; align-items: center; color: #2d3436;
+    }
+    .section-title::before {
+      content: ""; display: block; width: 6px; height: 24px;
+      background: var(--primary-grad); margin-right: 10px; border-radius: 3px;
+    }
 
     /* 保証買取 */
-    .section-title {
-      font-size: 16px; font-weight: 700; margin-bottom: 12px;
-      border-left: 4px solid var(--primary); padding-left: 10px; color: #222;
-    }
-    .guarantee-scroll {
-      display: flex; gap: 10px; overflow-x: auto; padding-bottom: 16px;
-      -webkit-overflow-scrolling: touch; scrollbar-width: none;
-    }
+    .guarantee-scroll { display: flex; gap: 12px; overflow-x: auto; padding: 5px 5px 20px; scrollbar-width: none; }
     .guarantee-scroll::-webkit-scrollbar { display: none; }
-
     .g-card {
-      background: #fff; border-radius: 12px; padding: 12px 0;
-      min-width: 90px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-      border: 1px solid #eee; flex-shrink: 0;
+      background: #fff; border-radius: 16px; padding: 15px 0;
+      min-width: 100px; text-align: center; 
+      box-shadow: var(--shadow-soft); border: none;
+      transition: transform 0.2s;
     }
-    .g-label { display: block; font-size: 11px; color: #888; margin-bottom: 4px; font-weight: 500; }
-    .g-price { display: block; font-family: 'Roboto', sans-serif; font-size: 16px; font-weight: 700; color: #333; }
+    .g-card:hover { transform: translateY(-3px); }
+    .g-label { display: block; font-size: 11px; color: #888; margin-bottom: 5px; font-weight: 700; }
+    .g-price { display: block; font-family: 'Roboto', sans-serif; font-size: 18px; font-weight: 900; color: #2d3436; }
 
-    .list-container { max-width: 900px; margin: 0 auto; }
-    
-    /* リスト表示 */
+    /* === リスト表示 (メイン) === */
+    .list-container { min-height: 200px; }
     .item-row {
-      background: #fff; border-radius: 12px; padding: 12px;
-      margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-      display: flex; align-items: center; gap: 12px;
-      transition: transform 0.1s; border: 1px solid transparent;
+      background: var(--card-bg); border-radius: 16px; padding: 15px;
+      margin-bottom: 15px; box-shadow: var(--shadow-soft);
+      display: flex; align-items: center; gap: 15px;
+      border: 1px solid transparent; transition: all 0.2s ease;
     }
-    .item-row:active { transform: scale(0.99); }
-    .item-row.is-favorite { border-color: #f1c40f; background: #fffdf5; }
+    .item-row:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+    .item-row.is-favorite { border-color: #f1c40f; background: #fffdf0; }
 
     .item-img {
-      width: 70px; height: 70px; flex-shrink: 0;
+      width: 80px; height: 80px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      background: #f9f9f9; border-radius: 8px;
+      background: #f8f9fa; border-radius: 12px; overflow: hidden;
     }
-    .item-img img { width: 100%; height: 100%; object-fit: contain; }
+    .item-img img { width: 100%; height: 100%; object-fit: contain; transition: transform 0.3s; }
+    .item-img img:hover { transform: scale(1.1); }
 
-    .item-info { flex: 1; min-width: 0; }
-    .item-title-row { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 6px; }
-    .star-btn { font-size: 18px; color: #ddd; cursor: pointer; line-height: 1; margin-top: 2px; }
+    .item-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; height: 80px; }
+    .item-title-row { display: flex; align-items: flex-start; gap: 8px; }
+    .star-btn { font-size: 20px; color: #e0e0e0; cursor: pointer; line-height: 1; transition: color 0.2s; }
+    .star-btn:hover { transform: scale(1.2); }
     .star-btn.active { color: #f1c40f; }
-    
+
     .item-title {
-      font-size: 14px; font-weight: 700; line-height: 1.4; color: #333;
-      word-break: break-all;
-    }
-
-    .item-price-row { text-align: right; }
-    .price-label { font-size: 10px; color: #999; margin-right: 4px; }
-    .price-val { font-family: 'Roboto', sans-serif; font-size: 18px; font-weight: 900; color: var(--accent); }
-
-    /* アクションボタン */
-    .item-actions {
-      display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end;
-    }
-    .btn-action {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 4px 10px; border-radius: 4px;
-      text-decoration: none; font-size: 11px; font-weight: 700;
-      color: white; cursor: pointer; border: none;
-      transition: opacity 0.2s;
-    }
-    .btn-action:hover { opacity: 0.8; }
-    .btn-mercari { background: #ea352d; }
-    .btn-share { background: #000; }
-
-    /* グリッド表示 */
-    .list-container.grid-mode {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 12px;
-    }
-    
-    .list-container.grid-mode .item-row {
-      flex-direction: column; padding: 10px; gap: 8px;
-      text-align: center; height: 100%; margin-bottom: 0;
-    }
-    .list-container.grid-mode .item-img {
-      width: 100%; height: 120px;
-    }
-    .list-container.grid-mode .item-info {
-      width: 100%; display: flex; flex-direction: column; justify-content: space-between; flex: 1;
-    }
-    .list-container.grid-mode .item-title-row {
-      justify-content: center; margin-bottom: 4px; height: 40px; overflow: hidden;
-    }
-    .list-container.grid-mode .item-title {
-      font-size: 12px; line-height: 1.3;
+      font-size: 14px; font-weight: 700; line-height: 1.4; color: #2d3436;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
-    .list-container.grid-mode .item-price-row {
-      text-align: center; margin-top: auto;
-    }
-    .list-container.grid-mode .item-actions {
-      justify-content: center; flex-wrap: wrap; margin-top: 6px;
-    }
-    .list-container.grid-mode .btn-action {
-      font-size: 10px; padding: 3px 8px;
-    }
 
-    /* ツール類 */
-    .spinner { display: none; text-align: center; padding: 40px; color: #999; font-size: 13px; }
-    .spinner-circle {
-      width: 26px; height: 26px; border: 3px solid #eee;
-      border-top-color: var(--primary); border-radius: 50%;
-      animation: spin 0.8s linear infinite; margin: 0 auto 8px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .item-bottom-row { display: flex; align-items: flex-end; justify-content: space-between; margin-top: auto; }
+    .price-group { text-align: left; }
+    .price-label { font-size: 10px; color: #999; font-weight: 700; display: block;}
+    .price-val { font-family: 'Roboto', sans-serif; font-size: 20px; font-weight: 900; color: var(--accent); }
 
-    #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; }
-    #modal img { max-width: 90%; max-height: 90%; border-radius: 8px; }
+    .item-actions { display: flex; gap: 6px; margin-left: auto; align-items: flex-end;}
+    .btn-action {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 6px 12px; border-radius: 6px;
+      text-decoration: none; font-size: 10px; font-weight: 700;
+      color: white; cursor: pointer; border: none;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-action:active { transform: scale(0.95); }
+    .btn-mercari { background: #ea352d; }
+    .btn-jptoreca { background: #222; }
+    .btn-share { background: #1DA1F2; }
+
+    /* === グリッド表示 === */
+    .list-container.grid-mode {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;
+    }
+    .list-container.grid-mode .item-row {
+      flex-direction: column; padding: 12px; gap: 10px;
+      text-align: center; height: 100%; margin-bottom: 0;
+      justify-content: space-between;
+    }
+    .list-container.grid-mode .item-img { width: 100%; height: 140px; }
+    .list-container.grid-mode .item-info { height: auto; width: 100%; gap: 6px; }
+    .list-container.grid-mode .item-bottom-row { flex-direction: column; gap: 8px; align-items: center; width: 100%; margin-top: 8px; }
+    .list-container.grid-mode .item-actions { width: 100%; justify-content: center; margin-left: 0; flex-wrap: wrap;}
+    .list-container.grid-mode .btn-action { padding: 6px 10px; flex: 1; }
+    .list-container.grid-mode .price-group { text-align: center; }
+
+    /* その他ツール */
+    .info-text { text-align: center; font-size: 11px; color: #999; margin-bottom: 30px; }
+    .error-msg { text-align: center; color: var(--accent); font-weight: 700; padding: 20px; background: #fff0f0; border-radius: 12px; display: none; }
     
+    #btnBackToTop {
+      position: fixed; bottom: 25px; right: 25px;
+      width: 50px; height: 50px; background: var(--primary-grad);
+      color: white; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; box-shadow: 0 4px 15px rgba(78, 84, 200, 0.4);
+      cursor: pointer; z-index: 900; border: none;
+      opacity: 0; visibility: hidden; transition: all 0.3s;
+    }
+    #btnBackToTop.show { opacity: 1; visibility: visible; bottom: 35px; }
+
+    /* スケルトン */
+    .skeleton-wrapper { display: none; }
+    .skeleton-wrapper.active { display: block; }
+    .skel-row {
+      background: #fff; border-radius: 16px; padding: 15px;
+      margin-bottom: 15px; display: flex; align-items: center; gap: 15px;
+    }
+    .skel-img { width: 80px; height: 80px; border-radius: 12px; background: var(--skel-base); animation: skel-anim 1.5s infinite; }
+    .skel-info { flex: 1; }
+    .skel-line { height: 14px; border-radius: 4px; background: var(--skel-base); margin-bottom: 10px; animation: skel-anim 1.5s infinite; }
+    .skel-line.short { width: 60%; }
+    @keyframes skel-anim { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+    
+    #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 9999; align-items: center; justify-content: center; }
+    #modal img { max-width: 90%; max-height: 90%; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
     #toast {
-      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
-      background: #222; color: #fff; padding: 10px 20px; border-radius: 30px;
-      font-size: 13px; opacity: 0; visibility: hidden; transition: all 0.3s; z-index: 10000;
+      position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: rgba(30, 30, 30, 0.9); color: #fff; padding: 10px 24px; border-radius: 30px;
+      font-size: 13px; font-weight: 700; opacity: 0; visibility: hidden; transition: all 0.3s; z-index: 10000;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
     #toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
 
-    /* PC調整 */
+    /* PCレスポンシブ */
     @media (min-width: 600px) {
-      .search-wrapper { flex-direction: row; flex-wrap: wrap; }
-      .search-bar { width: 100%; margin-bottom: 0; }
+      .search-outer { flex-direction: row; flex-wrap: wrap; }
+      .search-bar { width: 100%; }
       .controls-row { width: auto; flex: 1; }
-      .filter-row { width: auto; margin-top: 0; margin-left: 10px; max-width: 300px;}
+      .filter-row { width: auto; max-width: 300px; }
+      .list-container.grid-mode { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+      .item-row { padding: 20px; }
+      .item-img { width: 100px; height: 100px; }
+      .item-info { height: 100px; }
     }
   </style>
 </head>
 <body onload="init()">
 
-  <div class="header-area">
-    <img src="https://i.imgur.com/ZXFdMYn.png" alt="トレカキングダム">
+  <div class="sticky-header-wrapper">
+    <div class="header-area">
+      <img src="https://i.imgur.com/ZXFdMYn.png" alt="トレカキングダム">
+      <a href="https://shop.japan-toreca.com/apps/loyalty/ref/8144469688472" target="_blank" class="header-shop-btn">
+        通販サイトへ
+      </a>
+    </div>
+
+    <div class="search-outer">
+      <div class="search-bar">
+        <input type="search" id="keyword" list="search-history" placeholder="カード名・型番" enterkeyhint="search" />
+        <datalist id="search-history"></datalist>
+
+        <button class="btn-search" onclick="search()">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 3 13.09 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <span>検索</span>
+        </button>
+      </div>
+
+      <div class="controls-row">
+        <div class="dropdown-wrapper">
+          <span class="dropdown-icon">💎</span>
+          <span class="dropdown-label" id="rarityLabel">全て</span>
+          <select id="raritySelect" onchange="onRarityChange()">
+            <option value="">全て</option>
+          </select>
+        </div>
+
+        <div class="dropdown-wrapper">
+          <span class="dropdown-icon">⇅</span>
+          <span class="dropdown-label" id="sortLabel">高い順</span>
+          <select id="sortSelect" onchange="onSortChange()">
+            <option value="priceDesc" selected>価格高い順</option>
+            <option value="priceAsc">価格低い順</option>
+            <option value="nameAsc">名前順(A-Z)</option>
+            <option value="nameDesc">名前順(Z-A)</option>
+          </select>
+        </div>
+
+        <button class="btn-view-toggle" id="viewToggleBtn" onclick="toggleViewMode()" title="表示切替">⊞</button>
+        <button class="btn-fav-toggle" id="favFilterBtn" onclick="toggleFavFilter()" title="お気に入りのみ表示">
+          <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+        </button>
+      </div>
+
+      <div class="filter-row">
+        <div class="price-input-wrapper">
+          <span>MIN</span>
+          <input type="number" id="minPrice" placeholder="0" onchange="search()" enterkeyhint="search">
+        </div>
+        <span style="color:#ccc">〜</span>
+        <div class="price-input-wrapper">
+          <span>MAX</span>
+          <input type="number" id="maxPrice" placeholder="上限なし" onchange="search()" enterkeyhint="search">
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="search-wrapper">
+  <div class="content-wrapper">
+    <div class="quick-tags-wrapper" id="popularTagsArea"></div>
+
+    <div class="quick-actions">
+      <button class="btn-latest" onclick="fetchLatest()">
+        <span>🔥</span> 最新弾『MEGAドリームex』
+      </button>
+    </div>
     
-    <div class="search-bar">
-      <input type="text" id="keyword" list="search-history" placeholder="カード名・型番" enterkeyhint="search" />
-      <datalist id="search-history"></datalist>
+    <div id="rarityButtonArea" class="rarity-scroll-area" style="display:none;"></div>
 
-      <button class="btn-search" onclick="search()">
-        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 3 13.09 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-        <span>検索</span>
-      </button>
+    <div class="info-text">
+      <div id="lastUpdatedDisplay"></div>
+      ※価格は在庫状況等により変動します
     </div>
 
-    <div class="controls-row">
-      <div class="dropdown-wrapper">
-        <span class="dropdown-icon">💎</span>
-        <span class="dropdown-label" id="rarityLabel">全て</span>
-        <select id="raritySelect" onchange="onRarityChange()">
-          <option value="">全て</option>
-        </select>
-      </div>
+    <div class="section-title">最低保証買取</div>
+    <div class="guarantee-scroll" id="guaranteeContainer"></div>
 
-      <div class="dropdown-wrapper">
-        <span class="dropdown-icon">⇅</span>
-        <span class="dropdown-label" id="sortLabel">高い順</span>
-        <select id="sortSelect" onchange="onSortChange()">
-          <option value="priceDesc" selected>価格高い順</option>
-          <option value="priceAsc">価格低い順</option>
-          <option value="nameAsc">名前順(A-Z)</option>
-          <option value="nameDesc">名前順(Z-A)</option>
-        </select>
-      </div>
+    <div class="section-title" id="listTitle">ピックアップ買取</div>
+    
+    <div id="errorMsg" class="error-msg"></div>
 
-      <button class="btn-view-toggle" id="viewToggleBtn" onclick="toggleViewMode()" title="表示切替">
-        ⊞
-      </button>
-
-      <button class="btn-fav-toggle" id="favFilterBtn" onclick="toggleFavFilter()" title="お気に入りのみ表示">
-        <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-      </button>
+    <div id="skeletonLoader" class="skeleton-wrapper">
+      <div class="skel-row"><div class="skel-img"></div><div class="skel-info"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
+      <div class="skel-row"><div class="skel-img"></div><div class="skel-info"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
+      <div class="skel-row"><div class="skel-img"></div><div class="skel-info"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
     </div>
 
-    <div class="filter-row">
-      <div class="price-input-wrapper">
-        <span>MIN</span>
-        <input type="number" id="minPrice" placeholder="0" onchange="search()" enterkeyhint="search">
-      </div>
-      <span style="color:#ccc">〜</span>
-      <div class="price-input-wrapper">
-        <span>MAX</span>
-        <input type="number" id="maxPrice" placeholder="上限なし" onchange="search()" enterkeyhint="search">
-      </div>
-    </div>
+    <div class="list-container" id="resultList"></div>
   </div>
 
-  <div class="quick-tags-wrapper" id="popularTagsArea"></div>
-
-  <div class="quick-actions">
-    <button class="btn-latest" onclick="fetchLatest()">
-      <span>🔥</span> 最新弾『MEGAドリームex』
-    </button>
-  </div>
-  
-  <div id="rarityButtonArea" class="rarity-scroll-area" style="display:none;"></div>
-
-  <div class="info-text">
-    <div id="lastUpdatedDisplay"></div>
-    ※価格は在庫状況等により変動します
-  </div>
-
-  <div class="section-title">最低保証買取</div>
-  <div class="guarantee-scroll" id="guaranteeContainer">
-    <div class="g-card"><span class="g-label">PSA10</span><span class="g-price">¥5,000</span></div>
-    <div class="g-card"><span class="g-label">SAR</span><span class="g-price">¥400</span></div>
-    <div class="g-card"><span class="g-label">SR</span><span class="g-price">¥250</span></div>
-    <div class="g-card"><span class="g-label">AR</span><span class="g-price">¥220</span></div>
-    <div class="g-card"><span class="g-label">RR</span><span class="g-price">¥10</span></div>
-  </div>
-
-  <br><br>
-
-  <div class="section-title" id="listTitle">ピックアップ買取</div>
-  
-  <div id="spinner" class="spinner">
-    <div class="spinner-circle"></div>
-    読み込み中...
-  </div>
-
-  <div class="list-container" id="resultList"></div>
+  <button id="btnBackToTop" onclick="window.scrollTo({top:0, behavior:'smooth'})">↑</button>
 
   <div id="modal" onclick="this.style.display='none'"><img id="modalImage" src=""></div>
   <div id="toast">✅ <span id="toastMsg"></span></div>
@@ -417,7 +432,7 @@
       loadRarityList();
       loadGuarantee();
       loadViewMode(); 
-      loadPopularTags(); // 人気タグ読み込み
+      loadPopularTags();
       loadData(); 
 
       document.getElementById('keyword').addEventListener('keydown', e => {
@@ -428,27 +443,43 @@
           if (e.key === 'Enter') search();
         });
       });
+
+      // スクロール検知でTopボタン表示
+      window.addEventListener('scroll', () => {
+        const btn = document.getElementById('btnBackToTop');
+        if (window.scrollY > 300) btn.classList.add('show');
+        else btn.classList.remove('show');
+      });
     }
 
-    // --- API通信 ---
     async function fetchData(params) {
       const url = new URL(API_URL);
       Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
       try {
+        document.getElementById('errorMsg').style.display = 'none'; 
         const res = await fetch(url);
+        if (!res.ok) throw new Error("Network response was not ok");
         return await res.json();
       } catch (e) {
+        console.error(e);
+        showError("データの読み込みに失敗しました。<br>時間をおいて再読み込みしてください。");
         return null;
       }
     }
 
-    // --- データ読み込み ---
+    function showError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.innerHTML = msg;
+      el.style.display = 'block';
+      showSkeleton(false);
+    }
+
     function loadData() {
       const myRequestId = ++currentRequestId;
-      showSpinner(true);
+      showSkeleton(true);
       fetchData({ action: 'pickup' }).then(data => {
         if (myRequestId !== currentRequestId) return;
-        showSpinner(false);
+        showSkeleton(false);
         if (!data) return;
         if (data.lastUpdated) displayDate(data.lastUpdated);
         allData = data.rows || [];
@@ -456,21 +487,24 @@
       });
     }
 
-    // --- 通常検索 ---
     function search() {
       const myRequestId = ++currentRequestId;
-      const kw = document.getElementById('keyword').value.trim();
+      const kwEl = document.getElementById('keyword');
+      const kw = kwEl.value.trim();
       const rar = document.getElementById('raritySelect').value;
       if (kw) saveSearchHistory(kw);
 
+      kwEl.blur(); 
+
       document.getElementById('rarityButtonArea').style.display = 'none';
       currentRarityFilter = null;
-      showSpinner(true);
+      
       document.getElementById('resultList').innerHTML = "";
+      showSkeleton(true); 
 
       fetchData({ action: 'search', keyword: kw, rarity: rar }).then(data => {
         if (myRequestId !== currentRequestId) return;
-        showSpinner(false);
+        showSkeleton(false);
         if (!data) return;
         allData = data.rows || [];
         document.getElementById('listTitle').innerText = (kw || rar) ? "検索結果" : "ピックアップ買取";
@@ -478,19 +512,19 @@
       });
     }
 
-    // --- 最新弾取得 ---
     function fetchLatest() {
       const myRequestId = ++currentRequestId;
-      showSpinner(true);
       document.getElementById('resultList').innerHTML = "";
       document.getElementById('keyword').value = "";
       const sel = document.getElementById('raritySelect');
       sel.value = "";
       document.getElementById('rarityLabel').innerText = "全て";
 
+      showSkeleton(true);
+
       fetchData({ action: 'latest' }).then(data => {
         if (myRequestId !== currentRequestId) return;
-        showSpinner(false);
+        showSkeleton(false);
         if (!data) return;
         allData = data.rows || [];
         document.getElementById('listTitle').innerText = "最新弾 (M2a) 買取表";
@@ -500,12 +534,10 @@
       });
     }
 
-    // --- リスト描画 ---
     function renderList(isLoadMore = false) {
       const container = document.getElementById('resultList');
 
       if (!isLoadMore) {
-        // フィルタリング
         const minInput = document.getElementById('minPrice').value;
         const maxInput = document.getElementById('maxPrice').value;
         const minP = minInput ? parseInt(minInput) : 0;
@@ -524,7 +556,6 @@
           return true;
         });
 
-        // ソート
         currentFilteredRows.sort((a, b) => {
           const pA = parseFloat(String(a[2]).replace(/,/g, '')) || 0;
           const pB = parseFloat(String(b[2]).replace(/,/g, '')) || 0;
@@ -558,8 +589,9 @@
         const img = row[1];
         const price = row[2]; 
         const isFav = favorites.has(name);
+        
         const imgTag = (img && /^http/.test(img))
-          ? `<img src="${img}" loading="lazy" onclick="showModal('${img}')">`
+          ? `<img src="${img}" loading="lazy" onclick="showModal('${img}')" onerror="this.onerror=null;this.src='https://via.placeholder.com/150x150?text=No+Img';">`
           : `<span style="font-size:10px;color:#ccc;">No Img</span>`;
 
         const mm = name.match(/\{(.+?)\}/);
@@ -569,6 +601,7 @@
 
         const cleanName = getCleanQuery(name);
         const mercariUrl = `https://jp.mercari.com/search?keyword=${encodeURIComponent(cleanName)}`;
+        const jpTorecaUrl = `https://shop.japan-toreca.com/search?q=${encodeURIComponent(cleanName)}`;
 
         html += `
           <div class="item-row ${isFav ? 'is-favorite' : ''}">
@@ -578,13 +611,17 @@
                 <span class="star-btn ${isFav ? 'active' : ''}" onclick="toggleFav('${safeName} ', this)">★</span>
                 <div class="item-title" onclick="copyText('${safeCopy}','型番をコピー')">${name}</div>
               </div>
-              <div class="item-price-row" onclick="copyText('${price}','価格をコピー')">
-                <span class="price-label">買取</span>
-                <span class="price-val">¥${Number(price).toLocaleString()}</span>
-              </div>
-              <div class="item-actions">
-                <a href="${mercariUrl}" target="_blank" class="btn-action btn-mercari">メルカリ</a>
-                <button onclick="shareOnX('${safeName}', '${price}')" class="btn-action btn-share">Xでシェア</button>
+              
+              <div class="item-bottom-row">
+                <div class="price-group" onclick="copyText('${price}','価格をコピー')">
+                  <span class="price-label">買取価格</span>
+                  <span class="price-val">¥${Number(price).toLocaleString()}</span>
+                </div>
+                <div class="item-actions">
+                  <a href="${mercariUrl}" target="_blank" class="btn-action btn-mercari">メルカリ</a>
+                  <a href="${jpTorecaUrl}" target="_blank" class="btn-action btn-jptoreca">通販サイト</a>
+                  <button onclick="shareOnX('${safeName}', '${price}')" class="btn-action btn-share">Xでシェア</button>
+                </div>
               </div>
             </div>
           </div>
@@ -600,9 +637,9 @@
           <div id="btnLoadMore" style="text-align:center; margin: 20px 0 40px;">
             <button onclick="renderList(true)" 
               style="
-                background: #eee; border: none; padding: 12px 40px; 
+                background: #fff; border: 1px solid #ddd; padding: 12px 40px; 
                 border-radius: 30px; font-weight: 700; color: #555; cursor: pointer;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: all 0.2s;
               ">
               もっと見る (あと ${remaining} 件)
             </button>
@@ -612,7 +649,6 @@
       }
     }
 
-    // --- 人気タグ機能 ---
     function loadPopularTags() {
       fetchData({ action: 'tags' }).then(tags => {
         const area = document.getElementById('popularTagsArea');
@@ -635,7 +671,6 @@
       search();
     }
 
-    // --- 各種ツール ---
     function toggleViewMode() {
       isGridMode = !isGridMode;
       applyViewMode();
@@ -770,7 +805,16 @@
       const s = localStorage.getItem('tk_favorites');
       if (s) favorites = new Set(JSON.parse(s));
     }
-    function showSpinner(b) { document.getElementById('spinner').style.display = b ? 'block' : 'none'; }
+    
+    function showSkeleton(b) {
+      const skel = document.getElementById('skeletonLoader');
+      if (b) {
+        skel.classList.add('active');
+      } else {
+        skel.classList.remove('active');
+      }
+    }
+
     function displayDate(iso) {
       const d = new Date(iso);
       const s = `最終更新: ${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
