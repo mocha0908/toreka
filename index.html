@@ -746,9 +746,14 @@
     }
     
     function shareOnX(name, price) {
-      const text = `【買取価格 ¥${Number(price).toLocaleString()}】\n${name}\n#トレカキングダム`;
-      const url = " https://x.gd/TCKkaitori"; 
+     
+      const text = `👑トレカキングダム👑\n@TCK_akihabara\n\n${name}\n【買取価格 ¥${Number(price).toLocaleString()}】\n\n#ポケカ\n#秋葉原`;
+      
+      const url = "https://x.gd/TCKkaitori"; 
+      
+      
       const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+      
       window.open(shareUrl, '_blank');
     }
     function loadSearchHistory() {
