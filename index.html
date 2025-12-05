@@ -150,6 +150,17 @@
     }
     .btn-latest:active { transform: scale(0.96); }
 
+    /* お気に入りコピーボタン */
+    .btn-copy-list {
+      background: #222; color: #fff; border: none;
+      padding: 10px 24px; border-radius: 30px;
+      font-weight: 700; font-size: 13px; cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      transition: transform 0.1s;
+    }
+    .btn-copy-list:active { transform: scale(0.96); }
+
     /* レアリティエリア */
     .rarity-scroll-area { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 20px; }
     .btn-rarity-tag {
@@ -186,7 +197,7 @@
     .item-row {
       background: var(--card-bg); border-radius: 16px; padding: 16px;
       margin-bottom: 16px; box-shadow: var(--shadow-soft);
-      display: flex; gap: 16px; align-items: flex-start; /* 上揃え */
+      display: flex; gap: 16px; align-items: flex-start;
       border: 1px solid transparent; transition: all 0.2s ease;
     }
     .item-row.is-favorite { border-color: #f1c40f; background: #fffdf0; }
@@ -209,7 +220,7 @@
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
 
-    /* アイテム下部（価格とボタン）のコンテナ */
+    /* アイテム下部（価格とボタン） */
     .item-bottom-row { 
       display: flex; align-items: flex-end; justify-content: space-between; 
       margin-top: auto; 
@@ -236,7 +247,7 @@
     }
     .list-container.grid-mode .item-row {
       flex-direction: column; padding: 12px; gap: 10px; text-align: center;
-      align-items: center; /* 中央揃え */
+      align-items: center;
     }
     .list-container.grid-mode .item-img { width: 100%; height: 140px; }
     .list-container.grid-mode .item-info { width: 100%; }
@@ -296,34 +307,14 @@
       .btn-action { padding: 6px 14px; } 
     }
 
-    /* ★★★ スマホ調整 (重要) ★★★ */
+    /* スマホ調整 */
     @media (max-width: 600px) {
-      /* アイテムの高さを自然に任せる */
       .item-info { display: flex; flex-direction: column; gap: 10px; }
-      
-      /* 下部エリア（価格とボタン）を縦並びに変更してスペース確保 */
       .item-bottom-row { 
-        flex-direction: column; 
-        align-items: flex-start; /* 左寄せ */
-        gap: 10px; /* 価格とボタンの間隔 */
-        width: 100%;
+        flex-direction: column; align-items: flex-start; gap: 10px; width: 100%;
       }
-      
-      /* ボタン群の設定 */
-      .item-actions { 
-        width: 100%; 
-        justify-content: space-between; /* 均等に配置 */
-        gap: 8px;
-      }
-      
-      /* ボタンを少し大きく、押しやすく */
-      .btn-action {
-        flex: 1; /* 横幅いっぱいに広げる */
-        padding: 8px 0; /* 高さを出す */
-        font-size: 11px;
-      }
-      
-      /* 価格を少し大きく */
+      .item-actions { width: 100%; justify-content: space-between; gap: 8px; }
+      .btn-action { flex: 1; padding: 8px 0; font-size: 11px; }
       .price-val { font-size: 22px; }
     }
   </style>
@@ -340,7 +331,7 @@
 
     <div class="search-outer">
       <div class="search-bar">
-        <input type="search" id="keyword" list="search-history" placeholder="カード名・型番" enterkeyhint="search" />
+        <input type="search" id="keyword" list="search-history" placeholder="カード名・型番" enterkeyhint="search" oninput="onSearchInput()" />
         <datalist id="search-history"></datalist>
 
         <button class="btn-search" onclick="search()">
@@ -398,6 +389,12 @@
       </button>
     </div>
     
+    <div id="favActionArea" style="display:none; justify-content:center; margin-bottom:20px;">
+      <button class="btn-copy-list" onclick="copyFavText()">
+        📋 お気に入りリストをコピー
+      </button>
+    </div>
+
     <div id="rarityButtonArea" class="rarity-scroll-area" style="display:none;"></div>
 
     <div class="info-text">
@@ -449,6 +446,9 @@
     let displayedCount = 0;
     const MAX_HISTORY = 10;
 
+    // デバウンス用タイマー
+    let debounceTimer;
+
     function init() {
       loadFavorites();
       loadSearchHistory(); 
@@ -458,8 +458,12 @@
       loadPopularTags();
       loadData(); 
 
+      // Enterキーでも検索できるように
       document.getElementById('keyword').addEventListener('keydown', e => {
-        if (e.key === 'Enter') search();
+        if (e.key === 'Enter') {
+          if (debounceTimer) clearTimeout(debounceTimer);
+          search();
+        }
       });
       ['minPrice', 'maxPrice'].forEach(id => {
         document.getElementById(id).addEventListener('keydown', e => {
@@ -467,12 +471,20 @@
         });
       });
 
-      // スクロール検知でTopボタン表示
+      // スクロール検知
       window.addEventListener('scroll', () => {
         const btn = document.getElementById('btnBackToTop');
         if (window.scrollY > 300) btn.classList.add('show');
         else btn.classList.remove('show');
       });
+    }
+
+    // 入力中の自動検索 (デバウンス)
+    function onSearchInput() {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        search();
+      }, 600); // 0.6秒待機
     }
 
     async function fetchData(params) {
@@ -512,12 +524,9 @@
 
     function search() {
       const myRequestId = ++currentRequestId;
-      const kwEl = document.getElementById('keyword');
-      const kw = kwEl.value.trim();
+      const kw = document.getElementById('keyword').value.trim(); // フォーカスは外さない
       const rar = document.getElementById('raritySelect').value;
       if (kw) saveSearchHistory(kw);
-
-      kwEl.blur(); 
 
       document.getElementById('rarityButtonArea').style.display = 'none';
       currentRarityFilter = null;
@@ -560,6 +569,12 @@
     function renderList(isLoadMore = false) {
       const container = document.getElementById('resultList');
 
+      // お気に入りモードならコピーボタンを表示
+      const favArea = document.getElementById('favActionArea');
+      if (favArea) {
+        favArea.style.display = (isFavMode && favorites.size > 0) ? 'flex' : 'none';
+      }
+
       if (!isLoadMore) {
         const minInput = document.getElementById('minPrice').value;
         const maxInput = document.getElementById('maxPrice').value;
@@ -572,7 +587,7 @@
             const r = String(row[3] || "").trim();
             if (r !== currentRarityFilter) return false;
           }
-          const p = parseFloat(String(row[5]).replace(/,/g, '')); // F列参照
+          const p = parseFloat(String(row[5]).replace(/,/g, '')); // F列
           if (isNaN(p) || p <= 0) return false;
           if (p < minP) return false;
           if (p > maxP) return false;
@@ -580,8 +595,8 @@
         });
 
         currentFilteredRows.sort((a, b) => {
-          const pA = parseFloat(String(a[5]).replace(/,/g, '')) || 0; // F列参照
-          const pB = parseFloat(String(b[5]).replace(/,/g, '')) || 0; // F列参照
+          const pA = parseFloat(String(a[5]).replace(/,/g, '')) || 0;
+          const pB = parseFloat(String(b[5]).replace(/,/g, '')) || 0;
           const nA = String(a[0]);
           const nB = String(b[0]);
 
@@ -610,7 +625,7 @@
       nextRows.forEach(row => {
         const name = row[0];
         const img = row[1];
-        const price = row[5]; // F列参照
+        const price = row[5]; // F列
         const isFav = favorites.has(name);
         
         const imgTag = (img && /^http/.test(img))
@@ -694,6 +709,20 @@
       search();
     }
 
+    // 検索クエリ整形（型番のみ or 名前のみ）
+    function getCleanQuery(name) {
+      if (!name) return "";
+      const match = name.match(/\{(.+?)\}/);
+      if (match) {
+        const content = match[1].trim();
+        if (content !== "-") return content;
+      }
+      let base = name.split('【')[0];
+      base = base.replace(/\{.+?\}/g, '');
+      base = base.replace(/[\(\)\[\]]/g, ' ').trim();
+      return base.trim();
+    }
+
     function toggleViewMode() {
       isGridMode = !isGridMode;
       applyViewMode();
@@ -715,15 +744,7 @@
       isGridMode = (mode === 'grid');
       applyViewMode();
     }
-    function getCleanQuery(name) {
-      if (!name) return "";
-      const match = name.match(/\{(.+?)\}/);
-      const code = match ? match[1] : "";
-      let base = name.split('【')[0];
-      base = base.replace(/\{.+?\}/g, '');
-      base = base.replace(/[\(\)\[\]]/g, ' ').trim();
-      return (base + " " + code).trim();
-    }
+    
     function shareOnX(name, price) {
       const text = `【買取価格 ¥${Number(price).toLocaleString()}】\n${name}\n#トレカキングダム`;
       const url = " https://x.gd/TCKkaitori"; 
@@ -822,7 +843,7 @@
         if (el) el.classList.add('active');
         el.closest('.item-row').classList.add('is-favorite');
         
-        // 【通知】GASに「お気に入り追加」を通知
+        // GASへ通知
         fetch(`${API_URL}?action=like&name=${encodeURIComponent(name)}`, { mode: 'no-cors' })
           .catch(err => console.error(err));
       }
@@ -830,6 +851,31 @@
       localStorage.setItem('tk_favorites', JSON.stringify([...favorites]));
       if (isFavMode) renderList();
     }
+    
+    // お気に入りリストをテキストコピー
+    function copyFavText() {
+      const favRows = allData.filter(r => favorites.has(r[0]));
+      if (favRows.length === 0) {
+        alert("お気に入りがありません");
+        return;
+      }
+      let total = 0;
+      let text = "【買取/購入検討リスト】\n";
+      favRows.forEach(r => {
+        const price = parseInt(String(r[5]).replace(/,/g, '')) || 0; 
+        total += price;
+        text += `・${r[0]} (¥${price.toLocaleString()})\n`;
+      });
+      text += `\n合計: ${favRows.length}枚 / ¥${total.toLocaleString()}`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        const t = document.getElementById('toast');
+        document.getElementById('toastMsg').innerText = "リストをコピーしました";
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2000);
+      });
+    }
+
     function loadFavorites() {
       const s = localStorage.getItem('tk_favorites');
       if (s) favorites = new Set(JSON.parse(s));
