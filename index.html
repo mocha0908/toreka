@@ -572,7 +572,7 @@
             const r = String(row[3] || "").trim();
             if (r !== currentRarityFilter) return false;
           }
-          const p = parseFloat(String(row[5]).replace(/,/g, '')); // ★変更: F列参照 (Index 5)
+          const p = parseFloat(String(row[5]).replace(/,/g, '')); // F列参照
           if (isNaN(p) || p <= 0) return false;
           if (p < minP) return false;
           if (p > maxP) return false;
@@ -580,8 +580,8 @@
         });
 
         currentFilteredRows.sort((a, b) => {
-          const pA = parseFloat(String(a[5]).replace(/,/g, '')) || 0; // ★変更: F列参照
-          const pB = parseFloat(String(b[5]).replace(/,/g, '')) || 0; // ★変更: F列参照
+          const pA = parseFloat(String(a[5]).replace(/,/g, '')) || 0; // F列参照
+          const pB = parseFloat(String(b[5]).replace(/,/g, '')) || 0; // F列参照
           const nA = String(a[0]);
           const nB = String(b[0]);
 
@@ -610,7 +610,7 @@
       nextRows.forEach(row => {
         const name = row[0];
         const img = row[1];
-        const price = row[5]; // ★変更: F列参照 (Index 5)
+        const price = row[5]; // F列参照
         const isFav = favorites.has(name);
         
         const imgTag = (img && /^http/.test(img))
@@ -812,6 +812,7 @@
     function toggleFav(name, el) {
       event.stopPropagation();
       name = name.trim();
+      
       if (favorites.has(name)) {
         favorites.delete(name);
         if (el) el.classList.remove('active');
@@ -820,7 +821,12 @@
         favorites.add(name);
         if (el) el.classList.add('active');
         el.closest('.item-row').classList.add('is-favorite');
+        
+        // 【通知】GASに「お気に入り追加」を通知
+        fetch(`${API_URL}?action=like&name=${encodeURIComponent(name)}`, { mode: 'no-cors' })
+          .catch(err => console.error(err));
       }
+      
       localStorage.setItem('tk_favorites', JSON.stringify([...favorites]));
       if (isFavMode) renderList();
     }
