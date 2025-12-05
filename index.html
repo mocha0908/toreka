@@ -197,7 +197,7 @@
     .item-row {
       background: var(--card-bg); border-radius: 16px; padding: 16px;
       margin-bottom: 16px; box-shadow: var(--shadow-soft);
-      display: flex; gap: 16px; align-items: flex-start;
+      display: flex; gap: 16px; align-items: flex-start; /* 上揃え */
       border: 1px solid transparent; transition: all 0.2s ease;
     }
     .item-row.is-favorite { border-color: #f1c40f; background: #fffdf0; }
@@ -247,7 +247,7 @@
     }
     .list-container.grid-mode .item-row {
       flex-direction: column; padding: 12px; gap: 10px; text-align: center;
-      align-items: center;
+      align-items: center; /* 中央揃え */
     }
     .list-container.grid-mode .item-img { width: 100%; height: 140px; }
     .list-container.grid-mode .item-info { width: 100%; }
@@ -307,14 +307,34 @@
       .btn-action { padding: 6px 14px; } 
     }
 
-    /* スマホ調整 */
+    /* ★★★ スマホ調整 (重要) ★★★ */
     @media (max-width: 600px) {
+      /* アイテムの高さを自然に任せる */
       .item-info { display: flex; flex-direction: column; gap: 10px; }
+      
+      /* 下部エリア（価格とボタン）を縦並びに変更してスペース確保 */
       .item-bottom-row { 
-        flex-direction: column; align-items: flex-start; gap: 10px; width: 100%;
+        flex-direction: column; 
+        align-items: flex-start; /* 左寄せ */
+        gap: 10px; /* 価格とボタンの間隔 */
+        width: 100%;
       }
-      .item-actions { width: 100%; justify-content: space-between; gap: 8px; }
-      .btn-action { flex: 1; padding: 8px 0; font-size: 11px; }
+      
+      /* ボタン群の設定 */
+      .item-actions { 
+        width: 100%; 
+        justify-content: space-between; /* 均等に配置 */
+        gap: 8px;
+      }
+      
+      /* ボタンを少し大きく、押しやすく */
+      .btn-action {
+        flex: 1; /* 横幅いっぱいに広げる */
+        padding: 8px 0; /* 高さを出す */
+        font-size: 11px;
+      }
+      
+      /* 価格を少し大きく */
       .price-val { font-size: 22px; }
     }
   </style>
@@ -729,194 +749,4 @@
       localStorage.setItem('tk_view_mode', isGridMode ? 'grid' : 'list');
     }
     function applyViewMode() {
-      const container = document.getElementById('resultList');
-      const btn = document.getElementById('viewToggleBtn');
-      if (isGridMode) {
-        container.classList.add('grid-mode');
-        btn.innerText = "≣"; btn.classList.add('active');
-      } else {
-        container.classList.remove('grid-mode');
-        btn.innerText = "⊞"; btn.classList.remove('active');
-      }
-    }
-    function loadViewMode() {
-      const mode = localStorage.getItem('tk_view_mode');
-      isGridMode = (mode === 'grid');
-      applyViewMode();
-    }
-    
-    function shareOnX(name, price) {
-     
-      const text = `👑トレカキングダム👑\n@TCK_akihabara\n\n${name}\n【買取価格 ¥${Number(price).toLocaleString()}】\n\n#ポケカ\n#秋葉原`;
-      
-      const url = "https://x.gd/TCKkaitori"; 
-      
-      
-      const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
-      
-      window.open(shareUrl, '_blank');
-    }
-    function loadSearchHistory() {
-      const history = JSON.parse(localStorage.getItem('tk_search_history') || '[]');
-      const datalist = document.getElementById('search-history');
-      datalist.innerHTML = ""; 
-      history.forEach(word => {
-        const opt = document.createElement('option');
-        opt.value = word;
-        datalist.appendChild(opt);
-      });
-    }
-    function saveSearchHistory(keyword) {
-      if (!keyword) return;
-      let history = JSON.parse(localStorage.getItem('tk_search_history') || '[]');
-      history = history.filter(w => w !== keyword);
-      history.unshift(keyword);
-      if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
-      localStorage.setItem('tk_search_history', JSON.stringify(history));
-      loadSearchHistory();
-    }
-    function generateRarityButtons(rows) {
-      const area = document.getElementById('rarityButtonArea');
-      const rarities = new Set();
-      rows.forEach(r => { if(r[3]) rarities.add(String(r[3]).trim()); });
-      if (rarities.size === 0) { area.style.display = 'none'; return; }
-      const sorted = Array.from(rarities).sort();
-      let html = `<button class="btn-rarity-tag active" onclick="filterByLocalRarity(null, this)">全て</button>`;
-      sorted.forEach(rar => {
-        html += `<button class="btn-rarity-tag" onclick="filterByLocalRarity('${rar}', this)">${rar}</button>`;
-      });
-      area.innerHTML = html;
-      area.style.display = 'flex';
-    }
-    function filterByLocalRarity(rarity, btn) {
-      currentRarityFilter = rarity;
-      document.querySelectorAll('.btn-rarity-tag').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderList();
-    }
-    function loadRarityList() {
-      fetchData({ action: 'rarityList' }).then(list => {
-        if (!list) return;
-        const sel = document.getElementById('raritySelect');
-        while(sel.options.length > 1) sel.remove(1);
-        list.forEach(r => {
-          const opt = document.createElement('option');
-          opt.value = r; opt.innerText = r;
-          sel.appendChild(opt);
-        });
-      });
-    }
-    function loadGuarantee() {
-      fetchData({ action: 'guarantee' }).then(rows => {
-        if(!rows || rows.length===0) return;
-        const cont = document.getElementById('guaranteeContainer');
-        let html = "";
-        rows.forEach(r => {
-          html += `<div class="g-card"><span class="g-label">${r[0]}</span><span class="g-price">${fmtPrice(r[1])}</span></div>`;
-        });
-        cont.innerHTML = html;
-      });
-    }
-    function onRarityChange() {
-      const sel = document.getElementById('raritySelect');
-      document.getElementById('rarityLabel').innerText = sel.value || "全て";
-      search();
-    }
-    function onSortChange() {
-      const sel = document.getElementById('sortSelect');
-      const txt = sel.options[sel.selectedIndex].text;
-      document.getElementById('sortLabel').innerText = txt.replace("価格","").replace("名前順","名"); 
-      currentSort = sel.value;
-      renderList();
-    }
-    function toggleFavFilter() {
-      isFavMode = !isFavMode;
-      const btn = document.getElementById('favFilterBtn');
-      if (isFavMode) btn.classList.add('active'); else btn.classList.remove('active');
-      renderList();
-    }
-    function toggleFav(name, el) {
-      event.stopPropagation();
-      name = name.trim();
-      
-      if (favorites.has(name)) {
-        favorites.delete(name);
-        if (el) el.classList.remove('active');
-        el.closest('.item-row').classList.remove('is-favorite');
-      } else {
-        favorites.add(name);
-        if (el) el.classList.add('active');
-        el.closest('.item-row').classList.add('is-favorite');
-        
-        // GASへ通知
-        fetch(`${API_URL}?action=like&name=${encodeURIComponent(name)}`, { mode: 'no-cors' })
-          .catch(err => console.error(err));
-      }
-      
-      localStorage.setItem('tk_favorites', JSON.stringify([...favorites]));
-      if (isFavMode) renderList();
-    }
-    
-    // お気に入りリストをテキストコピー
-    function copyFavText() {
-      const favRows = allData.filter(r => favorites.has(r[0]));
-      if (favRows.length === 0) {
-        alert("お気に入りがありません");
-        return;
-      }
-      let total = 0;
-      let text = "【買取/購入検討リスト】\n";
-      favRows.forEach(r => {
-        const price = parseInt(String(r[5]).replace(/,/g, '')) || 0; 
-        total += price;
-        text += `・${r[0]} (¥${price.toLocaleString()})\n`;
-      });
-      text += `\n合計: ${favRows.length}枚 / ¥${total.toLocaleString()}`;
-
-      navigator.clipboard.writeText(text).then(() => {
-        const t = document.getElementById('toast');
-        document.getElementById('toastMsg').innerText = "リストをコピーしました";
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2000);
-      });
-    }
-
-    function loadFavorites() {
-      const s = localStorage.getItem('tk_favorites');
-      if (s) favorites = new Set(JSON.parse(s));
-    }
-    
-    function showSkeleton(b) {
-      const skel = document.getElementById('skeletonLoader');
-      if (b) {
-        skel.classList.add('active');
-      } else {
-        skel.classList.remove('active');
-      }
-    }
-
-    function displayDate(iso) {
-      const d = new Date(iso);
-      const s = `最終更新: ${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-      document.getElementById('lastUpdatedDisplay').innerText = s;
-    }
-    function fmtPrice(v) {
-      if (!v || isNaN(v)) return v;
-      return "¥" + Number(v).toLocaleString();
-    }
-    function copyText(txt, msg) {
-      navigator.clipboard.writeText(txt).then(() => {
-        const t = document.getElementById('toast');
-        document.getElementById('toastMsg').innerText = msg;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2000);
-      });
-    }
-    function showModal(src) {
-      document.getElementById('modalImage').src = src;
-      document.getElementById('modal').style.display = 'flex';
-    }
-    window.onload = init;
-  </script>
-</body>
-</html>
+      const container = document.getElementById('
