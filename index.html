@@ -15,7 +15,6 @@
       --text: #2d3436;
       --card-bg: #ffffff;
       
-      /* シャドウとエフェクト */
       --shadow-soft: 0 8px 20px rgba(0,0,0,0.04);
       --glass-bg: rgba(244, 247, 246, 0.9);
       --skel-base: #e0e0e0;
@@ -26,7 +25,7 @@
       font-family: 'Noto Sans JP', sans-serif;
       margin: 0; padding: 0;
       background: var(--bg); color: var(--text);
-      padding-bottom: 80px;
+      padding-bottom: 140px; /* 合計バーのために下部余白を広げる */
     }
 
     /* === 固定ヘッダーエリア === */
@@ -39,7 +38,6 @@
       box-shadow: 0 2px 15px rgba(0,0,0,0.03);
     }
 
-    /* ロゴと通販ボタン */
     .header-area { 
       position: relative;
       display: flex; justify-content: center; align-items: center; 
@@ -57,10 +55,8 @@
     .header-shop-btn:hover { opacity: 0.8; }
     .header-shop-btn::after { content: " ↗"; font-size: 10px; opacity: 0.7; }
 
-    /* === 検索コントロール === */
     .search-outer { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
 
-    /* 検索バー */
     .search-bar {
       width: 100%; background: #fff; border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center;
@@ -83,7 +79,6 @@
     }
     .btn-search svg { width: 16px; height: 16px; fill: white; }
 
-    /* フィルタ行 */
     .controls-row { display: flex; gap: 8px; width: 100%; }
     
     .dropdown-wrapper {
@@ -109,7 +104,6 @@
     .btn-view-toggle.active { background: #333; color: #fff; border-color: #333; }
     .btn-fav-toggle svg { width: 20px; height: 20px; fill: #ccc; transition: fill 0.2s;}
 
-    /* 価格入力 */
     .filter-row { display: flex; gap: 8px; align-items: center; margin-top: 0; }
     .price-input-wrapper {
       display: flex; align-items: center; background: #fff;
@@ -122,10 +116,8 @@
       text-align: right; color: #333; background: transparent;
     }
 
-    /* === コンテンツエリア === */
     .content-wrapper { padding: 20px 15px; max-width: 840px; margin: 0 auto; }
 
-    /* タグ */
     .quick-tags-wrapper {
       display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px;
       scrollbar-width: none; margin-bottom: 20px;
@@ -139,7 +131,6 @@
     .tag-chip:hover { border-color: var(--primary); color: var(--primary); }
     .tag-chip::before { content: "#"; color: var(--primary); font-weight: 900; margin-right: 2px; }
 
-    /* 最新弾ボタン */
     .quick-actions { display: flex; justify-content: center; margin-bottom: 25px; }
     .btn-latest {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -150,18 +141,6 @@
     }
     .btn-latest:active { transform: scale(0.96); }
 
-    /* お気に入りコピーボタン */
-    .btn-copy-list {
-      background: #222; color: #fff; border: none;
-      padding: 10px 24px; border-radius: 30px;
-      font-weight: 700; font-size: 13px; cursor: pointer;
-      display: flex; align-items: center; gap: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      transition: transform 0.1s;
-    }
-    .btn-copy-list:active { transform: scale(0.96); }
-
-    /* レアリティエリア */
     .rarity-scroll-area { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 20px; }
     .btn-rarity-tag {
       background: #fff; border: 1px solid #eee; color: #666;
@@ -170,7 +149,6 @@
     }
     .btn-rarity-tag.active { background: #333; color: #fff; border-color: #333; }
 
-    /* セクションタイトル */
     .section-title {
       font-size: 16px; font-weight: 900; margin: 25px 0 12px;
       display: flex; align-items: center; color: #2d3436;
@@ -180,7 +158,6 @@
       background: var(--primary-grad); margin-right: 8px; border-radius: 2px;
     }
 
-    /* 保証買取 */
     .guarantee-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 5px 5px 20px; scrollbar-width: none; }
     .guarantee-scroll::-webkit-scrollbar { display: none; }
     .g-card {
@@ -191,7 +168,6 @@
     .g-label { display: block; font-size: 10px; color: #888; margin-bottom: 4px; font-weight: 700; }
     .g-price { display: block; font-family: 'Roboto', sans-serif; font-size: 15px; font-weight: 900; color: #2d3436; }
 
-    /* === リスト表示 (メイン: 縦長) === */
     .list-container { min-height: 200px; }
     
     .item-row {
@@ -220,7 +196,6 @@
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
 
-    /* アイテム下部（価格とボタン） */
     .item-bottom-row { 
       display: flex; align-items: flex-end; justify-content: space-between; 
       margin-top: auto; 
@@ -241,52 +216,63 @@
     .btn-jptoreca { background: #222; }
     .btn-share { background: #1DA1F2; }
 
-    /* === ★重要★ グリッド表示（四角い表示） === */
+    /* ★追加：枚数変更UI（お気に入りモード時のみ表示） */
+    .qty-control-area {
+      display: flex; align-items: center; gap: 8px; margin-top: 10px;
+      background: #f0f0f0; padding: 4px; border-radius: 8px; width: fit-content;
+    }
+    .btn-qty {
+      width: 24px; height: 24px; border-radius: 6px; background: #fff; border: 1px solid #ddd;
+      display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 700;
+    }
+    .qty-val { font-weight: 700; font-size: 14px; min-width: 20px; text-align: center; }
+
+    /* ★追加：合計金額バー（フッター） */
+    #totalBar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      border-top: 1px solid #ddd;
+      padding: 15px 20px;
+      display: none; /* 初期は非表示 */
+      justify-content: space-between; align-items: center;
+      box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+    }
+    .total-info { font-size: 12px; font-weight: 700; color: #555; }
+    .total-price { font-family: 'Roboto', sans-serif; font-size: 20px; font-weight: 900; color: var(--accent); margin-left: 4px; }
+    .btn-copy-total {
+      background: #222; color: #fff; border: none;
+      padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; gap: 4px;
+    }
+
+    /* グリッド表示設定 */
     .list-container.grid-mode {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;
     }
     .list-container.grid-mode .item-row {
-      flex-direction: column; padding: 12px; gap: 10px; text-align: center;
-      align-items: center;
+      flex-direction: column; padding: 12px; gap: 10px; text-align: center; align-items: center;
     }
     .list-container.grid-mode .item-img { width: 100%; height: 140px; }
     .list-container.grid-mode .item-info { width: 100%; }
     .list-container.grid-mode .item-bottom-row { 
       flex-direction: column; width: 100%; gap: 8px; align-items: center; margin-top: 8px;
     }
-    
-    /* ★ここを変更: ボタンエリアのレイアウト */
     .list-container.grid-mode .item-actions { 
-      width: 100%; 
-      display: flex; 
-      flex-wrap: wrap; /* 折り返し許可 */
-      justify-content: space-between; 
-      gap: 6px; 
+      width: 100%; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; 
     }
-    
-    /* メルカリと通販サイト: 横並びで幅50%ずつ */
     .list-container.grid-mode .btn-mercari,
-    .list-container.grid-mode .btn-jptoreca {
-      width: calc(50% - 3px); /* ギャップの半分を引く */
-      flex: none; 
-      padding: 6px 0;
-    }
-    
-    /* Xでシェア: 1行独占 */
-    .list-container.grid-mode .btn-share {
-      width: 100%;
-      flex: none;
-      padding: 6px 0;
-    }
-    
+    .list-container.grid-mode .btn-jptoreca { width: calc(50% - 3px); flex: none; padding: 6px 0; }
+    .list-container.grid-mode .btn-share { width: 100%; flex: none; padding: 6px 0; }
     .list-container.grid-mode .price-group { text-align: center; }
+    .list-container.grid-mode .qty-control-area { margin: 8px auto 0; }
 
-    /* その他ツール */
     .info-text { text-align: center; font-size: 11px; color: #999; margin-bottom: 30px; }
     .error-msg { text-align: center; color: var(--accent); font-weight: 700; padding: 20px; background: #fff0f0; border-radius: 12px; display: none; }
     
     #btnBackToTop {
-      position: fixed; bottom: 25px; right: 25px;
+      position: fixed; bottom: 90px; right: 25px; /* 合計バーが出るので位置調整 */
       width: 50px; height: 50px; background: var(--primary-grad);
       color: white; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
@@ -294,15 +280,11 @@
       cursor: pointer; z-index: 900; border: none;
       opacity: 0; visibility: hidden; transition: all 0.3s;
     }
-    #btnBackToTop.show { opacity: 1; visibility: visible; bottom: 35px; }
+    #btnBackToTop.show { opacity: 1; visibility: visible; }
 
-    /* スケルトン */
     .skeleton-wrapper { display: none; }
     .skeleton-wrapper.active { display: block; }
-    .skel-row {
-      background: #fff; border-radius: 16px; padding: 15px;
-      margin-bottom: 15px; display: flex; align-items: center; gap: 15px;
-    }
+    .skel-row { background: #fff; border-radius: 16px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; }
     .skel-img { width: 80px; height: 80px; border-radius: 12px; background: var(--skel-base); animation: skel-anim 1.5s infinite; }
     .skel-info { flex: 1; }
     .skel-line { height: 14px; border-radius: 4px; background: var(--skel-base); margin-bottom: 10px; animation: skel-anim 1.5s infinite; }
@@ -312,14 +294,13 @@
     #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 9999; align-items: center; justify-content: center; }
     #modal img { max-width: 90%; max-height: 90%; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
     #toast {
-      position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px);
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
       background: rgba(30, 30, 30, 0.9); color: #fff; padding: 10px 24px; border-radius: 30px;
       font-size: 13px; font-weight: 700; opacity: 0; visibility: hidden; transition: all 0.3s; z-index: 10000;
       box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
     #toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
 
-    /* PCレスポンシブ */
     @media (min-width: 600px) {
       .search-outer { flex-direction: row; flex-wrap: wrap; }
       .search-bar { width: 100%; }
@@ -332,14 +313,10 @@
       .btn-action { padding: 6px 14px; } 
     }
 
-    /* スマホ調整（リスト表示時） */
     @media (max-width: 600px) {
       .item-info { display: flex; flex-direction: column; gap: 10px; }
-      .item-bottom-row { 
-        flex-direction: column; align-items: flex-start; gap: 10px; width: 100%;
-      }
+      .item-bottom-row { flex-direction: column; align-items: flex-start; gap: 10px; width: 100%; }
       .item-actions { width: 100%; justify-content: space-between; gap: 8px; }
-      /* リスト表示時は均等に横並び */
       .btn-action { flex: 1; padding: 8px 0; font-size: 11px; }
       .price-val { font-size: 22px; }
     }
@@ -359,7 +336,6 @@
       <div class="search-bar">
         <input type="search" id="keyword" list="search-history" placeholder="カード名・型番" enterkeyhint="search" oninput="onSearchInput()" />
         <datalist id="search-history"></datalist>
-
         <button class="btn-search" onclick="search()">
           <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 3 13.09 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
           <span>検索</span>
@@ -415,12 +391,6 @@
       </button>
     </div>
     
-    <div id="favActionArea" style="display:none; justify-content:center; margin-bottom:20px;">
-      <button class="btn-copy-list" onclick="copyFavText()">
-        📋 お気に入りリストをコピー
-      </button>
-    </div>
-
     <div id="rarityButtonArea" class="rarity-scroll-area" style="display:none;"></div>
 
     <div class="info-text">
@@ -432,13 +402,12 @@
     <div class="guarantee-scroll" id="guaranteeContainer">
       <div class="g-card"><span class="g-label">PSA10</span><span class="g-price">¥5,000</span></div>
       <div class="g-card"><span class="g-label">SAR</span><span class="g-price">¥400</span></div>
-      <div class="g-card"><span class="g-label">SR</span><span class="g-price">¥200</span></div>
+      <div class="g-card"><span class="g-label">SR</span><span class="g-price">¥250</span></div>
       <div class="g-card"><span class="g-label">AR</span><span class="g-price">¥220</span></div>
       <div class="g-card"><span class="g-label">RR</span><span class="g-price">¥10</span></div>
     </div>
 
     <div class="section-title" id="listTitle">ピックアップ買取</div>
-    
     <div id="errorMsg" class="error-msg"></div>
 
     <div id="skeletonLoader" class="skeleton-wrapper">
@@ -452,6 +421,16 @@
 
   <button id="btnBackToTop" onclick="window.scrollTo({top:0, behavior:'smooth'})">↑</button>
 
+  <div id="totalBar">
+    <div>
+      <div class="total-info">お気に入り合計 (<span id="totalCount">0</span>枚)</div>
+      <div class="total-price" id="totalPrice">¥0</div>
+    </div>
+    <button class="btn-copy-total" onclick="copyFavText()">
+      📋 リストをコピー
+    </button>
+  </div>
+
   <div id="modal" onclick="this.style.display='none'"><img id="modalImage" src=""></div>
   <div id="toast">✅ <span id="toastMsg"></span></div>
 
@@ -461,6 +440,9 @@
 
     let allData = []; 
     let favorites = new Set();
+    // ★追加: 枚数管理用
+    let quantities = {}; 
+
     let isFavMode = false;
     let currentSort = "priceDesc"; 
     let currentRarityFilter = null;
@@ -471,8 +453,6 @@
     let currentFilteredRows = [];
     let displayedCount = 0;
     const MAX_HISTORY = 10;
-
-    // デバウンス用タイマー
     let debounceTimer;
 
     function init() {
@@ -484,7 +464,6 @@
       loadPopularTags();
       loadData(); 
 
-      // Enterキーでも検索できるように
       document.getElementById('keyword').addEventListener('keydown', e => {
         if (e.key === 'Enter') {
           if (debounceTimer) clearTimeout(debounceTimer);
@@ -497,7 +476,6 @@
         });
       });
 
-      // スクロール検知
       window.addEventListener('scroll', () => {
         const btn = document.getElementById('btnBackToTop');
         if(!btn) return;
@@ -506,12 +484,11 @@
       });
     }
 
-    // 入力中の自動検索 (デバウンス)
     function onSearchInput() {
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         search();
-      }, 600); // 0.6秒待機
+      }, 600);
     }
 
     async function fetchData(params) {
@@ -599,9 +576,7 @@
       });
     }
 
-    // ★安全な価格取得関数（F列がだめならC列を見る）
     function getSafePrice(row) {
-      // row[5] = F列, row[2] = C列
       let p = parseFloat(String(row[5]).replace(/,/g, ''));
       if (isNaN(p) || p <= 0) {
         p = parseFloat(String(row[2]).replace(/,/g, ''));
@@ -612,10 +587,13 @@
     function renderList(isLoadMore = false) {
       const container = document.getElementById('resultList');
 
-      // お気に入りモードならコピーボタンを表示
-      const favArea = document.getElementById('favActionArea');
-      if (favArea) {
-        favArea.style.display = (isFavMode && favorites.size > 0) ? 'flex' : 'none';
+      // ★合計バーの表示制御
+      const totalBar = document.getElementById('totalBar');
+      if (isFavMode && favorites.size > 0) {
+        totalBar.style.display = 'flex';
+        updateTotalDisplay();
+      } else {
+        totalBar.style.display = 'none';
       }
 
       if (!isLoadMore) {
@@ -630,17 +608,13 @@
             const r = String(row[3] || "").trim();
             if (r !== currentRarityFilter) return false;
           }
-          
-          // ★修正: 安全な価格取得
           const p = getSafePrice(row);
-          
           if (isNaN(p) || p <= 0) return false; 
           if (p < minP) return false;
           if (p > maxP) return false;
           return true;
         });
 
-        // ソート
         currentFilteredRows.sort((a, b) => {
           const pA = getSafePrice(a) || 0;
           const pB = getSafePrice(b) || 0;
@@ -672,9 +646,10 @@
       nextRows.forEach(row => {
         const name = row[0];
         const img = row[1];
-        // ★修正: 表示価格も安全な方を使う
         const price = getSafePrice(row); 
         const isFav = favorites.has(name);
+        // ★枚数取得
+        const qty = quantities[name] || 1; 
         
         const imgTag = (img && /^http/.test(img))
           ? `<img src="${img}" loading="lazy" onclick="showModal('${img}')" onerror="this.onerror=null;this.src='https://via.placeholder.com/150x150?text=No+Img';">`
@@ -689,6 +664,18 @@
         const mercariUrl = `https://jp.mercari.com/search?keyword=${encodeURIComponent(cleanName)}`;
         const jpTorecaUrl = `https://shop.japan-toreca.com/search?q=${encodeURIComponent(cleanName)}`;
 
+        // ★お気に入りモード時のみ、枚数変更ボタンを表示
+        let qtyControlHtml = "";
+        if (isFavMode) {
+          qtyControlHtml = `
+            <div class="qty-control-area">
+              <div class="btn-qty" onclick="changeQty('${safeName}', -1)">-</div>
+              <div class="qty-val">${qty}</div>
+              <div class="btn-qty" onclick="changeQty('${safeName}', 1)">+</div>
+            </div>
+          `;
+        }
+
         html += `
           <div class="item-row ${isFav ? 'is-favorite' : ''}">
             <div class="item-img">${imgTag}</div>
@@ -702,6 +689,7 @@
                 <div class="price-group" onclick="copyText('${price}','価格をコピー')">
                   <span class="price-label">買取価格</span>
                   <span class="price-val">¥${Number(price).toLocaleString()}</span>
+                  ${qtyControlHtml}
                 </div>
                 <div class="item-actions">
                   <a href="${mercariUrl}" target="_blank" class="btn-action btn-mercari">メルカリ</a>
@@ -892,33 +880,78 @@
         el.closest('.item-row').classList.remove('is-favorite');
       } else {
         favorites.add(name);
+        // 新規登録時は枚数を1にリセット
+        quantities[name] = 1; 
         if (el) el.classList.add('active');
         el.closest('.item-row').classList.add('is-favorite');
         
-        // GASへ通知
         fetch(`${API_URL}?action=like&name=${encodeURIComponent(name)}`, { mode: 'no-cors' })
           .catch(err => console.error(err));
       }
       
       localStorage.setItem('tk_favorites', JSON.stringify([...favorites]));
+      localStorage.setItem('tk_quantities', JSON.stringify(quantities));
+      
       if (isFavMode) renderList();
     }
+
+    // ★追加: 枚数変更処理
+    function changeQty(name, delta) {
+      name = name.trim();
+      if (!quantities[name]) quantities[name] = 1;
+      
+      quantities[name] += delta;
+      if (quantities[name] < 1) quantities[name] = 1; // 最小1枚
+      
+      localStorage.setItem('tk_quantities', JSON.stringify(quantities));
+      renderList(); // 再描画して合計金額更新
+    }
+
+    // ★追加: 合計金額計算・表示
+    function updateTotalDisplay() {
+      const favRows = allData.filter(r => favorites.has(r[0]));
+      let totalPrice = 0;
+      let totalQty = 0;
+
+      favRows.forEach(r => {
+        const name = r[0];
+        const p = getSafePrice(r) || 0;
+        const q = quantities[name] || 1;
+        totalPrice += p * q;
+        totalQty += q;
+      });
+
+      document.getElementById('totalCount').innerText = totalQty;
+      document.getElementById('totalPrice').innerText = "¥" + totalPrice.toLocaleString();
+    }
     
-    // お気に入りリストをテキストコピー
+    // ★修正: リストコピー（枚数と合計金額を含む）
     function copyFavText() {
       const favRows = allData.filter(r => favorites.has(r[0]));
       if (favRows.length === 0) {
         alert("お気に入りがありません");
         return;
       }
-      let total = 0;
-      let text = "【買取/購入検討リスト】\n";
+      let totalPrice = 0;
+      let totalQty = 0;
+      let text = "【買取/購入検討リスト】\n\n";
+      
       favRows.forEach(r => {
-        const price = getSafePrice(r) || 0; 
-        total += price;
-        text += `・${r[0]} (¥${price.toLocaleString()})\n`;
+        const name = r[0];
+        const p = getSafePrice(r) || 0;
+        const q = quantities[name] || 1;
+        const subTotal = p * q;
+        
+        totalPrice += subTotal;
+        totalQty += q;
+        
+        text += `・${name}\n`;
+        text += `　¥${p.toLocaleString()} x ${q}枚 = ¥${subTotal.toLocaleString()}\n`;
       });
-      text += `\n合計: ${favRows.length}枚 / ¥${total.toLocaleString()}`;
+      
+      text += `\n------------------\n`;
+      text += `合計: ${totalQty}枚\n`;
+      text += `総額: ¥${totalPrice.toLocaleString()}`;
 
       navigator.clipboard.writeText(text).then(() => {
         const t = document.getElementById('toast');
@@ -931,6 +964,10 @@
     function loadFavorites() {
       const s = localStorage.getItem('tk_favorites');
       if (s) favorites = new Set(JSON.parse(s));
+      
+      // 枚数もロード
+      const q = localStorage.getItem('tk_quantities');
+      if (q) quantities = JSON.parse(q);
     }
     
     function showSkeleton(b) {
