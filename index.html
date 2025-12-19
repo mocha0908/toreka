@@ -25,7 +25,7 @@
       font-family: 'Noto Sans JP', sans-serif;
       margin: 0; padding: 0;
       background: var(--bg); color: var(--text);
-      padding-bottom: 140px; /* 合計バーのために下部余白を広げる */
+      padding-bottom: 140px;
     }
 
     /* === 固定ヘッダーエリア === */
@@ -216,7 +216,7 @@
     .btn-jptoreca { background: #222; }
     .btn-share { background: #1DA1F2; }
 
-    /* ★追加：枚数変更UI（お気に入りモード時のみ表示） */
+    /* 枚数変更UI */
     .qty-control-area {
       display: flex; align-items: center; gap: 8px; margin-top: 10px;
       background: #f0f0f0; padding: 4px; border-radius: 8px; width: fit-content;
@@ -224,16 +224,19 @@
     .btn-qty {
       width: 24px; height: 24px; border-radius: 6px; background: #fff; border: 1px solid #ddd;
       display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 700;
+      user-select: none; /* 連打時の選択防止 */
     }
+    .btn-qty:active { background: #e0e0e0; }
     .qty-val { font-weight: 700; font-size: 14px; min-width: 20px; text-align: center; }
+    .qty-val.is-zero { color: #999; } /* 0枚の時は薄く */
 
-    /* ★追加：合計金額バー（フッター） */
+    /* 合計金額バー */
     #totalBar {
       position: fixed; bottom: 0; left: 0; right: 0;
       background: rgba(255, 255, 255, 0.95);
       border-top: 1px solid #ddd;
       padding: 15px 20px;
-      display: none; /* 初期は非表示 */
+      display: none;
       justify-content: space-between; align-items: center;
       box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
       z-index: 1000;
@@ -272,7 +275,7 @@
     .error-msg { text-align: center; color: var(--accent); font-weight: 700; padding: 20px; background: #fff0f0; border-radius: 12px; display: none; }
     
     #btnBackToTop {
-      position: fixed; bottom: 90px; right: 25px; /* 合計バーが出るので位置調整 */
+      position: fixed; bottom: 90px; right: 25px;
       width: 50px; height: 50px; background: var(--primary-grad);
       color: white; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
@@ -440,7 +443,6 @@
 
     let allData = []; 
     let favorites = new Set();
-    // ★追加: 枚数管理用
     let quantities = {}; 
 
     let isFavMode = false;
@@ -587,7 +589,7 @@
     function renderList(isLoadMore = false) {
       const container = document.getElementById('resultList');
 
-      // ★合計バーの表示制御
+      // 合計バーの表示制御
       const totalBar = document.getElementById('totalBar');
       if (isFavMode && favorites.size > 0) {
         totalBar.style.display = 'flex';
@@ -648,8 +650,8 @@
         const img = row[1];
         const price = getSafePrice(row); 
         const isFav = favorites.has(name);
-        // ★枚数取得
-        const qty = quantities[name] || 1; 
+        
+        const qty = quantities[name] !== undefined ? quantities[name] : 1; 
         
         const imgTag = (img && /^http/.test(img))
           ? `<img src="${img}" loading="lazy" onclick="showModal('${img}')" onerror="this.onerror=null;this.src='https://via.placeholder.com/150x150?text=No+Img';">`
@@ -664,14 +666,15 @@
         const mercariUrl = `https://jp.mercari.com/search?keyword=${encodeURIComponent(cleanName)}`;
         const jpTorecaUrl = `https://shop.japan-toreca.com/search?q=${encodeURIComponent(cleanName)}`;
 
-        // ★お気に入りモード時のみ、枚数変更ボタンを表示
+        // お気に入りモード時のみ、枚数変更ボタンを表示
         let qtyControlHtml = "";
         if (isFavMode) {
+          const zeroClass = (qty === 0) ? "is-zero" : "";
           qtyControlHtml = `
             <div class="qty-control-area">
-              <div class="btn-qty" onclick="changeQty('${safeName}', -1)">-</div>
-              <div class="qty-val">${qty}</div>
-              <div class="btn-qty" onclick="changeQty('${safeName}', 1)">+</div>
+              <div class="btn-qty" onclick="changeQty(event, '${safeName}', -1)">-</div>
+              <div class="qty-val ${zeroClass}">${qty}</div>
+              <div class="btn-qty" onclick="changeQty(event, '${safeName}', 1)">+</div>
             </div>
           `;
         }
@@ -880,8 +883,7 @@
         el.closest('.item-row').classList.remove('is-favorite');
       } else {
         favorites.add(name);
-        // 新規登録時は枚数を1にリセット
-        quantities[name] = 1; 
+        if (!quantities[name]) quantities[name] = 1;
         if (el) el.classList.add('active');
         el.closest('.item-row').classList.add('is-favorite');
         
@@ -895,19 +897,19 @@
       if (isFavMode) renderList();
     }
 
-    // ★追加: 枚数変更処理
-    function changeQty(name, delta) {
+    // ★枚数変更: イベントバブリング停止、0許可
+    function changeQty(event, name, delta) {
+      event.stopPropagation();
       name = name.trim();
-      if (!quantities[name]) quantities[name] = 1;
+      if (quantities[name] === undefined) quantities[name] = 1;
       
       quantities[name] += delta;
-      if (quantities[name] < 1) quantities[name] = 1; // 最小1枚
+      if (quantities[name] < 0) quantities[name] = 0; // 0枚許可
       
       localStorage.setItem('tk_quantities', JSON.stringify(quantities));
-      renderList(); // 再描画して合計金額更新
+      renderList(); 
     }
 
-    // ★追加: 合計金額計算・表示
     function updateTotalDisplay() {
       const favRows = allData.filter(r => favorites.has(r[0]));
       let totalPrice = 0;
@@ -916,7 +918,7 @@
       favRows.forEach(r => {
         const name = r[0];
         const p = getSafePrice(r) || 0;
-        const q = quantities[name] || 1;
+        const q = quantities[name] !== undefined ? quantities[name] : 1;
         totalPrice += p * q;
         totalQty += q;
       });
@@ -925,7 +927,6 @@
       document.getElementById('totalPrice').innerText = "¥" + totalPrice.toLocaleString();
     }
     
-    // ★修正: リストコピー（枚数と合計金額を含む）
     function copyFavText() {
       const favRows = allData.filter(r => favorites.has(r[0]));
       if (favRows.length === 0) {
@@ -939,9 +940,10 @@
       favRows.forEach(r => {
         const name = r[0];
         const p = getSafePrice(r) || 0;
-        const q = quantities[name] || 1;
-        const subTotal = p * q;
+        const q = quantities[name] !== undefined ? quantities[name] : 1;
         
+        // 0枚の場合はリストに載せるが計算には入れない
+        const subTotal = p * q;
         totalPrice += subTotal;
         totalQty += q;
         
@@ -964,8 +966,6 @@
     function loadFavorites() {
       const s = localStorage.getItem('tk_favorites');
       if (s) favorites = new Set(JSON.parse(s));
-      
-      // 枚数もロード
       const q = localStorage.getItem('tk_quantities');
       if (q) quantities = JSON.parse(q);
     }
