@@ -351,7 +351,7 @@
           <span class="dropdown-label" id="rarityLabel">全て</span>
           <select id="raritySelect" onchange="onRarityChange()">
             <option value="">全て</option>
-          </select>
+            </select>
         </div>
 
         <div class="dropdown-wrapper">
@@ -436,7 +436,6 @@
   <div id="toast">✅ <span id="toastMsg"></span></div>
 
   <script>
-    // ★★★ あなたのデプロイURL ★★★
     const API_URL = "https://script.google.com/macros/s/AKfycbzszLt8yC8AhwjyS6E3ZzsqTFMcMVUOP3Pj50wnEpLlDFG2-bTEiRYhvUSiNjNYUY7WKA/exec";
 
     let allData = []; 
@@ -458,7 +457,7 @@
     function init() {
       loadFavorites();
       loadSearchHistory(); 
-      loadRarityList();
+      loadRarityList(); // ★追加: 初期化時にレアリティ一覧を取得
       loadGuarantee();
       loadViewMode(); 
       loadPopularTags();
@@ -482,6 +481,31 @@
         if (window.scrollY > 300) btn.classList.add('show');
         else btn.classList.remove('show');
       });
+    }
+
+    // ★追加: サーバーからレアリティ一覧を取得してプルダウン作成
+    function loadRarityList() {
+      fetchData({ action: 'rarityList' }).then(list => {
+        if (!list) return;
+        const sel = document.getElementById('raritySelect');
+        // "全て"以外を一度クリア
+        while(sel.options.length > 1) sel.remove(1);
+        
+        list.forEach(r => {
+          if(!r) return; // 空文字除外
+          const opt = document.createElement('option');
+          opt.value = r; 
+          opt.innerText = r;
+          sel.appendChild(opt);
+        });
+      });
+    }
+
+    // ★追加: プルダウン変更時
+    function onRarityChange() {
+      const sel = document.getElementById('raritySelect');
+      document.getElementById('rarityLabel').innerText = sel.value || "全て";
+      search(); // 即検索
     }
 
     function onSearchInput() {
@@ -532,16 +556,19 @@
     function search() {
       const myRequestId = ++currentRequestId;
       const kw = document.getElementById('keyword').value.trim();
+      // ★追加：プルダウンからレアリティ取得
       const rar = document.getElementById('raritySelect').value;
+      
       if (kw) saveSearchHistory(kw);
 
       const rarArea = document.getElementById('rarityButtonArea');
       if(rarArea) rarArea.style.display = 'none';
-      currentRarityFilter = null;
+      currentRarityFilter = null; // ボタンフィルタはリセット
       
       document.getElementById('resultList').innerHTML = "";
       showSkeleton(true); 
 
+      // ★ rarityパラメータを送信
       fetchData({ action: 'search', keyword: kw, rarity: rar }).then(data => {
         if (myRequestId !== currentRequestId) return;
         showSkeleton(false);
@@ -557,6 +584,8 @@
       const myRequestId = ++currentRequestId;
       document.getElementById('resultList').innerHTML = "";
       document.getElementById('keyword').value = "";
+      
+      // プルダウンもリセット
       const sel = document.getElementById('raritySelect');
       sel.value = "";
       document.getElementById('rarityLabel').innerText = "全て";
@@ -570,6 +599,8 @@
         allData = data.rows || [];
         const title = document.getElementById('listTitle');
         if(title) title.innerText = "最新弾 (M2a) 買取表";
+        
+        // 最新弾用ボタン生成（これはクライアント側フィルタ）
         generateRarityButtons(allData);
         currentRarityFilter = null;
         renderList();
@@ -587,7 +618,6 @@
     function renderList(isLoadMore = false) {
       const container = document.getElementById('resultList');
 
-      // 合計バーの表示制御
       const totalBar = document.getElementById('totalBar');
       if (isFavMode && favorites.size > 0) {
         totalBar.style.display = 'flex';
@@ -604,6 +634,7 @@
 
         currentFilteredRows = allData.filter(row => {
           if (isFavMode && !favorites.has(row[0])) return false;
+          // 最新弾ボタン用フィルタ
           if (currentRarityFilter) {
             const r = String(row[3] || "").trim();
             if (r !== currentRarityFilter) return false;
@@ -664,7 +695,6 @@
         const mercariUrl = `https://jp.mercari.com/search?keyword=${encodeURIComponent(cleanName)}`;
         const jpTorecaUrl = `https://shop.japan-toreca.com/search?q=${encodeURIComponent(cleanName)}`;
 
-        // お気に入りモード時のみ、枚数変更ボタンを表示
         let qtyControlHtml = "";
         if (isFavMode) {
           const zeroClass = (qty === 0) ? "is-zero" : "";
@@ -809,6 +839,8 @@
       localStorage.setItem('tk_search_history', JSON.stringify(history));
       loadSearchHistory();
     }
+    
+    // クライアント側フィルタ用（最新弾ボタンなど）
     function generateRarityButtons(rows) {
       const area = document.getElementById('rarityButtonArea');
       if(!area) return;
@@ -829,18 +861,7 @@
       btn.classList.add('active');
       renderList();
     }
-    function loadRarityList() {
-      fetchData({ action: 'rarityList' }).then(list => {
-        if (!list) return;
-        const sel = document.getElementById('raritySelect');
-        while(sel.options.length > 1) sel.remove(1);
-        list.forEach(r => {
-          const opt = document.createElement('option');
-          opt.value = r; opt.innerText = r;
-          sel.appendChild(opt);
-        });
-      });
-    }
+    
     function loadGuarantee() {
       fetchData({ action: 'guarantee' }).then(rows => {
         if(!rows || rows.length===0) return;
@@ -853,11 +874,7 @@
         cont.innerHTML = html;
       });
     }
-    function onRarityChange() {
-      const sel = document.getElementById('raritySelect');
-      document.getElementById('rarityLabel').innerText = sel.value || "全て";
-      search();
-    }
+    
     function onSortChange() {
       const sel = document.getElementById('sortSelect');
       const txt = sel.options[sel.selectedIndex].text;
@@ -895,14 +912,13 @@
       if (isFavMode) renderList();
     }
 
-    // ★枚数変更: イベントバブリング停止、0許可
     function changeQty(event, name, delta) {
       event.stopPropagation();
       name = name.trim();
       if (quantities[name] === undefined) quantities[name] = 1;
       
       quantities[name] += delta;
-      if (quantities[name] < 0) quantities[name] = 0; // 0枚許可
+      if (quantities[name] < 0) quantities[name] = 0; 
       
       localStorage.setItem('tk_quantities', JSON.stringify(quantities));
       renderList(); 
@@ -940,7 +956,6 @@
         const p = getSafePrice(r) || 0;
         const q = quantities[name] !== undefined ? quantities[name] : 1;
         
-        // 0枚の場合はリストに載せるが計算には入れない
         const subTotal = p * q;
         totalPrice += subTotal;
         totalQty += q;
@@ -1000,7 +1015,6 @@
       document.getElementById('modalImage').src = src;
       document.getElementById('modal').style.display = 'flex';
     }
-    window.onload = init;
   </script>
 </body>
 </html>
