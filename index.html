@@ -1,1 +1,127 @@
-
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>トレカキングダム 買取検索</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Roboto:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4e54c8;
+      --accent: #ff416c;
+      --bg: #f4f7f6;
+    }
+    body { font-family: 'Noto Sans JP', sans-serif; margin: 0; background: var(--bg); padding-bottom: 40px; }
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+      padding: 10px 15px; border-bottom: 1px solid #ddd;
+    }
+    .search-outer { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
+    .search-bar { display: flex; background: #fff; border-radius: 8px; border: 1px solid #ccc; overflow: hidden; }
+    .search-bar input { flex: 1; border: none; outline: none; padding: 12px; font-size: 16px; }
+    .btn-search { background: var(--primary); color: #fff; border: none; padding: 0 15px; font-weight: bold; cursor: pointer; }
+    .filter-row { display: flex; gap: 8px; }
+    .filter-row select { flex: 1; padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 12px; }
+    .container { max-width: 700px; margin: 20px auto; padding: 0 15px; }
+    .card {
+      background: #fff; border-radius: 12px; padding: 15px; margin-bottom: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; gap: 15px;
+    }
+    .card-img { width: 90px; height: 90px; object-fit: contain; background: #f9f9f9; border-radius: 8px; }
+    .card-info { flex: 1; min-width: 0; }
+    .rarity { font-size: 10px; color: #888; display: block; }
+    .name { font-size: 15px; font-weight: bold; margin: 4px 0; color: #222; }
+    .price { font-family: 'Roboto', sans-serif; font-size: 22px; color: var(--accent); font-weight: 900; margin-bottom: 10px; }
+    .actions { display: flex; gap: 5px; }
+    .btn {
+      flex: 1; text-align: center; padding: 8px 0; border-radius: 5px;
+      text-decoration: none; font-size: 11px; font-weight: bold; color: #fff; border: none;
+    }
+    .btn-mercari { background: #ea352d; }
+    .btn-shop { background: #222; }
+    .btn-x { background: #1DA1F2; }
+    @media (max-width: 480px) {
+      .card-img { width: 70px; height: 70px; }
+      .price { font-size: 18px; }
+    }
+  </style>
+</head>
+<body onload="init()">
+<div class="header">
+  <div class="search-outer">
+    <div class="search-bar">
+      <input type="search" id="keyword" placeholder="カード名を検索..." oninput="debounceSearch()">
+      <button class="btn-search" onclick="search()">検索</button>
+    </div>
+    <div class="filter-row">
+      <select id="raritySelect" onchange="search()"><option value="">全レアリティ</option></select>
+      <select id="sortSelect" onchange="render()"><option value="desc">高い順</option><option value="asc">低い順</option></select>
+    </div>
+  </div>
+</div>
+<div class="container" id="list">
+  <p style="text-align:center; color:#999;">読み込み中...</p>
+</div>
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbzv2wolJO2p6GHnYD6LjUITECV7GEx2DemWL3IJUE-C7GttkQ-7fn6rTDAZaxmUr77n/exec";
+  let allData = [];
+  let timer;
+  async function init() {
+    try {
+      const r = await fetch(`${API_URL}?action=rarityList`);
+      const list = await r.json();
+      const sel = document.getElementById('raritySelect');
+      list.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = opt.text = v;
+        sel.appendChild(opt);
+      });
+    } catch(e) {}
+    await search();
+  }
+  async function search() {
+    const kw = document.getElementById('keyword').value;
+    const rar = document.getElementById('raritySelect').value;
+    try {
+      const r = await fetch(`${API_URL}?action=search&keyword=${encodeURIComponent(kw)}&rarity=${encodeURIComponent(rar)}`);
+      const d = await r.json();
+      allData = d.rows || [];
+      render();
+    } catch(e) { document.getElementById('list').innerHTML = "取得エラー"; }
+  }
+  function debounceSearch() {
+    clearTimeout(timer);
+    timer = setTimeout(search, 500);
+  }
+  function render() {
+    const cont = document.getElementById('list');
+    const sort = document.getElementById('sortSelect').value;
+    allData.sort((a, b) => sort === 'desc' ? b.price - a.price : a.price - b.price);
+    if (allData.length === 0) {
+      cont.innerHTML = `<p style="text-align:center; padding:50px;">該当なし</p>`;
+      return;
+    }
+    cont.innerHTML = allData.map(item => `
+      <div class="card">
+        <img src="${item.image}" class="card-img" onerror="this.src='https://via.placeholder.com/100?text=No+Img'">
+        <div class="card-info">
+          <span class="rarity">${item.rarity || '-'}</span>
+          <div class="name">${item.name}</div>
+          <div class="price">¥${item.price.toLocaleString()}</div>
+          <div class="actions">
+            <a href="https://jp.mercari.com/search?keyword=${encodeURIComponent(item.name)}" target="_blank" class="btn btn-mercari">メルカリ</a>
+            <a href="https://shop.japan-toreca.com/search?q=${encodeURIComponent(item.name)}" target="_blank" class="btn btn-shop">通販</a>
+            <button onclick="share('${item.name}', ${item.price})" class="btn btn-x">X共有</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+  function share(n, p) {
+    const text = `${n}\n買取価格: ¥${p.toLocaleString()}\n#トレカキングダム`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+  }
+</script>
+</body>
+</html>
