@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>トレカ買取検索</title>
+  <title>トレカキングダム 買取額検索</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
@@ -12,6 +12,13 @@
     /* ヘッダー */
     .header { position: sticky; top: 0; z-index: 100; background: #fff; padding: 10px 15px; border-bottom: 1px solid #ddd; }
     .search-box { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
+    
+    /* タイトル */
+    .main-title { 
+      text-align: center; font-size: 18px; font-weight: 900; color: var(--primary); 
+      margin-bottom: 5px; letter-spacing: 1px;
+    }
+
     .input-row { display: flex; background: #fff; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; }
     .input-row input { flex: 1; border: none; outline: none; padding: 12px; font-size: 16px; }
     .btn-search { background: var(--primary); color: #fff; border: none; padding: 0 15px; font-weight: bold; cursor: pointer; }
@@ -42,6 +49,8 @@
 
 <div class="header">
   <div class="search-box">
+    <div class="main-title">トレカキングダム 買取額検索</div>
+    
     <div class="input-row">
       <input type="search" id="keyword" placeholder="カード名を検索..." oninput="onInput()">
       <button class="btn-search" onclick="search()">検索</button>
@@ -58,7 +67,7 @@
 </div>
 
 <script>
-  // ★ここにGASのデプロイURLを貼り付けてください
+  // あなたのGASのURL
   const API_URL = "https://script.google.com/macros/s/AKfycbzv2wolJO2p6GHnYD6LjUITECV7GEx2DemWL3IJUE-C7GttkQ-7fn6rTDAZaxmUr77n/exec";
 
   let items = [];
@@ -104,21 +113,30 @@
       return;
     }
 
-    cont.innerHTML = items.map(item => `
-      <div class="card">
-        <img src="${item.image}" class="card-img" onerror="this.src='https://via.placeholder.com/100?text=No+Img'">
-        <div class="card-info">
-          <span class="rarity">${item.rarity || '-'}</span>
-          <span class="name">${item.name}</span>
-          <div class="price">¥${item.price.toLocaleString()}</div>
-          <div class="actions">
-            <a href="https://jp.mercari.com/search?keyword=${encodeURIComponent(item.name)}" target="_blank" class="btn btn-mer">メルカリ</a>
-            <a href="https://shop.japan-toreca.com/search?q=${encodeURIComponent(item.name)}" target="_blank" class="btn btn-shp">通販</a>
-            <button onclick="share('${item.name}', ${item.price})" class="btn btn-tw">X共有</button>
+    cont.innerHTML = items.map(item => {
+      // 検索用キーワード：レアリティ(A列) + 半角スペース + カード名(H列)
+      // レアリティが空の場合はスペースを入れない
+      const searchQuery = (item.rarity ? item.rarity + ' ' : '') + item.name;
+      
+      const mercariUrl = `https://jp.mercari.com/search?keyword=${encodeURIComponent(searchQuery)}`;
+      const shopUrl = `https://shop.japan-toreca.com/search?q=${encodeURIComponent(searchQuery)}`;
+
+      return `
+        <div class="card">
+          <img src="${item.image}" class="card-img" onerror="this.src='https://via.placeholder.com/100?text=No+Img'">
+          <div class="card-info">
+            <span class="rarity">${item.rarity || '-'}</span>
+            <span class="name">${item.name}</span>
+            <div class="price">¥${item.price.toLocaleString()}</div>
+            <div class="actions">
+              <a href="${mercariUrl}" target="_blank" class="btn btn-mer">メルカリ</a>
+              <a href="${shopUrl}" target="_blank" class="btn btn-shp">通販</a>
+              <button onclick="share('${item.name}', ${item.price})" class="btn btn-tw">X共有</button>
+            </div>
           </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   function share(n, p) {
