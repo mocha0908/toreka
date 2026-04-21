@@ -8,21 +8,15 @@
   <style>
     :root { --primary: #4e54c8; --accent: #ff416c; --bg: #f4f7f6; }
     body { font-family: 'Noto Sans JP', sans-serif; margin: 0; background: var(--bg); padding-bottom: 30px; }
-    
     .header { position: sticky; top: 0; z-index: 100; background: #fff; padding: 10px 15px; border-bottom: 1px solid #ddd; }
     .search-box { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
-    
     .main-title { text-align: center; font-size: 18px; font-weight: 900; color: var(--primary); margin-bottom: 2px; letter-spacing: 1px; }
-    /* 更新案内文のスタイル */
     .update-info { text-align: center; font-size: 10px; color: #777; margin-bottom: 8px; line-height: 1.4; }
-
     .input-row { display: flex; background: #fff; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; }
     .input-row input { flex: 1; border: none; outline: none; padding: 12px; font-size: 16px; }
     .btn-search { background: var(--primary); color: #fff; border: none; padding: 0 15px; font-weight: bold; cursor: pointer; }
-    
     .filter-row { display: flex; gap: 8px; }
     .filter-row select { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 12px; outline: none; }
-
     .container { max-width: 600px; margin: 20px auto; padding: 0 10px; }
     .card { background: #fff; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; gap: 15px; }
     .card-img { width: 85px; height: 85px; object-fit: contain; background: #f0f0f0; border-radius: 8px; flex-shrink: 0; }
@@ -30,13 +24,11 @@
     .rarity { font-size: 10px; color: #888; }
     .name { font-size: 14px; font-weight: bold; margin: 3px 0; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .price { font-size: 20px; color: var(--accent); font-weight: 900; margin-bottom: 10px; }
-
     .actions { display: flex; gap: 5px; }
     .btn { flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: bold; color: #fff; border: none; cursor: pointer; }
     .btn-mer { background: #ea352d; }
     .btn-shp { background: #333; }
     .btn-tw { background: #1DA1F2; }
-
     @media (max-width: 480px) { .card-img { width: 70px; height: 70px; } .price { font-size: 18px; } }
   </style>
 </head>
@@ -53,7 +45,12 @@
     </div>
     <div class="filter-row">
       <select id="raritySelect" onchange="search()"><option value="">全レアリティ</option></select>
-      <select id="sortSelect" onchange="render()"><option value="desc">価格高い順</option><option value="asc">価格低い順</option></select>
+      <select id="sortSelect" onchange="render()">
+        <option value="desc">価格高い順</option>
+        <option value="asc">価格低い順</option>
+        <option value="name_asc">カード名：昇順 (A→Z/あ→ん)</option>
+        <option value="name_desc">カード名：降順 (Z→A/ん→あ)</option>
+      </select>
     </div>
   </div>
 </div>
@@ -101,7 +98,17 @@
   function render() {
     const cont = document.getElementById('list');
     const sort = document.getElementById('sortSelect').value;
-    items.sort((a, b) => sort === 'desc' ? b.price - a.price : a.price - b.price);
+    
+    // ソート処理
+    items.sort((a, b) => {
+      switch(sort) {
+        case 'desc': return b.price - a.price;
+        case 'asc': return a.price - b.price;
+        case 'name_asc': return a.name.localeCompare(b.name, 'ja');
+        case 'name_desc': return b.name.localeCompare(a.name, 'ja');
+        default: return 0;
+      }
+    });
 
     if (items.length === 0) {
       cont.innerHTML = `<p style="text-align:center; padding:50px; color:#999;">該当なし</p>`;
