@@ -28,7 +28,8 @@
     .card-info { flex: 1; min-width: 0; }
     .rarity { font-size: 10px; color: #888; font-weight: bold; background: #eee; padding: 2px 6px; border-radius: 4px; }
     .name { font-size: 14px; font-weight: bold; margin: 6px 0; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .price { font-size: 20px; color: var(--accent); font-weight: 900; margin-bottom: 10px; }
+    .price { font-size: 20px; color: var(--accent); font-weight: 900; margin-bottom: 2px; }
+    .limit { font-size: 11px; color: #666; font-weight: bold; margin-bottom: 10px; }
     .actions { display: flex; gap: 5px; }
     .btn { flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: bold; color: #fff; border: none; cursor: pointer; }
     .btn-mer { background: #ea352d; }
@@ -44,7 +45,8 @@
     <div class="main-title">トレカキングダム 買取額検索</div>
     <div class="update-info">
       毎日21時〜24時の間を目安に、翌日のデータへ更新予定です。<br>
-      掲載されているのは更新時の価格になります。
+      掲載されているのは更新時の価格になります。<br>
+      買取上限に達した場合は返却か減額でのお査定となります。
     </div>
     
     <div class="tab-row" id="tabContainer">
@@ -88,40 +90,32 @@
       if (!res.ok) throw new Error('Network response was not ok');
       const data = await res.json();
       
-      // 1. PSAデータの仕分け
+      // ★ データの仕分け時に「limitStr（上限）」を追加取得
       if (data.psa) {
         database.psa = data.psa.filter(item => item.status === "掲載").map(item => ({
           name: item.name, code: item.code || "", rarity: item.spec || "PSA10",
-          priceNum: item.sort_price, 
-          priceStr: item.price_max, // ★ 減額後ではなく「上限買取金額」を表示するように変更
-          image: formatImageUrl(item.img)
+          priceNum: item.sort_price, priceStr: item.price_max, limitStr: item.price_limit, image: formatImageUrl(item.img)
         }));
       }
 
-      // 2. BOXデータの仕分け
       if (data.box) {
         database.box = data.box.filter(item => item.status === "掲載").map(item => ({
           name: item.name, code: item.code || "", rarity: item.spec || "BOX",
-          priceNum: item.sort_price, 
-          priceStr: item.price_max, // ★ 減額後ではなく「上限買取金額」を表示するように変更
-          image: formatImageUrl(item.img)
+          priceNum: item.sort_price, priceStr: item.price_max, limitStr: item.price_limit, image: formatImageUrl(item.img)
         }));
       }
 
-      // 3. 素体データの仕分け
       if (data.sotai) {
         database.sotai = data.sotai.map(item => ({
           name: item.name, code: item.code || "", rarity: item.rarity || "-",
-          priceNum: item.sort_price, priceStr: item.price_a, image: formatImageUrl(item.img)
+          priceNum: item.sort_price, priceStr: item.price_a, limitStr: null, image: formatImageUrl(item.img)
         }));
       }
 
-      // データが存在しない（0件）のタブボタンは非表示にする
       if (database.psa.length === 0) document.getElementById('tab-psa').style.display = 'none';
       if (database.box.length === 0) document.getElementById('tab-box').style.display = 'none';
       if (database.sotai.length === 0) document.getElementById('tab-sotai').style.display = 'none';
 
-      // データが存在するタブを自動で初期表示
       if (database.psa.length > 0) switchTab('psa');
       else if (database.box.length > 0) switchTab('box');
       else if (database.sotai.length > 0) switchTab('sotai');
@@ -169,7 +163,6 @@
     return rawUrl;
   }
 
-  // キーワード、型番、レアリティすべてを対象にしたあいまい検索
   function search() {
     const kw = document.getElementById('keyword').value.toLowerCase().trim();
     const rar = document.getElementById('raritySelect').value;
@@ -220,6 +213,29 @@
       const shopUrl = `https://shop.japan-toreca.com/search?q=${encodeURIComponent(searchQuery)}`;
       const safeName = item.name.replace(/'/g, "\\'");
 
+      let actionsHtml = '';
+      if (currentTab === 'sotai') {
+        actionsHtml = `
+          <a href="${mercariUrl}" target="_blank" class="btn btn-mer">メルカリ</a>
+          <a href="${shopUrl}" target="_blank" class="btn btn-shp">通販</a>
+          <button onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
+        `;
+      } else if (currentTab === 'psa') {
+        actionsHtml = `
+          <a href="${mercariUrl}" target="_blank" class="btn btn-mer">メルカリ</a>
+          <button onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
+        `;
+      } else if (currentTab === 'box') {
+        actionsHtml = `
+          <button onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
+        `;
+      }
+
+      // ★ 上限の表示エリア（データがある場合のみ表示）
+      const limitHtml = (item.limitStr && item.limitStr !== '-') 
+        ? `<div class="limit">上限: ${item.limitStr}</div>` 
+        : `<div style="margin-bottom:10px;"></div>`;
+
       return `
         <div class="card">
           <img src="${item.image}" class="card-img" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${fallbackImg}'">
@@ -227,10 +243,9 @@
             <span class="rarity">${item.rarity}</span>
             <span class="name">${item.name}</span>
             <div class="price">${item.priceStr}</div>
+            ${limitHtml}
             <div class="actions">
-              <a href="${mercariUrl}" target="_blank" class="btn btn-mer">メルカリ</a>
-              <a href="${shopUrl}" target="_blank" class="btn btn-shp">通販</a>
-              <button onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
+              ${actionsHtml}
             </div>
           </div>
         </div>
