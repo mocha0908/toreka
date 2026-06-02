@@ -88,20 +88,27 @@
       if (!res.ok) throw new Error('Network response was not ok');
       const data = await res.json();
       
+      // 1. PSAデータの仕分け
       if (data.psa) {
         database.psa = data.psa.filter(item => item.status === "掲載").map(item => ({
           name: item.name, code: item.code || "", rarity: item.spec || "PSA10",
-          priceNum: item.sort_price, priceStr: item.price_after, image: formatImageUrl(item.img)
+          priceNum: item.sort_price, 
+          priceStr: item.price_max, // ★ 減額後ではなく「上限買取金額」を表示するように変更
+          image: formatImageUrl(item.img)
         }));
       }
 
+      // 2. BOXデータの仕分け
       if (data.box) {
         database.box = data.box.filter(item => item.status === "掲載").map(item => ({
           name: item.name, code: item.code || "", rarity: item.spec || "BOX",
-          priceNum: item.sort_price, priceStr: item.price_after, image: formatImageUrl(item.img)
+          priceNum: item.sort_price, 
+          priceStr: item.price_max, // ★ 減額後ではなく「上限買取金額」を表示するように変更
+          image: formatImageUrl(item.img)
         }));
       }
 
+      // 3. 素体データの仕分け
       if (data.sotai) {
         database.sotai = data.sotai.map(item => ({
           name: item.name, code: item.code || "", rarity: item.rarity || "-",
@@ -109,12 +116,12 @@
         }));
       }
 
-      // ★ データが存在しない（0件）のタブボタンは非表示にする
+      // データが存在しない（0件）のタブボタンは非表示にする
       if (database.psa.length === 0) document.getElementById('tab-psa').style.display = 'none';
       if (database.box.length === 0) document.getElementById('tab-box').style.display = 'none';
       if (database.sotai.length === 0) document.getElementById('tab-sotai').style.display = 'none';
 
-      // ★ データが存在するタブを自動で初期表示
+      // データが存在するタブを自動で初期表示
       if (database.psa.length > 0) switchTab('psa');
       else if (database.box.length > 0) switchTab('box');
       else if (database.sotai.length > 0) switchTab('sotai');
@@ -162,6 +169,7 @@
     return rawUrl;
   }
 
+  // キーワード、型番、レアリティすべてを対象にしたあいまい検索
   function search() {
     const kw = document.getElementById('keyword').value.toLowerCase().trim();
     const rar = document.getElementById('raritySelect').value;
@@ -235,7 +243,6 @@
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(txt)}`, '_blank');
   }
 
-  // ページ読み込み時に実行
   init();
 </script>
 </body>
