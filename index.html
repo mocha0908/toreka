@@ -11,7 +11,12 @@
     .header { position: sticky; top: 0; z-index: 100; background: #fff; padding: 10px 15px; border-bottom: 1px solid #ddd; }
     .search-box { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
     .main-title { text-align: center; font-size: 18px; font-weight: 900; color: var(--primary); margin-bottom: 2px; letter-spacing: 1px; }
-    .update-info { text-align: center; font-size: 10px; color: #777; margin-bottom: 8px; line-height: 1.4; }
+    .update-info { text-align: center; font-size: 10px; color: #777; margin-bottom: 4px; line-height: 1.4; }
+    
+    .tab-row { display: flex; gap: 6px; margin-bottom: 2px; }
+    .tab-btn { flex: 1; padding: 10px 0; background: #fff; border: 1px solid #ccc; border-radius: 8px; font-size: 13px; font-weight: bold; color: #555; cursor: pointer; outline: none; transition: all 0.2s; }
+    .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
     .input-row { display: flex; background: #fff; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; }
     .input-row input { flex: 1; border: none; outline: none; padding: 12px; font-size: 16px; }
     .btn-search { background: var(--primary); color: #fff; border: none; padding: 0 15px; font-weight: bold; cursor: pointer; }
@@ -21,8 +26,8 @@
     .card { background: #fff; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; gap: 15px; }
     .card-img { width: 85px; height: 85px; object-fit: contain; background: #f0f0f0; border-radius: 8px; flex-shrink: 0; }
     .card-info { flex: 1; min-width: 0; }
-    .rarity { font-size: 10px; color: #888; }
-    .name { font-size: 14px; font-weight: bold; margin: 3px 0; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rarity { font-size: 10px; color: #888; font-weight: bold; background: #eee; padding: 2px 6px; border-radius: 4px; }
+    .name { font-size: 14px; font-weight: bold; margin: 6px 0; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .price { font-size: 20px; color: var(--accent); font-weight: 900; margin-bottom: 10px; }
     .actions { display: flex; gap: 5px; }
     .btn { flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: bold; color: #fff; border: none; cursor: pointer; }
@@ -32,28 +37,33 @@
     @media (max-width: 480px) { .card-img { width: 70px; height: 70px; } .price { font-size: 18px; } }
   </style>
 </head>
-<body onload="init()">
+<body>
 
 <div class="header">
   <div class="search-box">
     <div class="main-title">トレカキングダム 買取額検索</div>
     <div class="update-info">
-  毎日21時〜24時の間を目安に、翌日のデータへ更新予定です。<br>
-  掲載されているのは更新時の価格になります。<br>
-  相場や在庫状況、状態等により価格が変動する場合がございます。
-</div>
+      毎日21時〜24時の間を目安に、翌日のデータへ更新予定です。<br>
+      掲載されているのは更新時の価格になります。
+    </div>
+    
+    <div class="tab-row" id="tabContainer">
+      <button class="tab-btn" id="tab-psa" onclick="switchTab('psa')">PSA鑑定品</button>
+      <button class="tab-btn" id="tab-box" onclick="switchTab('box')">未開封BOX</button>
+      <button class="tab-btn" id="tab-sotai" onclick="switchTab('sotai')">素体</button>
+    </div>
     
     <div class="input-row">
-      <input type="search" id="keyword" placeholder="カード名を検索..." oninput="onInput()">
+      <input type="search" id="keyword" placeholder="キーワード・型番を検索..." oninput="onInput()">
       <button class="btn-search" onclick="search()">検索</button>
     </div>
     <div class="filter-row">
-      <select id="raritySelect" onchange="search()"><option value="">全レアリティ</option></select>
+      <select id="raritySelect" onchange="search()"><option value="">全種別・レアリティ</option></select>
       <select id="sortSelect" onchange="render()">
         <option value="desc">価格高い順</option>
         <option value="asc">価格低い順</option>
-        <option value="name_asc">カード名：昇順 (A→Z/あ→ん)</option>
-        <option value="name_desc">カード名：降順 (Z→A/ん→あ)</option>
+        <option value="name_asc">名前：あ〜ん順</option>
+        <option value="name_desc">名前：ん〜あ順</option>
       </select>
     </div>
   </div>
@@ -64,80 +74,155 @@
 </div>
 
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbxHOUzIW4R1pykcmoS6EtOx9_C2Heh945X9LJyDAIf64p8trmgvSPdAlWHtlnWAJ1vL/exec";
+  const DATA_URL = "https://mocha0908.github.io/TCK-kaitori/data.json";
+  const fallbackImg = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect fill='%23eeeeee' width='100' height='100'/%3E%3Ctext fill='%23999999' x='50' y='50' font-family='sans-serif' font-size='12' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3C/svg%3E";
 
-  let items = [];
+  let database = { psa: [], box: [], sotai: [] };
+  let currentTab = '';
+  let filteredItems = [];
   let timer;
 
   async function init() {
     try {
-      const res = await fetch(`${API_URL}?action=rarityList`);
-      const list = await res.json();
-      const sel = document.getElementById('raritySelect');
-      list.forEach(v => {
-        const opt = document.createElement('option');
-        opt.value = opt.text = v;
-        sel.appendChild(opt);
-      });
-    } catch(e) {}
+      const res = await fetch(DATA_URL + "?v=" + new Date().getTime());
+      if (!res.ok) throw new Error('Network response was not ok');
+      const data = await res.json();
+      
+      if (data.psa) {
+        database.psa = data.psa.filter(item => item.status === "掲載").map(item => ({
+          name: item.name, code: item.code || "", rarity: item.spec || "PSA10",
+          priceNum: item.sort_price, priceStr: item.price_after, image: formatImageUrl(item.img)
+        }));
+      }
+
+      if (data.box) {
+        database.box = data.box.filter(item => item.status === "掲載").map(item => ({
+          name: item.name, code: item.code || "", rarity: item.spec || "BOX",
+          priceNum: item.sort_price, priceStr: item.price_after, image: formatImageUrl(item.img)
+        }));
+      }
+
+      if (data.sotai) {
+        database.sotai = data.sotai.map(item => ({
+          name: item.name, code: item.code || "", rarity: item.rarity || "-",
+          priceNum: item.sort_price, priceStr: item.price_a, image: formatImageUrl(item.img)
+        }));
+      }
+
+      // ★ データが存在しない（0件）のタブボタンは非表示にする
+      if (database.psa.length === 0) document.getElementById('tab-psa').style.display = 'none';
+      if (database.box.length === 0) document.getElementById('tab-box').style.display = 'none';
+      if (database.sotai.length === 0) document.getElementById('tab-sotai').style.display = 'none';
+
+      // ★ データが存在するタブを自動で初期表示
+      if (database.psa.length > 0) switchTab('psa');
+      else if (database.box.length > 0) switchTab('box');
+      else if (database.sotai.length > 0) switchTab('sotai');
+      else {
+        document.getElementById('list').innerHTML = `<p style="text-align:center; padding:50px; color:#999;">現在公開中のデータはありません</p>`;
+        document.getElementById('raritySelect').innerHTML = '<option value="">データなし</option>';
+        document.getElementById('tabContainer').style.display = 'none';
+      }
+
+    } catch(e) { 
+      document.getElementById('list').innerHTML = `<p style="text-align:center; padding:50px; color:red;">データの取得に失敗しました。<br>${e.message}</p>`; 
+    }
+  }
+
+  function switchTab(tabName) {
+    currentTab = tabName;
+    document.getElementById('tab-psa').classList.toggle('active', tabName === 'psa');
+    document.getElementById('tab-box').classList.toggle('active', tabName === 'box');
+    document.getElementById('tab-sotai').classList.toggle('active', tabName === 'sotai');
+    updateRarityOptions();
     search();
   }
 
-  async function search() {
-    const kw = document.getElementById('keyword').value;
+  function updateRarityOptions() {
+    const sel = document.getElementById('raritySelect');
+    sel.innerHTML = '<option value="">全種別・レアリティ</option>';
+    const currentData = database[currentTab] || [];
+    const rarities = [...new Set(currentData.map(i => i.rarity))].filter(r => r && r !== '-').sort();
+    rarities.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = opt.text = r;
+      sel.appendChild(opt);
+    });
+  }
+
+  function formatImageUrl(rawUrl) {
+    if (!rawUrl) return fallbackImg;
+    if (rawUrl.startsWith('data:image')) return rawUrl;
+    if (rawUrl.includes('drive.google.com')) {
+      const matches = rawUrl.match(/(?:id=|\/d\/)([a-zA-Z0-9-_]+)/);
+      if (matches && matches[1]) {
+        return `https://drive.google.com/thumbnail?id=${matches[1]}`;
+      }
+    }
+    return rawUrl;
+  }
+
+  function search() {
+    const kw = document.getElementById('keyword').value.toLowerCase().trim();
     const rar = document.getElementById('raritySelect').value;
-    try {
-      const res = await fetch(`${API_URL}?action=search&keyword=${encodeURIComponent(kw)}&rarity=${encodeURIComponent(rar)}`);
-      const data = await res.json();
-      items = data.rows || [];
-      render();
-    } catch(e) { document.getElementById('list').innerHTML = "取得エラー"; }
+    const currentData = database[currentTab] || [];
+    
+    filteredItems = currentData.filter(item => {
+      const name = String(item.name).toLowerCase();
+      const code = String(item.code).toLowerCase();
+      const rarity = String(item.rarity).toLowerCase();
+      if (kw && !name.includes(kw) && !code.includes(kw) && !rarity.includes(kw)) return false;
+      if (rar && item.rarity !== rar) return false;
+      return true;
+    });
+    render();
   }
 
   function onInput() {
     clearTimeout(timer);
-    timer = setTimeout(search, 500);
+    timer = setTimeout(search, 300);
   }
 
   function render() {
     const cont = document.getElementById('list');
     const sort = document.getElementById('sortSelect').value;
     
-    // ソート処理
-    items.sort((a, b) => {
+    filteredItems.sort((a, b) => {
       switch(sort) {
-        case 'desc': return b.price - a.price;
-        case 'asc': return a.price - b.price;
+        case 'desc': return b.priceNum - a.priceNum;
+        case 'asc': return a.priceNum - b.priceNum;
         case 'name_asc': return a.name.localeCompare(b.name, 'ja');
         case 'name_desc': return b.name.localeCompare(a.name, 'ja');
         default: return 0;
       }
     });
 
-    if (items.length === 0) {
-      cont.innerHTML = `<p style="text-align:center; padding:50px; color:#999;">該当なし</p>`;
+    if (filteredItems.length === 0) {
+      cont.innerHTML = `<p style="text-align:center; padding:50px; color:#999;">該当するデータがありません</p>`;
       return;
     }
 
-    cont.innerHTML = items.map(item => {
-      const queryA = item.rarity || "";
-      const queryB = item.colB || "";
-      const searchQuery = `${queryA} ${queryB}`.trim();
+    cont.innerHTML = filteredItems.map(item => {
+      const queryA = item.rarity === "PSA" || item.rarity === "BOX" ? "" : item.rarity;
+      const queryB = item.code || "";
+      let searchQuery = `${queryA} ${queryB}`.trim();
+      if (!searchQuery) searchQuery = item.name;
       
       const mercariUrl = `https://jp.mercari.com/search?keyword=${encodeURIComponent(searchQuery)}`;
       const shopUrl = `https://shop.japan-toreca.com/search?q=${encodeURIComponent(searchQuery)}`;
+      const safeName = item.name.replace(/'/g, "\\'");
 
       return `
         <div class="card">
-          <img src="${item.image}" class="card-img" onerror="this.src='https://via.placeholder.com/100?text=No+Img'">
+          <img src="${item.image}" class="card-img" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${fallbackImg}'">
           <div class="card-info">
-            <span class="rarity">${item.rarity || '-'}</span>
+            <span class="rarity">${item.rarity}</span>
             <span class="name">${item.name}</span>
-            <div class="price">¥${item.price.toLocaleString()}</div>
+            <div class="price">${item.priceStr}</div>
             <div class="actions">
               <a href="${mercariUrl}" target="_blank" class="btn btn-mer">メルカリ</a>
               <a href="${shopUrl}" target="_blank" class="btn btn-shp">通販</a>
-              <button onclick="share('${item.name}', ${item.price})" class="btn btn-tw">X共有</button>
+              <button onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
             </div>
           </div>
         </div>
@@ -145,10 +230,13 @@
     }).join('');
   }
 
-  function share(n, p) {
-    const txt = `${n}\n買取価格: ¥${p.toLocaleString()}\n#トレカキングダム`;
+  function share(name, priceStr) {
+    const txt = `${name}\n買取価格: ${priceStr}\n#トレカキングダム`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(txt)}`, '_blank');
   }
+
+  // ページ読み込み時に実行
+  init();
 </script>
 </body>
 </html>
