@@ -6,49 +6,76 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
-    :root { --primary: #4e54c8; --accent: #ff416c; --bg: #f4f7f6; --skeleton: #e0e0e0; }
+    :root { --primary: #4e54c8; --accent: #ff416c; --bg: #f4f7f6; --skeleton: #e0e0e0; --fav: #ffd700; }
     body { font-family: 'Noto Sans JP', sans-serif; margin: 0; background: var(--bg); padding-bottom: 30px; }
     
-    .header { position: sticky; top: -115px; z-index: 100; background: #fff; padding: 10px 15px; border-bottom: 1px solid #ddd; transition: top 0.2s; }
-    @media (max-width: 480px) { .header { top: -130px; } }
+    .header { position: sticky; top: -115px; z-index: 100; background: #fff; padding: 10px 10px; border-bottom: 1px solid #ddd; transition: top 0.2s; }
+    @media (max-width: 480px) { .header { top: -130px; padding: 10px 8px; } }
 
     .search-box { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
     .main-title { text-align: center; font-size: 18px; font-weight: 900; color: var(--primary); margin-bottom: 2px; letter-spacing: 1px; }
     .update-info { text-align: center; font-size: 10px; color: #777; margin-bottom: 4px; line-height: 1.4; }
     
-    .tab-row { display: flex; gap: 6px; margin-bottom: 2px; }
-    .tab-btn { flex: 1; padding: 10px 0; background: #fff; border: 1px solid #ccc; border-radius: 8px; font-size: 13px; font-weight: bold; color: #555; cursor: pointer; outline: none; transition: all 0.2s; }
+    /* タブ4つ対応のスタイル調整 */
+    .tab-row { display: flex; gap: 4px; margin-bottom: 2px; }
+    .tab-btn { flex: 1; padding: 8px 0; background: #fff; border: 1px solid #ccc; border-radius: 8px; font-size: 10px; font-weight: bold; color: #555; cursor: pointer; outline: none; transition: all 0.2s; line-height: 1.3; }
     .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
     .search-form { margin: 0; padding: 0; display: block; }
     .input-row { display: flex; background: #fff; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; position: relative; }
     .input-row input { flex: 1; border: none; outline: none; padding: 12px 35px 12px 12px; font-size: 16px; width: 100%; box-sizing: border-box; -webkit-appearance: none; }
-    
     .input-row input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
     .btn-clear { position: absolute; right: 65px; top: 50%; transform: translateY(-50%); background: #ccc; color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; cursor: pointer; display: none; align-items: center; justify-content: center; padding: 0; font-weight: bold; z-index: 3; }
-    
     .btn-search { background: var(--primary); color: #fff; border: none; padding: 0 15px; font-weight: bold; cursor: pointer; z-index: 2; }
-    .filter-row { display: flex; gap: 8px; align-items: center; }
-    .filter-row select { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 12px; outline: none; background: #fff; color: #333; }
     
+    .history-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+    .history-tag { font-size: 11px; background: #eee; color: #555; padding: 4px 10px; border-radius: 12px; cursor: pointer; font-weight: bold; transition: background 0.2s; white-space: nowrap; }
+    .history-tag:active { background: #ddd; }
+    .history-clear { font-size: 10px; color: #888; cursor: pointer; text-decoration: underline; margin-left: auto; display: flex; align-items: center; }
+
+    .filter-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .filter-row select { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 12px; outline: none; background: #fff; color: #333; min-width: 120px; }
+    
+    .status-group { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
     .hit-count { font-size: 11px; color: #666; font-weight: bold; white-space: nowrap; background: #eee; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; }
+    .btn-view { font-size: 11px; background: #fff; color: #333; border: 1px solid #ccc; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap; }
 
     .container { max-width: 600px; margin: 20px auto; padding: 0 10px; }
-    .card { background: #fff; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; gap: 15px; }
-    .card-img { width: 85px; height: 85px; object-fit: contain; background: #f0f0f0; border-radius: 8px; flex-shrink: 0; }
-    .card-info { flex: 1; min-width: 0; }
-    .rarity { font-size: 10px; color: #888; font-weight: bold; background: #eee; padding: 2px 6px; border-radius: 4px; }
-    .name { font-size: 14px; font-weight: bold; margin: 6px 0; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    
+    .card { background: #fff; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; gap: 15px; position: relative; }
+    .card-img { width: 85px; height: 85px; object-fit: contain; background: #f0f0f0; border-radius: 8px; flex-shrink: 0; cursor: zoom-in; }
+    .card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+    
+    .container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+    .container.grid .card { flex-direction: column; padding: 12px; gap: 8px; margin-bottom: 0; }
+    .container.grid .card-img { width: 100%; height: 140px; }
+    .container.grid .name { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; line-height: 1.4; height: 36px; }
+
+    .rarity-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .rarity { font-size: 10px; color: #888; font-weight: bold; background: #eee; padding: 2px 6px; border-radius: 4px; display: inline-block; }
+    
+    /* お気に入りボタン */
+    .btn-fav { background: none; border: none; font-size: 18px; color: #ccc; cursor: pointer; padding: 0; line-height: 1; transition: transform 0.2s; }
+    .btn-fav.active { color: var(--fav); }
+    .btn-fav:active { transform: scale(1.2); }
+
+    .name { font-size: 14px; font-weight: bold; margin: 0 0 6px 0; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .price { font-size: 20px; color: var(--accent); font-weight: 900; margin-bottom: 2px; }
     .limit { font-size: 11px; color: #666; font-weight: bold; margin-bottom: 10px; }
-    .actions { display: flex; gap: 5px; }
+    .actions { display: flex; gap: 5px; margin-top: auto; }
     .btn { flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: bold; color: #fff; border: none; cursor: pointer; }
     .btn-mer { background: #ea352d; }
     .btn-shp { background: #333; }
     .btn-tw { background: #1DA1F2; }
-    @media (max-width: 480px) { .card-img { width: 70px; height: 70px; } .price { font-size: 18px; } }
 
     .scroll-to-top { position: fixed; bottom: 20px; right: 20px; width: 45px; height: 45px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 18px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: none; z-index: 200; font-weight: bold; transition: opacity 0.3s; opacity: 0.9; }
+
+    .toast { position: fixed; bottom: -50px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 12px; font-weight: bold; z-index: 300; transition: bottom 0.3s ease-in-out; pointer-events: none; }
+    .toast.show { bottom: 30px; }
+
+    #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; justify-content: center; align-items: center; cursor: zoom-out; opacity: 0; transition: opacity 0.2s; }
+    #lightbox.active { display: flex; opacity: 1; }
+    #lightbox img { max-width: 90%; max-height: 80%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
 
     .skeleton-card { display: flex; gap: 15px; padding: 15px; background: #fff; border-radius: 12px; margin-bottom: 15px; }
     .sk-img { width: 85px; height: 85px; background: var(--skeleton); border-radius: 8px; }
@@ -59,8 +86,8 @@
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
 
     .btn-retry { background: var(--primary); color: #fff; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 13px; }
+    #sentinel { height: 20px; }
 
-    /* ダークモードの色設計を完全に見直し */
     @media (prefers-color-scheme: dark) {
       :root { --bg: #121212; --skeleton: #2d2d2d; }
       body { color: #e0e0e0; }
@@ -68,10 +95,12 @@
       .main-title { color: #8ab4f8; }
       .update-info { color: #aaa; }
       .input-row, .input-row input { background: #2d2d2d; color: #fff; border-color: #444; }
-      .filter-row select { background: #2d2d2d; color: #fff; border-color: #444; }
+      .filter-row select, .btn-view { background: #2d2d2d; color: #fff; border-color: #444; }
       .rarity, .hit-count { background: #333; color: #ccc; border-color: #444; }
-      .limit { color: #aaa; }
+      .history-tag { background: #333; color: #ccc; }
+      .history-tag:active { background: #444; }
       .card-img { background: #2d2d2d; }
+      .btn-fav { color: #555; }
     }
   </style>
 </head>
@@ -87,9 +116,10 @@
     </div>
     
     <div class="tab-row" id="tabContainer">
-      <button class="tab-btn" id="tab-psa" onclick="switchTab('psa')">PSA鑑定品等</button>
-      <button class="tab-btn" id="tab-box" onclick="switchTab('box')">未開封BOX</button>
-      <button class="tab-btn" id="tab-sotai" onclick="switchTab('sotai')">素体</button>
+      <button class="tab-btn" id="tab-psa" onclick="switchTab('psa')">PSA等<br>(0件)</button>
+      <button class="tab-btn" id="tab-box" onclick="switchTab('box')">BOX<br>(0件)</button>
+      <button class="tab-btn" id="tab-sotai" onclick="switchTab('sotai')">素体<br>(0件)</button>
+      <button class="tab-btn" id="tab-fav" onclick="switchTab('fav')" style="color:var(--fav);">★お気に入り<br>(0件)</button>
     </div>
     
     <form class="search-form" onsubmit="handleSearchSubmit(event)">
@@ -98,18 +128,22 @@
         <button type="button" class="btn-clear" id="btnClear" onclick="clearKeyword()">×</button>
         <button type="submit" class="btn-search">検索</button>
       </div>
+      <div class="history-row" id="historyContainer"></div>
     </form>
     
     <div class="filter-row">
       <select id="raritySelect" onchange="search()"><option value="">全種別・レアリティ</option></select>
-      <select id="sortSelect" onchange="render()">
+      <select id="sortSelect" onchange="executeSortAndRender()">
         <option value="default">おすすめ順（標準）</option>
         <option value="desc">価格高い順</option>
         <option value="asc">価格低い順</option>
         <option value="name_asc">名前：あ〜ん順</option>
         <option value="name_desc">名前：ん〜あ順</option>
       </select>
-      <div class="hit-count" id="hitCount">0 件</div>
+      <div class="status-group">
+        <div class="hit-count" id="hitCount">0 件</div>
+        <button class="btn-view" id="viewToggleBtn" onclick="toggleView()">画像のみ</button>
+      </div>
     </div>
   </div>
 </div>
@@ -117,84 +151,141 @@
 <div class="container" id="list">
   <div class="skeleton-card animate-pulse"><div class="sk-img"></div><div class="sk-info"><div class="sk-line short"></div><div class="sk-line"></div><div class="sk-line short"></div></div></div>
   <div class="skeleton-card animate-pulse"><div class="sk-img"></div><div class="sk-info"><div class="sk-line short"></div><div class="sk-line"></div><div class="sk-line short"></div></div></div>
-  <div class="skeleton-card animate-pulse"><div class="sk-img"></div><div class="sk-info"><div class="sk-line short"></div><div class="sk-line"></div><div class="sk-line short"></div></div></div>
 </div>
 
+<div id="sentinel"></div>
 <button class="scroll-to-top" id="scrollToTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">↑</button>
+
+<div class="toast" id="toast"></div>
+
+<div id="lightbox" onclick="closeLightbox()">
+  <img id="lb-img" src="" alt="拡大画像">
+</div>
 
 <script>
   const DATA_URL = "https://mocha0908.github.io/TCK-kaitori/data.json";
   const fallbackImg = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect fill='%23eeeeee' width='100' height='100'/%3E%3Ctext fill='%23999999' x='50' y='50' font-family='sans-serif' font-size='12' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3C/svg%3E";
 
-  let database = { psa: [], box: [], sotai: [] };
+  let database = { psa: [], box: [], sotai: [], all: [] };
   let currentTab = '';
   let filteredItems = [];
   let timer;
+  let displayLimit = 30;
+  const INCREMENT = 30;
+  
+  let isGrid = localStorage.getItem('tck_view') === 'grid';
+  let searchHistory = JSON.parse(localStorage.getItem('tck_history') || '[]');
+  let favorites = JSON.parse(localStorage.getItem('tck_favs') || '[]');
+
+  // 高度な正規化処理（ひらがな化 ＆ 全角英数字スペース→半角化 ＆ 小文字化）
+  function normalizeText(str) {
+    if (!str) return "";
+    let s = str.replace(/[\u30a1-\u30f6]/g, match => String.fromCharCode(match.charCodeAt(0) - 0x60)); // カタカナ→ひらがな
+    s = s.replace(/[！-～]/g, match => String.fromCharCode(match.charCodeAt(0) - 0xFEE0)); // 全角英数記号→半角
+    s = s.replace(/ /g, ' '); // 全角スペース→半角スペース
+    return s.toLowerCase();
+  }
 
   async function init() {
     try {
+      applyViewState();
+      renderHistory();
+
       const res = await fetch(DATA_URL + "?v=" + new Date().getTime());
       if (!res.ok) throw new Error('Network response was not ok');
       const data = await res.json();
       
-      if (data.psa) {
-        database.psa = data.psa.filter(item => item.status === "掲載").map((item, index) => ({
-          name: item.name, code: item.code || "", rarity: item.spec || "PSA10",
-          priceNum: item.sort_price, priceStr: item.price_max, limitStr: item.price_limit, image: formatImageUrl(item.img),
-          originalIndex: index
-        }));
-      }
+      if (data.psa) database.psa = data.psa.filter(item => item.status === "掲載").map((item, index) => formatItem(item, index, "PSA10"));
+      if (data.box) database.box = data.box.filter(item => item.status === "掲載").map((item, index) => formatItem(item, index, "BOX"));
+      if (data.sotai) database.sotai = data.sotai.map((item, index) => formatItem(item, index, "-"));
+      
+      // 全データの統合（お気に入り検索用）
+      database.all = [...database.psa, ...database.box, ...database.sotai];
 
-      if (data.box) {
-        database.box = data.box.filter(item => item.status === "掲載").map((item, index) => ({
-          name: item.name, code: item.code || "", rarity: item.spec || "BOX",
-          priceNum: item.sort_price, priceStr: item.price_max, limitStr: item.price_limit, image: formatImageUrl(item.img),
-          originalIndex: index
-        }));
-      }
-
-      if (data.sotai) {
-        database.sotai = data.sotai.map((item, index) => ({
-          name: item.name, code: item.code || "", rarity: item.rarity || "-",
-          priceNum: item.sort_price, priceStr: item.price_a, limitStr: null, image: formatImageUrl(item.img),
-          originalIndex: index
-        }));
-      }
+      updateTabCounts();
 
       if (database.psa.length === 0) document.getElementById('tab-psa').style.display = 'none';
       if (database.box.length === 0) document.getElementById('tab-box').style.display = 'none';
       if (database.sotai.length === 0) document.getElementById('tab-sotai').style.display = 'none';
 
-      if (database.psa.length > 0) switchTab('psa');
-      else if (database.box.length > 0) switchTab('box');
-      else if (database.sotai.length > 0) switchTab('sotai');
-      else {
-        document.getElementById('list').innerHTML = `<p style="text-align:center; padding:50px; color:#999;">現在公開中のデータはありません</p>`;
-        document.getElementById('raritySelect').innerHTML = '<option value="">データなし</option>';
-        document.getElementById('tabContainer').style.display = 'none';
+      const params = new URLSearchParams(window.location.search);
+      const urlTab = params.get('tab');
+      const urlQuery = params.get('q');
+      
+      if (urlQuery) {
+        document.getElementById('keyword').value = urlQuery;
+        document.getElementById('btnClear').style.display = 'flex';
       }
+
+      let targetTab = urlTab || '';
+      if (!targetTab || (targetTab !== 'fav' && (!database[targetTab] || database[targetTab].length === 0))) {
+        if (database.psa.length > 0) targetTab = 'psa';
+        else if (database.box.length > 0) targetTab = 'box';
+        else if (database.sotai.length > 0) targetTab = 'sotai';
+        else targetTab = 'fav';
+      }
+
+      switchTab(targetTab, true);
 
     } catch(e) { 
       document.getElementById('list').innerHTML = `<p style="text-align:center; padding:50px; color:red;">データの取得に失敗しました。<br>${e.message}</p>`; 
     }
   }
 
-  function switchTab(tabName) {
+  function formatItem(item, index, defaultRarity) {
+    const safeFavId = `${item.name}::${item.code || ""}::${item.rarity || item.spec || defaultRarity}`;
+    return {
+      name: item.name, 
+      code: item.code || "", 
+      rarity: item.rarity || item.spec || defaultRarity,
+      priceNum: item.sort_price, 
+      priceStr: item.price_a || item.price_max, 
+      limitStr: item.price_limit || null, 
+      image: formatImageUrl(item.img),
+      originalIndex: index,
+      favId: safeFavId,
+      // 正規化済みの検索対象文字列を生成（表記ゆれと全半角の違いを吸収）
+      searchTarget: normalizeText(`${item.name} ${item.code || ""} ${item.rarity || item.spec || defaultRarity}`)
+    };
+  }
+
+  function formatImageUrl(rawUrl) {
+    if (!rawUrl) return fallbackImg;
+    if (rawUrl.startsWith('data:image')) return rawUrl;
+    if (rawUrl.includes('drive.google.com')) {
+      const matches = rawUrl.match(/(?:id=|\/d\/)([a-zA-Z0-9-_]+)/);
+      if (matches && matches[1]) return `https://drive.google.com/thumbnail?id=${matches[1]}`;
+    }
+    return rawUrl;
+  }
+
+  function updateTabCounts() {
+    if (database.psa.length > 0) document.getElementById('tab-psa').innerHTML = `PSA等<br>(${database.psa.length}件)`;
+    if (database.box.length > 0) document.getElementById('tab-box').innerHTML = `BOX<br>(${database.box.length}件)`;
+    if (database.sotai.length > 0) document.getElementById('tab-sotai').innerHTML = `素体<br>(${database.sotai.length}件)`;
+    
+    const validFavs = database.all.filter(item => favorites.includes(item.favId)).length;
+    document.getElementById('tab-fav').innerHTML = `★お気に入り<br>(${validFavs}件)`;
+  }
+
+  function switchTab(tabName, skipUrlUpdate = false) {
     currentTab = tabName;
     document.getElementById('tab-psa').classList.toggle('active', tabName === 'psa');
     document.getElementById('tab-box').classList.toggle('active', tabName === 'box');
     document.getElementById('tab-sotai').classList.toggle('active', tabName === 'sotai');
+    document.getElementById('tab-fav').classList.toggle('active', tabName === 'fav');
     
     document.getElementById('sortSelect').value = 'default';
-    
     updateRarityOptions();
-    search();
+    search(skipUrlUpdate);
   }
 
   function updateRarityOptions() {
     const sel = document.getElementById('raritySelect');
     sel.innerHTML = '<option value="">全種別・レアリティ</option>';
-    const currentData = database[currentTab] || [];
+    let currentData = database[currentTab] || [];
+    if (currentTab === 'fav') currentData = database.all.filter(item => favorites.includes(item.favId));
+    
     const rarities = [...new Set(currentData.map(i => i.rarity))].filter(r => r && r !== '-').sort();
     rarities.forEach(r => {
       const opt = document.createElement('option');
@@ -203,49 +294,80 @@
     });
   }
 
-  function formatImageUrl(rawUrl) {
-    if (!rawUrl) return fallbackImg;
-    if (rawUrl.startsWith('data:image')) return rawUrl;
-    if (rawUrl.includes('drive.google.com')) {
-      const matches = rawUrl.match(/(?:id=|\/d\/)([a-zA-Z0-9-_]+)/);
-      if (matches && matches[1]) {
-        return `https://drive.google.com/thumbnail?id=${matches[1]}`;
-      }
-    }
-    return rawUrl;
-  }
-
-  // 純粋な検索・フィルタ処理（無駄な連打を防ぐため引数で非同期かどうか制御可能に）
-  function search() {
+  function search(skipUrlUpdate = false) {
     const kwInput = document.getElementById('keyword');
-    const kw = kwInput.value.toLowerCase().trim();
+    const rawKw = kwInput.value.trim();
     const rar = document.getElementById('raritySelect').value;
-    const currentData = database[currentTab] || [];
     
-    document.getElementById('btnClear').style.display = kw ? 'flex' : 'none';
+    let currentData = database[currentTab] || [];
+    if (currentTab === 'fav') {
+      currentData = database.all.filter(item => favorites.includes(item.favId));
+      // 重複排除（同じカードが別カテゴリに存在する場合等）
+      currentData = Array.from(new Map(currentData.map(item => [item.favId, item])).values());
+    }
+    
+    document.getElementById('btnClear').style.display = rawKw ? 'flex' : 'none';
+
+    // 検索入力も正規化（ひらがな・半角化）してAND分割
+    const keywords = normalizeText(rawKw).split(/\s+/).filter(k => k);
     
     filteredItems = currentData.filter(item => {
-      const name = String(item.name).toLowerCase();
-      const code = String(item.code).toLowerCase();
-      const rarity = String(item.rarity).toLowerCase();
-      if (kw && !name.includes(kw) && !code.includes(kw) && !rarity.includes(kw)) return false;
+      const isMatchKw = keywords.length === 0 || keywords.every(k => item.searchTarget.includes(k));
+      if (!isMatchKw) return false;
       if (rar && item.rarity !== rar) return false;
       return true;
     });
-    render();
+
+    if (!skipUrlUpdate) {
+      const params = new URLSearchParams();
+      params.set('tab', currentTab);
+      if (rawKw) params.set('q', rawKw);
+      window.history.replaceState(null, '', '?' + params.toString());
+    }
+
+    executeSortAndRender();
   }
 
   function onInput() {
     clearTimeout(timer);
-    timer = setTimeout(search, 300); // ユーザーが入力中の時は300ms待つ
+    timer = setTimeout(search, 300);
   }
 
-  // スマホのEnter/検索キーを押した時：無駄な再検索をせず、タイマーをクリアしてキーボードを閉じるだけに最適化
   function handleSearchSubmit(e) {
     e.preventDefault();
     clearTimeout(timer); 
-    search(); // 即時確定
+    const kw = document.getElementById('keyword').value.trim();
+    if (kw) saveHistory(kw);
+    search(); 
     document.getElementById('keyword').blur(); 
+  }
+
+  function saveHistory(kw) {
+    searchHistory = searchHistory.filter(h => h !== kw); 
+    searchHistory.unshift(kw); 
+    if (searchHistory.length > 10) searchHistory.pop(); 
+    localStorage.setItem('tck_history', JSON.stringify(searchHistory));
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const cont = document.getElementById('historyContainer');
+    if (searchHistory.length === 0) { cont.innerHTML = ''; return; }
+    const tagsHtml = searchHistory.map(h => `<span class="history-tag" onclick="searchFromHistory('${h.replace(/'/g, "\\'")}')">${h}</span>`).join('');
+    cont.innerHTML = `${tagsHtml}<span class="history-clear" onclick="clearHistory()">履歴消去</span>`;
+  }
+
+  function searchFromHistory(kw) {
+    document.getElementById('keyword').value = kw;
+    saveHistory(kw); 
+    search();
+    document.getElementById('keyword').blur();
+  }
+
+  function clearHistory() {
+    searchHistory = [];
+    localStorage.removeItem('tck_history');
+    renderHistory();
   }
 
   function clearKeyword() {
@@ -255,13 +377,26 @@
     kwInput.focus();
   }
 
-  function render() {
-    const cont = document.getElementById('list');
-    const sort = document.getElementById('sortSelect').value;
-    
-    document.getElementById('hitCount').innerText = `${filteredItems.length} 件`;
+  function toggleView() {
+    isGrid = !isGrid;
+    localStorage.setItem('tck_view', isGrid ? 'grid' : 'list');
+    applyViewState();
+  }
 
-    // 【修正：タイポ解消】name_desc が正しく動くように修正
+  function applyViewState() {
+    const listCont = document.getElementById('list');
+    const btn = document.getElementById('viewToggleBtn');
+    if (isGrid) {
+      listCont.classList.add('grid');
+      btn.innerText = 'リスト表示';
+    } else {
+      listCont.classList.remove('grid');
+      btn.innerText = '画像表示';
+    }
+  }
+
+  function executeSortAndRender() {
+    const sort = document.getElementById('sortSelect').value;
     filteredItems.sort((a, b) => {
       switch(sort) {
         case 'default': return a.originalIndex - b.originalIndex;
@@ -273,70 +408,137 @@
       }
     });
 
-    // 検索0件時のUI親切化（クリアボタンを設置）
+    document.getElementById('hitCount').innerText = `${filteredItems.length} 件`;
+    displayLimit = INCREMENT;
+    renderList();
+  }
+
+  function renderList() {
+    const cont = document.getElementById('list');
     if (filteredItems.length === 0) {
+      const msg = currentTab === 'fav' ? 'お気に入りに登録されているカードはありません。<br>リストの★マークをタップして追加してください。' : '該当するデータが見つかりませんでした。';
       cont.innerHTML = `
-        <div style="text-align:center; padding:50px 10px; color:#999;">
-          <p>該当するデータが見つかりませんでした。</p>
-          <button class="btn-retry" onclick="clearKeyword()">検索条件をクリア</button>
+        <div style="text-align:center; padding:50px 10px; color:#999; line-height:1.6;">
+          <p>${msg}</p>
+          ${currentTab !== 'fav' ? `<button class="btn-retry" onclick="clearKeyword()">検索条件をクリア</button>` : ''}
         </div>
       `;
       return;
     }
+    const chunk = filteredItems.slice(0, displayLimit);
+    cont.innerHTML = chunk.map(generateCardHtml).join('');
+  }
 
-    cont.innerHTML = filteredItems.map(item => {
-      const queryA = item.rarity === "PSA" || item.rarity === "BOX" ? "" : item.rarity;
-      const queryB = item.code || "";
-      let searchQuery = `${queryA} ${queryB}`.trim();
-      if (!searchQuery) searchQuery = item.name;
-      
-      const mercariUrl = `https://jp.mercari.com/search?keyword=${encodeURIComponent(searchQuery)}`;
-      const shopUrl = `https://shop.japan-toreca.com/search?q=${encodeURIComponent(searchQuery)}`;
-      const safeName = item.name.replace(/'/g, "\\'");
+  function toggleFav(favId) {
+    if (favorites.includes(favId)) {
+      favorites = favorites.filter(f => f !== favId);
+    } else {
+      favorites.push(favId);
+    }
+    localStorage.setItem('tck_favs', JSON.stringify(favorites));
+    
+    // UIを即座に更新
+    document.querySelectorAll(`[data-favid="${favId}"]`).forEach(btn => {
+      btn.innerHTML = favorites.includes(favId) ? '★' : '☆';
+      btn.classList.toggle('active', favorites.includes(favId));
+    });
 
-      let actionsHtml = '';
-      if (currentTab === 'sotai') {
-        actionsHtml = `
-          <a href="${mercariUrl}" target="_blank" class="btn btn-mer">メルカリ</a>
-          <a href="${shopUrl}" target="_blank" class="btn btn-shp">通販</a>
-          <button type="button" onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
-        `;
-      } else if (currentTab === 'psa') {
-        actionsHtml = `
-          <a href="${mercariUrl}" target="_blank" class="btn btn-mer">メルカリ</a>
-          <button type="button" onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
-        `;
-      } else if (currentTab === 'box') {
-        actionsHtml = `
-          <button type="button" onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
-        `;
-      }
+    updateTabCounts();
+    
+    if (currentTab === 'fav') {
+      search(true); // お気に入りタブの場合は即時リスト更新
+    } else {
+      showToast(favorites.includes(favId) ? 'お気に入りに追加しました' : 'お気に入りから削除しました');
+    }
+  }
 
-      const limitHtml = (item.limitStr && item.limitStr !== '-') 
-        ? `<div class="limit">上限: ${item.limitStr}</div>` 
-        : `<div style="margin-bottom:10px;"></div>`;
+  function generateCardHtml(item) {
+    const queryA = item.rarity === "PSA" || item.rarity === "BOX" ? "" : item.rarity;
+    const queryB = item.code || "";
+    let searchQuery = `${queryA} ${queryB}`.trim();
+    if (!searchQuery) searchQuery = item.name;
+    
+    const mercariUrl = `https://jp.mercari.com/search?keyword=${encodeURIComponent(searchQuery)}`;
+    const shopUrl = `https://shop.japan-toreca.com/search?q=${encodeURIComponent(searchQuery)}`;
+    const safeName = item.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    const isFav = favorites.includes(item.favId);
 
-      return `
-        <div class="card">
-          <img src="${item.image}" class="card-img" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null; this.src='${fallbackImg}'">
-          <div class="card-info">
+    // ★お気に入りボタンHTML
+    const favHtml = `<button class="btn-fav ${isFav ? 'active' : ''}" data-favid="${item.favId}" onclick="toggleFav('${item.favId}')">${isFav ? '★' : '☆'}</button>`;
+
+    let actionsHtml = '';
+    if (currentTab === 'sotai' || currentTab === 'fav') {
+      actionsHtml = `
+        <a href="${mercariUrl}" target="_blank" rel="noopener" class="btn btn-mer">メルカリ</a>
+        <a href="${shopUrl}" target="_blank" rel="noopener" class="btn btn-shp">通販</a>
+        <button type="button" onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
+      `;
+    } else if (currentTab === 'psa') {
+      actionsHtml = `
+        <a href="${mercariUrl}" target="_blank" rel="noopener" class="btn btn-mer">メルカリ</a>
+        <button type="button" onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
+      `;
+    } else if (currentTab === 'box') {
+      actionsHtml = `
+        <button type="button" onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
+      `;
+    }
+
+    const limitHtml = (item.limitStr && item.limitStr !== '-') ? `<div class="limit">上限: ${item.limitStr}</div>` : `<div style="margin-bottom:10px;"></div>`;
+
+    return `
+      <div class="card">
+        <img src="${item.image}" class="card-img" referrerpolicy="no-referrer" loading="lazy" onclick="openLightbox('${item.image}')" onerror="this.onerror=null; this.src='${fallbackImg}'">
+        <div class="card-info">
+          <div class="rarity-row">
             <span class="rarity">${item.rarity}</span>
-            <span class="name">${item.name}</span>
-            <div class="price">${item.priceStr}</div>
-            ${limitHtml}
-            <div class="actions">
-              ${actionsHtml}
-            </div>
+            ${favHtml}
+          </div>
+          <span class="name" title="${item.name}">${item.name}</span>
+          <div class="price">${item.priceStr}</div>
+          ${limitHtml}
+          <div class="actions">
+            ${actionsHtml}
           </div>
         </div>
-      `;
-    }).join('');
+      </div>
+    `;
+  }
+
+  function openLightbox(src) {
+    if (src === fallbackImg) return;
+    const lb = document.getElementById('lightbox');
+    document.getElementById('lb-img').src = src;
+    lb.classList.add('active');
+  }
+  
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('active');
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); }, 2000);
   }
 
   function share(name, priceStr) {
-    const txt = `${name}\n買取価格: ${priceStr}\n#トレカキングダム`;
+    const cleanName = name.replace(/&quot;/g, '"');
+    const txt = `${cleanName}\n買取価格: ${priceStr}\n#トレカキングダム`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(txt)}`, '_blank');
   }
+
+  const observer = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting && displayLimit < filteredItems.length) {
+      displayLimit += INCREMENT;
+      renderList();
+    }
+  }, { rootMargin: '200px' });
+  
+  window.addEventListener('DOMContentLoaded', () => {
+    observer.observe(document.getElementById('sentinel'));
+  });
 
   window.onscroll = function() {
     const btn = document.getElementById('scrollToTop');
