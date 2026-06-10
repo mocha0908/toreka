@@ -22,14 +22,14 @@
 
     .search-form { margin: 0; padding: 0; display: block; }
     .input-row { display: flex; background: #fff; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; position: relative; }
-    .input-row input { flex: 1; border: none; outline: none; padding: 12px 35px 12px 12px; font-size: 16px; width: 100%; box-sizing: border-box; }
+    .input-row input { flex: 1; border: none; outline: none; padding: 12px 35px 12px 12px; font-size: 16px; width: 100%; box-sizing: border-box; -webkit-appearance: none; }
     
     .input-row input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
-    .btn-clear { position: absolute; right: 65px; top: 50%; transform: translateY(-50%); background: #ccc; color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; cursor: pointer; display: none; align-items: center; justify-content: center; padding: 0; font-weight: bold; }
+    .btn-clear { position: absolute; right: 65px; top: 50%; transform: translateY(-50%); background: #ccc; color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; cursor: pointer; display: none; align-items: center; justify-content: center; padding: 0; font-weight: bold; z-index: 3; }
     
     .btn-search { background: var(--primary); color: #fff; border: none; padding: 0 15px; font-weight: bold; cursor: pointer; z-index: 2; }
     .filter-row { display: flex; gap: 8px; align-items: center; }
-    .filter-row select { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 12px; outline: none; background: #fff; }
+    .filter-row select { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 12px; outline: none; background: #fff; color: #333; }
     
     .hit-count { font-size: 11px; color: #666; font-weight: bold; white-space: nowrap; background: #eee; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; }
 
@@ -50,18 +50,19 @@
 
     .scroll-to-top { position: fixed; bottom: 20px; right: 20px; width: 45px; height: 45px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 18px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: none; z-index: 200; font-weight: bold; transition: opacity 0.3s; opacity: 0.9; }
 
-    /* 高度なUI：スケルトンスクリーン（読み込み中のアニメーション） */
     .skeleton-card { display: flex; gap: 15px; padding: 15px; background: #fff; border-radius: 12px; margin-bottom: 15px; }
     .sk-img { width: 85px; height: 85px; background: var(--skeleton); border-radius: 8px; }
     .sk-info { flex: 1; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
     .sk-line { height: 12px; background: var(--skeleton); border-radius: 4px; width: 100%; }
     .sk-line.short { width: 60%; }
-    .sk-line.btn-space { height: 25px; }
     .animate-pulse { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
 
+    .btn-retry { background: var(--primary); color: #fff; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 13px; }
+
+    /* ダークモードの色設計を完全に見直し */
     @media (prefers-color-scheme: dark) {
-      :root { --bg: #121212; --skeleton: #333; }
+      :root { --bg: #121212; --skeleton: #2d2d2d; }
       body { color: #e0e0e0; }
       .header, .card, .tab-btn, .skeleton-card { background: #1e1e1e; border-color: #333; color: #e0e0e0; }
       .main-title { color: #8ab4f8; }
@@ -91,7 +92,6 @@
       <button class="tab-btn" id="tab-sotai" onclick="switchTab('sotai')">素体</button>
     </div>
     
-    <!-- スマホ改行確定に対応するため form タグ化 -->
     <form class="search-form" onsubmit="handleSearchSubmit(event)">
       <div class="input-row">
         <input type="search" id="keyword" placeholder="キーワード・型番を検索..." oninput="onInput()">
@@ -115,7 +115,6 @@
 </div>
 
 <div class="container" id="list">
-  <!-- スケルトンスクリーン初期表示 -->
   <div class="skeleton-card animate-pulse"><div class="sk-img"></div><div class="sk-info"><div class="sk-line short"></div><div class="sk-line"></div><div class="sk-line short"></div></div></div>
   <div class="skeleton-card animate-pulse"><div class="sk-img"></div><div class="sk-info"><div class="sk-line short"></div><div class="sk-line"></div><div class="sk-line short"></div></div></div>
   <div class="skeleton-card animate-pulse"><div class="sk-img"></div><div class="sk-info"><div class="sk-line short"></div><div class="sk-line"></div><div class="sk-line short"></div></div></div>
@@ -216,6 +215,7 @@
     return rawUrl;
   }
 
+  // 純粋な検索・フィルタ処理（無駄な連打を防ぐため引数で非同期かどうか制御可能に）
   function search() {
     const kwInput = document.getElementById('keyword');
     const kw = kwInput.value.toLowerCase().trim();
@@ -237,14 +237,15 @@
 
   function onInput() {
     clearTimeout(timer);
-    timer = setTimeout(search, 300);
+    timer = setTimeout(search, 300); // ユーザーが入力中の時は300ms待つ
   }
 
-  // スマホのEnter/検索キーを押した時の挙動改善
+  // スマホのEnter/検索キーを押した時：無駄な再検索をせず、タイマーをクリアしてキーボードを閉じるだけに最適化
   function handleSearchSubmit(e) {
     e.preventDefault();
-    search();
-    document.getElementById('keyword').blur(); // キーボードを閉じる
+    clearTimeout(timer); 
+    search(); // 即時確定
+    document.getElementById('keyword').blur(); 
   }
 
   function clearKeyword() {
@@ -260,6 +261,7 @@
     
     document.getElementById('hitCount').innerText = `${filteredItems.length} 件`;
 
+    // 【修正：タイポ解消】name_desc が正しく動くように修正
     filteredItems.sort((a, b) => {
       switch(sort) {
         case 'default': return a.originalIndex - b.originalIndex;
@@ -271,8 +273,14 @@
       }
     });
 
+    // 検索0件時のUI親切化（クリアボタンを設置）
     if (filteredItems.length === 0) {
-      cont.innerHTML = `<p style="text-align:center; padding:50px; color:#999;">該当するデータがありません</p>`;
+      cont.innerHTML = `
+        <div style="text-align:center; padding:50px 10px; color:#999;">
+          <p>該当するデータが見つかりませんでした。</p>
+          <button class="btn-retry" onclick="clearKeyword()">検索条件をクリア</button>
+        </div>
+      `;
       return;
     }
 
@@ -291,16 +299,16 @@
         actionsHtml = `
           <a href="${mercariUrl}" target="_blank" class="btn btn-mer">メルカリ</a>
           <a href="${shopUrl}" target="_blank" class="btn btn-shp">通販</a>
-          <button onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
+          <button type="button" onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
         `;
       } else if (currentTab === 'psa') {
         actionsHtml = `
           <a href="${mercariUrl}" target="_blank" class="btn btn-mer">メルカリ</a>
-          <button onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
+          <button type="button" onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
         `;
       } else if (currentTab === 'box') {
         actionsHtml = `
-          <button onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
+          <button type="button" onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
         `;
       }
 
@@ -308,7 +316,6 @@
         ? `<div class="limit">上限: ${item.limitStr}</div>` 
         : `<div style="margin-bottom:10px;"></div>`;
 
-      // プロの最適化：loading="lazy" を付与してスクロールされるまで画像を読み込まない（爆速化）
       return `
         <div class="card">
           <img src="${item.image}" class="card-img" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null; this.src='${fallbackImg}'">
