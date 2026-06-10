@@ -6,7 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
-    :root { --primary: #4e54c8; --accent: #ff416c; --bg: #f4f7f6; --skeleton: #e0e0e0; --fav: #ffd700; }
+    /* ★メインカラーを青からオレンジに変更 */
+    :root { --primary: #ff6b0b; --accent: #ff416c; --bg: #f4f7f6; --skeleton: #e0e0e0; --fav: #ffd700; }
     body { font-family: 'Noto Sans JP', sans-serif; margin: 0; background: var(--bg); padding-bottom: 30px; }
     
     .header { position: sticky; top: -115px; z-index: 100; background: #fff; padding: 10px 10px; border-bottom: 1px solid #ddd; transition: top 0.2s; }
@@ -16,7 +17,6 @@
     .main-title { text-align: center; font-size: 18px; font-weight: 900; color: var(--primary); margin-bottom: 2px; letter-spacing: 1px; }
     .update-info { text-align: center; font-size: 10px; color: #777; margin-bottom: 4px; line-height: 1.4; }
     
-    /* タブ4つ対応のスタイル調整 */
     .tab-row { display: flex; gap: 4px; margin-bottom: 2px; }
     .tab-btn { flex: 1; padding: 8px 0; background: #fff; border: 1px solid #ccc; border-radius: 8px; font-size: 10px; font-weight: bold; color: #555; cursor: pointer; outline: none; transition: all 0.2s; line-height: 1.3; }
     .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
@@ -36,6 +36,12 @@
     .filter-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .filter-row select { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 12px; outline: none; background: #fff; color: #333; min-width: 120px; }
     
+    /* ★追加: 価格フィルター用のスタイル */
+    .price-range-group { display: flex; align-items: center; gap: 4px; flex: 2; min-width: 180px; }
+    .price-range-group input { flex: 1; padding: 8px 4px; border-radius: 6px; border: 1px solid #ccc; font-size: 12px; outline: none; background: #fff; color: #333; text-align: center; box-sizing: border-box; width: 100%; -moz-appearance: textfield; }
+    .price-range-group input::-webkit-outer-spin-button, .price-range-group input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .price-range-group span { font-size: 11px; color: #666; white-space: nowrap; }
+
     .status-group { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
     .hit-count { font-size: 11px; color: #666; font-weight: bold; white-space: nowrap; background: #eee; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; }
     .btn-view { font-size: 11px; background: #fff; color: #333; border: 1px solid #ccc; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap; }
@@ -54,7 +60,6 @@
     .rarity-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .rarity { font-size: 10px; color: #888; font-weight: bold; background: #eee; padding: 2px 6px; border-radius: 4px; display: inline-block; }
     
-    /* お気に入りボタン */
     .btn-fav { background: none; border: none; font-size: 18px; color: #ccc; cursor: pointer; padding: 0; line-height: 1; transition: transform 0.2s; }
     .btn-fav.active { color: var(--fav); }
     .btn-fav:active { transform: scale(1.2); }
@@ -92,10 +97,14 @@
       :root { --bg: #121212; --skeleton: #2d2d2d; }
       body { color: #e0e0e0; }
       .header, .card, .tab-btn, .skeleton-card { background: #1e1e1e; border-color: #333; color: #e0e0e0; }
-      .main-title { color: #8ab4f8; }
+      /* ★ダークモード時のタイトルをゴールド・オレンジ系に変更 */
+      .main-title { color: #ffa726; }
       .update-info { color: #aaa; }
       .input-row, .input-row input { background: #2d2d2d; color: #fff; border-color: #444; }
       .filter-row select, .btn-view { background: #2d2d2d; color: #fff; border-color: #444; }
+      /* ★追加: ダークモード時の価格入力枠スタイル */
+      .price-range-group input { background: #2d2d2d; color: #fff; border-color: #444; }
+      .price-range-group span { color: #aaa; }
       .rarity, .hit-count { background: #333; color: #ccc; border-color: #444; }
       .history-tag { background: #333; color: #ccc; }
       .history-tag:active { background: #444; }
@@ -133,6 +142,13 @@
     
     <div class="filter-row">
       <select id="raritySelect" onchange="search()"><option value="">全種別・レアリティ</option></select>
+      
+      <div class="price-range-group">
+        <input type="number" id="minPrice" placeholder="下限(¥)" oninput="onInput()" pattern="\d*">
+        <span>〜</span>
+        <input type="number" id="maxPrice" placeholder="上限(¥)" oninput="onInput()" pattern="\d*">
+      </div>
+
       <select id="sortSelect" onchange="executeSortAndRender()">
         <option value="default">おすすめ順（標準）</option>
         <option value="desc">価格高い順</option>
@@ -177,12 +193,11 @@
   let searchHistory = JSON.parse(localStorage.getItem('tck_history') || '[]');
   let favorites = JSON.parse(localStorage.getItem('tck_favs') || '[]');
 
-  // 高度な正規化処理（ひらがな化 ＆ 全角英数字スペース→半角化 ＆ 小文字化）
   function normalizeText(str) {
     if (!str) return "";
-    let s = str.replace(/[\u30a1-\u30f6]/g, match => String.fromCharCode(match.charCodeAt(0) - 0x60)); // カタカナ→ひらがな
-    s = s.replace(/[！-～]/g, match => String.fromCharCode(match.charCodeAt(0) - 0xFEE0)); // 全角英数記号→半角
-    s = s.replace(/ /g, ' '); // 全角スペース→半角スペース
+    let s = str.replace(/[\u30a1-\u30f6]/g, match => String.fromCharCode(match.charCodeAt(0) - 0x60));
+    s = s.replace(/[！-～]/g, match => String.fromCharCode(match.charCodeAt(0) - 0xFEE0));
+    s = s.replace(/ /g, ' ');
     return s.toLowerCase();
   }
 
@@ -199,7 +214,6 @@
       if (data.box) database.box = data.box.filter(item => item.status === "掲載").map((item, index) => formatItem(item, index, "BOX"));
       if (data.sotai) database.sotai = data.sotai.map((item, index) => formatItem(item, index, "-"));
       
-      // 全データの統合（お気に入り検索用）
       database.all = [...database.psa, ...database.box, ...database.sotai];
 
       updateTabCounts();
@@ -244,7 +258,6 @@
       image: formatImageUrl(item.img),
       originalIndex: index,
       favId: safeFavId,
-      // 正規化済みの検索対象文字列を生成（表記ゆれと全半角の違いを吸収）
       searchTarget: normalizeText(`${item.name} ${item.code || ""} ${item.rarity || item.spec || defaultRarity}`)
     };
   }
@@ -299,22 +312,28 @@
     const rawKw = kwInput.value.trim();
     const rar = document.getElementById('raritySelect').value;
     
+    // ★追加: 価格の取得（空ならそれぞれ 0 と 無限大 をデフォルトに設定）
+    const minPrice = parseInt(document.getElementById('minPrice').value, 10) || 0;
+    const maxPrice = parseInt(document.getElementById('maxPrice').value, 10) || Infinity;
+    
     let currentData = database[currentTab] || [];
     if (currentTab === 'fav') {
       currentData = database.all.filter(item => favorites.includes(item.favId));
-      // 重複排除（同じカードが別カテゴリに存在する場合等）
       currentData = Array.from(new Map(currentData.map(item => [item.favId, item])).values());
     }
     
-    document.getElementById('btnClear').style.display = rawKw ? 'flex' : 'none';
+    document.getElementById('btnClear').style.display = (rawKw || document.getElementById('minPrice').value || document.getElementById('maxPrice').value) ? 'flex' : 'none';
 
-    // 検索入力も正規化（ひらがな・半角化）してAND分割
     const keywords = normalizeText(rawKw).split(/\s+/).filter(k => k);
     
     filteredItems = currentData.filter(item => {
       const isMatchKw = keywords.length === 0 || keywords.every(k => item.searchTarget.includes(k));
       if (!isMatchKw) return false;
       if (rar && item.rarity !== rar) return false;
+      
+      // ★追加: 価格帯の絞り込みロジック
+      if (item.priceNum < minPrice || item.priceNum > maxPrice) return false;
+      
       return true;
     });
 
@@ -370,9 +389,12 @@
     renderHistory();
   }
 
+  // ★修正: キーワードだけでなく価格枠もクリアするように拡張
   function clearKeyword() {
     const kwInput = document.getElementById('keyword');
     kwInput.value = '';
+    document.getElementById('minPrice').value = '';
+    document.getElementById('maxPrice').value = '';
     search();
     kwInput.focus();
   }
@@ -437,7 +459,6 @@
     }
     localStorage.setItem('tck_favs', JSON.stringify(favorites));
     
-    // UIを即座に更新
     document.querySelectorAll(`[data-favid="${favId}"]`).forEach(btn => {
       btn.innerHTML = favorites.includes(favId) ? '★' : '☆';
       btn.classList.toggle('active', favorites.includes(favId));
@@ -446,7 +467,7 @@
     updateTabCounts();
     
     if (currentTab === 'fav') {
-      search(true); // お気に入りタブの場合は即時リスト更新
+      search(true);
     } else {
       showToast(favorites.includes(favId) ? 'お気に入りに追加しました' : 'お気に入りから削除しました');
     }
@@ -463,7 +484,6 @@
     const safeName = item.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
     const isFav = favorites.includes(item.favId);
 
-    // ★お気に入りボタンHTML
     const favHtml = `<button class="btn-fav ${isFav ? 'active' : ''}" data-favid="${item.favId}" onclick="toggleFav('${item.favId}')">${isFav ? '★' : '☆'}</button>`;
 
     let actionsHtml = '';
