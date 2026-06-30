@@ -36,7 +36,7 @@
     .filter-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .filter-row select { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 12px; outline: none; background: #fff; color: #333; min-width: 120px; }
     
-    /* ★追加: 価格フィルター用のスタイル */
+    /* 価格フィルター用のスタイル */
     .price-range-group { display: flex; align-items: center; gap: 4px; flex: 2; min-width: 180px; }
     .price-range-group input { flex: 1; padding: 8px 4px; border-radius: 6px; border: 1px solid #ccc; font-size: 12px; outline: none; background: #fff; color: #333; text-align: center; box-sizing: border-box; width: 100%; -moz-appearance: textfield; }
     .price-range-group input::-webkit-outer-spin-button, .price-range-group input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -49,6 +49,11 @@
     .container { max-width: 600px; margin: 20px auto; padding: 0 10px; }
     
     .card { background: #fff; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; gap: 15px; position: relative; }
+    
+    /* ★上限リスト用のハイライトスタイル */
+    .card.is-capped { background-color: #fff8e1; border: 1px solid #ffe082; }
+    .capped-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; background: #e67e22; color: white; margin-left: 6px; vertical-align: middle; }
+
     .card-img { width: 85px; height: 85px; object-fit: contain; background: #f0f0f0; border-radius: 8px; flex-shrink: 0; cursor: zoom-in; }
     .card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
     
@@ -97,12 +102,12 @@
       :root { --bg: #121212; --skeleton: #2d2d2d; }
       body { color: #e0e0e0; }
       .header, .card, .tab-btn, .skeleton-card { background: #1e1e1e; border-color: #333; color: #e0e0e0; }
-      /* ★ダークモード時のタイトルをゴールド・オレンジ系に変更 */
+      /* ダークモード時のタイトルをゴールド・オレンジ系に変更 */
       .main-title { color: #ffa726; }
       .update-info { color: #aaa; }
       .input-row, .input-row input { background: #2d2d2d; color: #fff; border-color: #444; }
       .filter-row select, .btn-view { background: #2d2d2d; color: #fff; border-color: #444; }
-      /* ★追加: ダークモード時の価格入力枠スタイル */
+      /* ダークモード時の価格入力枠スタイル */
       .price-range-group input { background: #2d2d2d; color: #fff; border-color: #444; }
       .price-range-group span { color: #aaa; }
       .rarity, .hit-count { background: #333; color: #ccc; border-color: #444; }
@@ -110,6 +115,8 @@
       .history-tag:active { background: #444; }
       .card-img { background: #2d2d2d; }
       .btn-fav { color: #555; }
+      /* ★ダークモード時の上限リストカラースタイル */
+      .card.is-capped { background-color: #3e3115; border-color: #5c4717; }
     }
   </style>
 </head>
@@ -209,8 +216,10 @@
       if (!res.ok) throw new Error('Network response was not ok');
       const data = await res.json();
       
-      if (data.psa) database.psa = data.psa.filter(item => item.status === "掲載").map((item, index) => formatItem(item, index, "PSA10"));
-      if (data.box) database.box = data.box.filter(item => item.status === "掲載").map((item, index) => formatItem(item, index, "BOX"));
+      // ★修正: 「掲載」に加え「注意」「強化」「超強化」を読み込み対象にする
+      const validStatuses = ["掲載", "注意", "強化", "超強化"];
+      if (data.psa) database.psa = data.psa.filter(item => validStatuses.includes(item.status)).map((item, index) => formatItem(item, index, "PSA10"));
+      if (data.box) database.box = data.box.filter(item => validStatuses.includes(item.status)).map((item, index) => formatItem(item, index, "BOX"));
       if (data.sotai) database.sotai = data.sotai.map((item, index) => formatItem(item, index, "-"));
       
       database.all = [...database.psa, ...database.box, ...database.sotai];
@@ -252,12 +261,13 @@
       code: item.code || "", 
       rarity: item.rarity || item.spec || defaultRarity,
       priceNum: item.sort_price, 
-      priceStr: item.price_a || item.price_max, 
+      priceStr: item.price_after || item.price_a || item.price_max, // ★減額後の金額があれば優先表示 
       limitStr: item.price_limit || null, 
       image: formatImageUrl(item.img),
       originalIndex: index,
       favId: safeFavId,
-      searchTarget: normalizeText(`${item.name} ${item.code || ""} ${item.rarity || item.spec || defaultRarity}`)
+      searchTarget: normalizeText(`${item.name} ${item.code || ""} ${item.rarity || item.spec || defaultRarity}`),
+      isCapped: item.is_capped || false // ★追加: 上限リストのフラグを取得
     };
   }
 
@@ -311,7 +321,6 @@
     const rawKw = kwInput.value.trim();
     const rar = document.getElementById('raritySelect').value;
     
-    // ★追加: 価格の取得（空ならそれぞれ 0 と 無限大 をデフォルトに設定）
     const minPrice = parseInt(document.getElementById('minPrice').value, 10) || 0;
     const maxPrice = parseInt(document.getElementById('maxPrice').value, 10) || Infinity;
     
@@ -330,7 +339,6 @@
       if (!isMatchKw) return false;
       if (rar && item.rarity !== rar) return false;
       
-      // ★追加: 価格帯の絞り込みロジック
       if (item.priceNum < minPrice || item.priceNum > maxPrice) return false;
       
       return true;
@@ -388,7 +396,6 @@
     renderHistory();
   }
 
-  // ★修正: キーワードだけでなく価格枠もクリアするように拡張
   function clearKeyword() {
     const kwInput = document.getElementById('keyword');
     kwInput.value = '';
@@ -504,16 +511,20 @@
     }
 
     const limitHtml = (item.limitStr && item.limitStr !== '-') ? `<div class="limit">上限: ${item.limitStr}</div>` : `<div style="margin-bottom:10px;"></div>`;
+    
+    // ★追加: 上限リスト特有のクラスとバッジ
+    const cappedClass = item.isCapped ? 'is-capped' : '';
+    const cappedBadge = item.isCapped ? `<span class="capped-badge">価格変動/終了</span>` : '';
 
     return `
-      <div class="card">
+      <div class="card ${cappedClass}">
         <img src="${item.image}" class="card-img" referrerpolicy="no-referrer" loading="lazy" onclick="openLightbox('${item.image}')" onerror="this.onerror=null; this.src='${fallbackImg}'">
         <div class="card-info">
           <div class="rarity-row">
             <span class="rarity">${item.rarity}</span>
             ${favHtml}
           </div>
-          <span class="name" title="${item.name}">${item.name}</span>
+          <span class="name" title="${item.name}">${item.name} ${cappedBadge}</span>
           <div class="price">${item.priceStr}</div>
           ${limitHtml}
           <div class="actions">
