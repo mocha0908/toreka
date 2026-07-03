@@ -261,7 +261,7 @@
       code: item.code || "", 
       rarity: item.rarity || item.spec || defaultRarity,
       priceNum: item.sort_price, 
-      priceStr: item.price_after || item.price_a || item.price_max, // ★減額後の金額があれば優先表示 
+      priceStr: item.price_max || item.price_a || item.price_after, // ★元の価格（上限）を優先表示に変更
       limitStr: item.price_limit || null, 
       image: formatImageUrl(item.img),
       originalIndex: index,
