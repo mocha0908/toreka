@@ -1,585 +1,696 @@
-<!DOCTYPE html>
-<html lang="ja">
+<!doctype html>
+<html lang="ja" data-theme="light">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#fffaf5">
   <title>トレカキングダム 買取額検索</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800;900&display=swap" rel="stylesheet">
   <style>
-    /* ★メインカラーを青からオレンジに変更 */
-    :root { --primary: #ff6b0b; --accent: #ff416c; --bg: #f4f7f6; --skeleton: #e0e0e0; --fav: #ffd700; }
-    body { font-family: 'Noto Sans JP', sans-serif; margin: 0; background: var(--bg); padding-bottom: 30px; }
-    
-    .header { position: sticky; top: -115px; z-index: 100; background: #fff; padding: 10px 10px; border-bottom: 1px solid #ddd; transition: top 0.2s; }
-    @media (max-width: 480px) { .header { top: -130px; padding: 10px 8px; } }
-
-    .search-box { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
-    .main-title { text-align: center; font-size: 18px; font-weight: 900; color: var(--primary); margin-bottom: 2px; letter-spacing: 1px; }
-    .update-info { text-align: center; font-size: 10px; color: #777; margin-bottom: 4px; line-height: 1.4; }
-    
-    .tab-row { display: flex; gap: 4px; margin-bottom: 2px; }
-    .tab-btn { flex: 1; padding: 8px 0; background: #fff; border: 1px solid #ccc; border-radius: 8px; font-size: 10px; font-weight: bold; color: #555; cursor: pointer; outline: none; transition: all 0.2s; line-height: 1.3; }
-    .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-
-    .search-form { margin: 0; padding: 0; display: block; }
-    .input-row { display: flex; background: #fff; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; position: relative; }
-    .input-row input { flex: 1; border: none; outline: none; padding: 12px 35px 12px 12px; font-size: 16px; width: 100%; box-sizing: border-box; -webkit-appearance: none; }
-    .input-row input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
-    .btn-clear { position: absolute; right: 65px; top: 50%; transform: translateY(-50%); background: #ccc; color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; cursor: pointer; display: none; align-items: center; justify-content: center; padding: 0; font-weight: bold; z-index: 3; }
-    .btn-search { background: var(--primary); color: #fff; border: none; padding: 0 15px; font-weight: bold; cursor: pointer; z-index: 2; }
-    
-    .history-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
-    .history-tag { font-size: 11px; background: #eee; color: #555; padding: 4px 10px; border-radius: 12px; cursor: pointer; font-weight: bold; transition: background 0.2s; white-space: nowrap; }
-    .history-tag:active { background: #ddd; }
-    .history-clear { font-size: 10px; color: #888; cursor: pointer; text-decoration: underline; margin-left: auto; display: flex; align-items: center; }
-
-    .filter-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .filter-row select { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 12px; outline: none; background: #fff; color: #333; min-width: 120px; }
-    
-    /* 価格フィルター用のスタイル */
-    .price-range-group { display: flex; align-items: center; gap: 4px; flex: 2; min-width: 180px; }
-    .price-range-group input { flex: 1; padding: 8px 4px; border-radius: 6px; border: 1px solid #ccc; font-size: 12px; outline: none; background: #fff; color: #333; text-align: center; box-sizing: border-box; width: 100%; -moz-appearance: textfield; }
-    .price-range-group input::-webkit-outer-spin-button, .price-range-group input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    .price-range-group span { font-size: 11px; color: #666; white-space: nowrap; }
-
-    .status-group { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
-    .hit-count { font-size: 11px; color: #666; font-weight: bold; white-space: nowrap; background: #eee; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; }
-    .btn-view { font-size: 11px; background: #fff; color: #333; border: 1px solid #ccc; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap; }
-
-    .container { max-width: 600px; margin: 20px auto; padding: 0 10px; }
-    
-    .card { background: #fff; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; gap: 15px; position: relative; }
-    
-    /* ★上限リスト用のハイライトスタイル */
-    .card.is-capped { background-color: #fff8e1; border: 1px solid #ffe082; }
-    .capped-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; background: #e67e22; color: white; margin-left: 6px; vertical-align: middle; }
-
-    .card-img { width: 85px; height: 85px; object-fit: contain; background: #f0f0f0; border-radius: 8px; flex-shrink: 0; cursor: zoom-in; }
-    .card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
-    
-    .container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
-    .container.grid .card { flex-direction: column; padding: 12px; gap: 8px; margin-bottom: 0; }
-    .container.grid .card-img { width: 100%; height: 140px; }
-    .container.grid .name { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; line-height: 1.4; height: 36px; }
-
-    .rarity-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-    .rarity { font-size: 10px; color: #888; font-weight: bold; background: #eee; padding: 2px 6px; border-radius: 4px; display: inline-block; }
-    
-    .btn-fav { background: none; border: none; font-size: 18px; color: #ccc; cursor: pointer; padding: 0; line-height: 1; transition: transform 0.2s; }
-    .btn-fav.active { color: var(--fav); }
-    .btn-fav:active { transform: scale(1.2); }
-
-    .name { font-size: 14px; font-weight: bold; margin: 0 0 6px 0; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .price { font-size: 20px; color: var(--accent); font-weight: 900; margin-bottom: 2px; }
-    .limit { font-size: 11px; color: #666; font-weight: bold; margin-bottom: 10px; }
-    .actions { display: flex; gap: 5px; margin-top: auto; }
-    .btn { flex: 1; text-align: center; padding: 8px 0; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: bold; color: #fff; border: none; cursor: pointer; }
-    .btn-mer { background: #ea352d; }
-    .btn-shp { background: #333; }
-    .btn-tw { background: #1DA1F2; }
-
-    .scroll-to-top { position: fixed; bottom: 20px; right: 20px; width: 45px; height: 45px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 18px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: none; z-index: 200; font-weight: bold; transition: opacity 0.3s; opacity: 0.9; }
-
-    .toast { position: fixed; bottom: -50px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 12px; font-weight: bold; z-index: 300; transition: bottom 0.3s ease-in-out; pointer-events: none; }
-    .toast.show { bottom: 30px; }
-
-    #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; justify-content: center; align-items: center; cursor: zoom-out; opacity: 0; transition: opacity 0.2s; }
-    #lightbox.active { display: flex; opacity: 1; }
-    #lightbox img { max-width: 90%; max-height: 80%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-
-    .skeleton-card { display: flex; gap: 15px; padding: 15px; background: #fff; border-radius: 12px; margin-bottom: 15px; }
-    .sk-img { width: 85px; height: 85px; background: var(--skeleton); border-radius: 8px; }
-    .sk-info { flex: 1; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
-    .sk-line { height: 12px; background: var(--skeleton); border-radius: 4px; width: 100%; }
-    .sk-line.short { width: 60%; }
-    .animate-pulse { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
-
-    .btn-retry { background: var(--primary); color: #fff; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 13px; }
-    #sentinel { height: 20px; }
-
-    @media (prefers-color-scheme: dark) {
-      :root { --bg: #121212; --skeleton: #2d2d2d; }
-      body { color: #e0e0e0; }
-      .header, .card, .tab-btn, .skeleton-card { background: #1e1e1e; border-color: #333; color: #e0e0e0; }
-      /* ダークモード時のタイトルをゴールド・オレンジ系に変更 */
-      .main-title { color: #ffa726; }
-      .update-info { color: #aaa; }
-      .input-row, .input-row input { background: #2d2d2d; color: #fff; border-color: #444; }
-      .filter-row select, .btn-view { background: #2d2d2d; color: #fff; border-color: #444; }
-      /* ダークモード時の価格入力枠スタイル */
-      .price-range-group input { background: #2d2d2d; color: #fff; border-color: #444; }
-      .price-range-group span { color: #aaa; }
-      .rarity, .hit-count { background: #333; color: #ccc; border-color: #444; }
-      .history-tag { background: #333; color: #ccc; }
-      .history-tag:active { background: #444; }
-      .card-img { background: #2d2d2d; }
-      .btn-fav { color: #555; }
-      /* ★ダークモード時の上限リストカラースタイル */
-      .card.is-capped { background-color: #3e3115; border-color: #5c4717; }
+    :root {
+      color-scheme: light;
+      --brand:#f25a1b; --brand-dark:#cf3e08; --brand-soft:#fff0e8;
+      --accent:#e93f68; --bg:#f7f5f2; --surface:#fff; --surface-2:#f3f1ee;
+      --text:#201d1b; --muted:#706a66; --line:#e4dfda; --warning:#9a5800;
+      --warning-bg:#fff5d8; --shadow:0 8px 26px rgba(58,39,29,.08);
+      --safe-bottom:max(16px,env(safe-area-inset-bottom));
     }
+    html[data-theme="dark"] {
+      color-scheme:dark;
+      --brand:#ff7a3d; --brand-dark:#ff9869; --brand-soft:#39231b;
+      --accent:#ff7595; --bg:#131211; --surface:#1d1b19; --surface-2:#292623;
+      --text:#f5f1ed; --muted:#b7afa9; --line:#3b3632; --warning:#ffd38a;
+      --warning-bg:#392e17; --shadow:0 10px 30px rgba(0,0,0,.24);
+    }
+    * { box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { margin:0; background:var(--bg); color:var(--text); font-family:"Noto Sans JP",sans-serif; padding-bottom:120px }
+    button,input,select { font:inherit }
+    button { -webkit-tap-highlight-color:transparent }
+    .app-header { background:linear-gradient(180deg,var(--brand-soft),var(--bg)); padding:18px 14px 12px }
+    .header-inner,.main { width:min(760px,100%); margin:auto }
+    .brand-row { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px }
+    .brand { display:flex; align-items:center; gap:10px; min-width:0 }
+    .brand-mark { width:38px; height:38px; display:grid; place-items:center; border-radius:12px; background:var(--brand); color:#fff; font-weight:900; box-shadow:0 7px 18px rgba(242,90,27,.24) }
+    .brand-title { font-size:17px; font-weight:900; line-height:1.2 }
+    .brand-sub { color:var(--muted); font-size:10px; margin-top:3px }
+    .icon-btn { min-width:42px; height:42px; padding:0 11px; border:1px solid var(--line); border-radius:12px; color:var(--text); background:var(--surface); cursor:pointer }
+    .search-shell { background:var(--surface); border:2px solid var(--brand); border-radius:16px; display:flex; align-items:center; padding:3px; box-shadow:0 10px 30px rgba(242,90,27,.12) }
+    .search-icon { padding-left:12px; color:var(--brand); font-size:20px }
+    #keyword { min-width:0; flex:1; border:0; outline:0; background:transparent; color:var(--text); padding:13px 8px; font-size:16px; font-weight:500 }
+    #keyword::placeholder { color:#99918b }
+    .clear-search { display:none; width:32px; height:32px; border:0; border-radius:50%; background:var(--surface-2); color:var(--muted); cursor:pointer }
+    .search-submit { border:0; background:var(--brand); color:#fff; border-radius:11px; height:42px; padding:0 17px; font-weight:800; cursor:pointer }
+    .search-help { margin:7px 3px 0; color:var(--muted); font-size:10px }
+    .sticky-tools { position:sticky; top:0; z-index:50; background:color-mix(in srgb,var(--bg) 92%,transparent); border-bottom:1px solid var(--line); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px) }
+    .sticky-inner { width:min(760px,100%); margin:auto; padding:9px 14px }
+    .tabs { display:grid; grid-template-columns:repeat(4,1fr); gap:6px }
+    .tab { border:1px solid var(--line); background:var(--surface); color:var(--muted); border-radius:11px; padding:8px 3px; font-size:11px; font-weight:800; line-height:1.25; cursor:pointer }
+    .tab span { display:block; font-size:9px; margin-top:2px; opacity:.78 }
+    .tab.active { border-color:var(--brand); background:var(--brand); color:#fff; box-shadow:0 5px 14px rgba(242,90,27,.2) }
+    .tab[data-tab="plan"].active { background:#8b6413; border-color:#8b6413 }
+    .toolbar { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:8px }
+    .filter-toggle,.view-toggle { border:1px solid var(--line); background:var(--surface); color:var(--text); border-radius:10px; min-height:38px; padding:0 11px; font-size:11px; font-weight:700; cursor:pointer }
+    .filter-toggle.has-filter { color:var(--brand); border-color:var(--brand) }
+    .result-count { flex:1; text-align:center; color:var(--muted); font-size:11px; font-weight:700 }
+    .filters { display:none; padding-top:10px; grid-template-columns:1fr 1fr; gap:8px }
+    .filters.open { display:grid }
+    .field { display:flex; flex-direction:column; gap:4px }
+    .field label { font-size:10px; color:var(--muted); font-weight:700 }
+    .field select,.field input { width:100%; min-height:40px; border:1px solid var(--line); border-radius:9px; background:var(--surface); color:var(--text); padding:0 9px; font-size:12px; outline:none }
+    .price-fields { grid-column:1/-1; display:grid; grid-template-columns:1fr 18px 1fr; align-items:end; gap:5px }
+    .range-sep { text-align:center; padding-bottom:11px; color:var(--muted) }
+    .filter-actions { grid-column:1/-1; display:flex; justify-content:flex-end }
+    .reset-filter { border:0; background:transparent; color:var(--brand); font-size:11px; font-weight:800; padding:5px; cursor:pointer }
+    .main { padding:16px 14px }
+    .history { display:flex; align-items:center; gap:6px; overflow:auto; scrollbar-width:none; margin-bottom:12px }
+    .history:empty { display:none }
+    .history-chip { flex:none; border:1px solid var(--line); background:var(--surface); color:var(--muted); border-radius:999px; padding:6px 10px; font-size:10px; cursor:pointer }
+    .history-delete { flex:none; border:0; background:none; color:var(--muted); font-size:10px; text-decoration:underline; cursor:pointer }
+    .notice { display:flex; gap:9px; align-items:flex-start; padding:10px 12px; background:var(--surface); border:1px solid var(--line); border-radius:12px; color:var(--muted); font-size:10px; line-height:1.6; margin-bottom:13px }
+    .store-guide { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:13px; padding:11px 12px; border-radius:13px; background:var(--surface); border:1px solid var(--line) }
+    .store-guide-title { color:var(--muted); font-size:9px; font-weight:700 }
+    .store-guide-hours { margin-top:2px; font-size:12px; font-weight:900; line-height:1.5 }
+    .store-guide-deadlines { color:var(--muted); font-size:9px; line-height:1.5 }
+    .access-button { flex:none; display:grid; place-items:center; min-height:38px; padding:0 12px; border-radius:10px; background:var(--brand-soft); color:var(--brand); border:1px solid color-mix(in srgb,var(--brand) 35%,var(--line)); text-decoration:none; font-size:10px; font-weight:900 }
+    .cards { display:grid; gap:10px }
+    .card { display:grid; grid-template-columns:104px minmax(0,1fr); gap:13px; background:var(--surface); border:1px solid var(--line); border-radius:15px; padding:11px; box-shadow:var(--shadow); content-visibility:auto; contain-intrinsic-size:128px }
+    .card.capped { background:var(--warning-bg); border-color:color-mix(in srgb,var(--warning) 35%,var(--line)) }
+    .card-image-wrap { position:relative; width:104px; height:112px; border-radius:11px; background:var(--surface-2); overflow:hidden }
+    .card-image { width:100%; height:100%; object-fit:contain; display:block; cursor:zoom-in }
+    .image-fallback { position:absolute; inset:0; display:none; place-items:center; color:var(--muted); font-size:10px; text-align:center; padding:8px }
+    .card-content { min-width:0; display:flex; flex-direction:column }
+    .meta-row { display:flex; justify-content:space-between; align-items:center; gap:5px }
+    .badges { min-width:0; display:flex; align-items:center; gap:4px; overflow:hidden }
+    .rarity { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background:var(--surface-2); color:var(--muted); border-radius:6px; padding:3px 7px; font-size:9px; font-weight:800 }
+    .category-badge { flex:none; border-radius:6px; padding:3px 6px; color:#fff; background:#645c57; font-size:8px; font-weight:900 }
+    .category-badge.psa { background:#6348a9 }
+    .category-badge.box { background:#167462 }
+    .category-badge.sotai { background:#b95a18 }
+    .plan-btn { width:35px; height:35px; flex:none; border:1px solid var(--line); border-radius:10px; background:var(--surface); color:#b7afa9; font-size:20px; line-height:1; cursor:pointer }
+    .plan-btn.active { color:#d69b11; background:#fff8de; border-color:#e7c05f }
+    html[data-theme="dark"] .plan-btn.active { background:#392e17 }
+    .card-name { margin:7px 0 3px; font-size:13px; font-weight:800; line-height:1.45; overflow-wrap:anywhere }
+    .card-code { color:var(--muted); font-size:9px; min-height:13px }
+    .price-label { color:var(--muted); font-size:9px; margin-top:auto }
+    .price { color:var(--accent); font-size:22px; font-weight:900; letter-spacing:-.03em; line-height:1.15 }
+    .price.missing { color:var(--muted); font-size:14px; margin-top:4px }
+    .limit { color:var(--muted); font-size:9px; margin-top:3px }
+    .capped-badge { display:inline-block; color:var(--warning); font-size:9px; font-weight:800; margin-top:4px }
+    .plan-widget { margin-top:7px }
+    .quantity-row { display:flex; align-items:center; justify-content:space-between; gap:7px; min-height:31px }
+    .quantity-label { color:var(--muted); font-size:9px; font-weight:700 }
+    .qty-stepper { display:grid; grid-template-columns:29px 34px 29px; align-items:center; border:1px solid var(--line); border-radius:9px; overflow:hidden; background:var(--surface) }
+    .qty-button { height:29px; border:0; background:var(--surface-2); color:var(--text); font-size:16px; font-weight:800; cursor:pointer }
+    .qty-button:disabled { opacity:.35; cursor:default }
+    .qty-input { width:34px; height:29px; padding:0; border:0; outline:0; background:var(--surface); color:var(--text); text-align:center; font-size:11px; font-weight:900; -moz-appearance:textfield }
+    .qty-input::-webkit-inner-spin-button,.qty-input::-webkit-outer-spin-button { -webkit-appearance:none; margin:0 }
+    .market-actions { display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:7px }
+    .market-button { display:grid; place-items:center; min-height:31px; border-radius:8px; color:#fff; text-decoration:none; font-size:9px; font-weight:800 }
+    .market-button.mercari { background:#e94343 }
+    .market-button.shop { background:#34312f }
+    html[data-theme="dark"] .market-button.shop { background:#55504c }
+    .cards.block-view { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px }
+    .cards.block-view .card { display:flex; flex-direction:column; gap:8px; padding:8px }
+    .cards.block-view .card-image-wrap { width:100%; height:155px }
+    .cards.block-view .card-content { min-height:142px }
+    .cards.block-view .card-name { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; min-height:38px; margin-top:6px; font-size:12px }
+    .cards.block-view .card-code { overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+    .cards.block-view .price { font-size:19px }
+    .cards.block-view .limit { overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+    .cards.block-view .quantity-row { align-items:flex-end; flex-direction:column }
+    .cards.block-view .quantity-label { align-self:flex-start }
+    .cards.block-view .qty-stepper { width:100%; grid-template-columns:1fr 35px 1fr }
+    .cards.block-view .market-button { min-height:32px }
+    .empty,.error-state { text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:34px 18px; color:var(--muted) }
+    .empty-icon { font-size:32px; margin-bottom:8px }
+    .empty h2,.error-state h2 { color:var(--text); font-size:16px; margin:0 0 7px }
+    .empty p,.error-state p { font-size:11px; line-height:1.7; margin:0 auto 14px; max-width:420px }
+    .suggestions { display:flex; flex-wrap:wrap; justify-content:center; gap:7px }
+    .suggestion,.retry { border:1px solid var(--brand); color:var(--brand); background:var(--brand-soft); border-radius:10px; padding:8px 12px; font-size:11px; font-weight:800; cursor:pointer }
+    .skeleton { height:136px; border-radius:15px; background:linear-gradient(90deg,var(--surface) 25%,var(--surface-2) 42%,var(--surface) 60%); background-size:300% 100%; animation:shimmer 1.3s infinite }
+    @keyframes shimmer { to { background-position:-100% 0 } }
+    .plan-bar { position:fixed; z-index:80; left:50%; bottom:var(--safe-bottom); transform:translateX(-50%); width:min(732px,calc(100% - 28px)); display:flex; align-items:center; gap:12px; background:#211d1a; color:#fff; border-radius:16px; padding:11px 13px; box-shadow:0 12px 34px rgba(0,0,0,.28); transition:.2s }
+    .plan-bar.empty { left:auto; right:14px; transform:none; width:auto; padding:8px 11px; border-radius:12px }
+    .plan-bar.empty .plan-total,.plan-bar.empty .open-plan { display:none }
+    .plan-bar.empty .plan-count { color:#fff; font-size:10px }
+    .plan-summary { min-width:0; flex:1 }
+    .plan-count { color:#d1c8c1; font-size:9px }
+    .plan-total { font-size:19px; font-weight:900; white-space:nowrap }
+    .plan-total small { color:#d1c8c1; font-size:9px; font-weight:500; margin-left:4px }
+    .open-plan { border:0; border-radius:10px; background:var(--brand); color:#fff; padding:10px 13px; font-size:11px; font-weight:800; cursor:pointer }
+    .modal { position:fixed; inset:0; z-index:200; display:none; align-items:flex-end; justify-content:center; background:rgba(0,0,0,.56) }
+    .modal.open { display:flex }
+    .sheet { width:min(760px,100%); max-height:88vh; overflow:auto; background:var(--surface); border-radius:22px 22px 0 0; padding:16px 14px calc(18px + env(safe-area-inset-bottom)) }
+    .sheet-head { display:flex; align-items:center; justify-content:space-between; position:sticky; top:-16px; background:var(--surface); padding:13px 0 10px; z-index:2 }
+    .sheet-head h2 { font-size:17px; margin:0 }
+    .sheet-head-actions { display:flex; align-items:center; gap:7px }
+    .clear-plan { min-height:34px; padding:0 9px; border:1px solid var(--line); border-radius:9px; background:var(--surface); color:var(--muted); font-size:9px; font-weight:800; cursor:pointer }
+    .sheet-close { width:38px; height:38px; border:1px solid var(--line); background:var(--surface-2); color:var(--text); border-radius:50%; cursor:pointer }
+    .plan-item { display:grid; grid-template-columns:58px minmax(0,1fr) auto; gap:10px; align-items:center; padding:10px 0; border-bottom:1px solid var(--line) }
+    .plan-item img { width:58px; height:58px; object-fit:contain; border-radius:8px; background:var(--surface-2) }
+    .plan-item-name { font-size:11px; font-weight:800; line-height:1.4 }
+    .plan-item-price { color:var(--muted); font-size:9px; font-weight:700; margin-top:3px }
+    .plan-item-subtotal { color:var(--accent); font-size:14px; font-weight:900; margin-top:2px }
+    .plan-item-controls { display:flex; flex-direction:column; align-items:flex-end; gap:6px }
+    .remove-plan { border:0; background:transparent; color:var(--muted); font-size:17px; cursor:pointer; padding:0 4px }
+    .sheet-total { display:flex; justify-content:space-between; align-items:end; margin:16px 0 6px }
+    .sheet-total-label { color:var(--muted); font-size:9px }
+    .sheet-total-count { color:var(--text); font-size:11px; font-weight:800; margin-top:3px }
+    .sheet-total strong { color:var(--accent); font-size:24px }
+    .sheet-note { color:var(--muted); font-size:9px; line-height:1.6 }
+    .share-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:13px 0 9px }
+    .share-button { min-height:42px; border:0; border-radius:11px; color:#fff; font-size:11px; font-weight:900; cursor:pointer }
+    .share-button.line { background:#06c755 }
+    .share-button.other { background:var(--brand) }
+    .share-button:disabled,.clear-plan:disabled { opacity:.4; cursor:default }
+    .toast { position:fixed; z-index:300; left:50%; bottom:100px; transform:translate(-50%,20px); opacity:0; pointer-events:none; background:#211d1a; color:#fff; border-radius:999px; padding:9px 15px; font-size:11px; font-weight:700; transition:.2s }
+    .toast.show { opacity:1; transform:translate(-50%,0) }
+    .lightbox { position:fixed; inset:0; z-index:250; display:none; place-items:center; background:rgba(0,0,0,.88); padding:28px; cursor:zoom-out }
+    .lightbox.open { display:grid }
+    .lightbox img { max-width:100%; max-height:86vh; object-fit:contain; border-radius:12px }
+    .sentinel { height:20px }
+    @media (min-width:640px) {
+      .app-header { padding-top:25px }
+      .brand-title { font-size:20px }
+      .cards.block-view { grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px }
+      .cards.block-view .card-image-wrap { height:190px }
+    }
+    @media (max-width:370px) {
+      .search-submit { padding:0 12px }
+      .card { grid-template-columns:88px minmax(0,1fr) }
+      .card-image-wrap { width:88px; height:104px }
+      .tab { font-size:10px }
+    }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; animation:none!important; transition:none!important } }
   </style>
 </head>
 <body>
-
-<div class="header">
-  <div class="search-box">
-    <div class="main-title">トレカキングダム 買取額検索</div>
-    <div class="update-info"><br>
-      掲載されているのは更新時の価格になります。<br>
-      買取上限に達した場合は返却か減額でのお査定となります。
-    </div>
-    
-    <div class="tab-row" id="tabContainer">
-      <button class="tab-btn" id="tab-psa" onclick="switchTab('psa')">PSA等<br>(0件)</button>
-      <button class="tab-btn" id="tab-box" onclick="switchTab('box')">BOX<br>(0件)</button>
-      <button class="tab-btn" id="tab-sotai" onclick="switchTab('sotai')">素体<br>(0件)</button>
-      <button class="tab-btn" id="tab-fav" onclick="switchTab('fav')" style="color:var(--fav);">★お気に入り<br>(0件)</button>
-    </div>
-    
-    <form class="search-form" onsubmit="handleSearchSubmit(event)">
-      <div class="input-row">
-        <input type="search" id="keyword" placeholder="キーワード・型番を検索..." oninput="onInput()">
-        <button type="button" class="btn-clear" id="btnClear" onclick="clearKeyword()">×</button>
-        <button type="submit" class="btn-search">検索</button>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-row">
+        <div class="brand">
+          <div class="brand-mark">TK</div>
+          <div><div class="brand-title">買取額検索</div><div class="brand-sub">トレカキングダム</div></div>
+        </div>
+        <button class="icon-btn" id="themeToggle" type="button" aria-label="表示テーマを切り替える">☾</button>
       </div>
-      <div class="history-row" id="historyContainer"></div>
-    </form>
-    
-    <div class="filter-row">
-      <select id="raritySelect" onchange="search()"><option value="">全種別・レアリティ</option></select>
-      
-      <div class="price-range-group">
-        <input type="number" id="minPrice" placeholder="下限(¥)" oninput="onInput()" pattern="\d*">
-        <span>〜</span>
-        <input type="number" id="maxPrice" placeholder="上限(¥)" oninput="onInput()" pattern="\d*">
-      </div>
+      <form id="searchForm" role="search">
+        <div class="search-shell">
+          <span class="search-icon" aria-hidden="true">⌕</span>
+          <input id="keyword" type="search" autocomplete="off" enterkeyhint="search" autofocus placeholder="カード名・型番を入力">
+          <button class="clear-search" id="clearSearch" type="button" aria-label="検索をクリア">×</button>
+          <button class="search-submit" type="submit">検索</button>
+        </div>
+        <div class="search-help">例：リザードンex ／ 201/165 ／ リザードン SAR</div>
+      </form>
+    </div>
+  </header>
 
-      <select id="sortSelect" onchange="executeSortAndRender()">
-        <option value="default">おすすめ順（標準）</option>
-        <option value="desc">価格高い順</option>
-        <option value="asc">価格低い順</option>
-        <option value="name_asc">名前：あ〜ん順</option>
-        <option value="name_desc">名前：ん〜あ順</option>
-      </select>
-      <div class="status-group">
-        <div class="hit-count" id="hitCount">0 件</div>
-        <button class="btn-view" id="viewToggleBtn" onclick="toggleView()">画像のみ</button>
+  <div class="sticky-tools">
+    <div class="sticky-inner">
+      <nav class="tabs" aria-label="商品カテゴリ">
+        <button class="tab" type="button" data-tab="psa">PSA等<span id="count-psa">0件</span></button>
+        <button class="tab" type="button" data-tab="box">BOX<span id="count-box">0件</span></button>
+        <button class="tab" type="button" data-tab="sotai">素体<span id="count-sotai">0件</span></button>
+        <button class="tab" type="button" data-tab="plan">持込予定<span id="count-plan">0件</span></button>
+      </nav>
+      <div class="toolbar">
+        <button class="filter-toggle" id="filterToggle" type="button" aria-expanded="false">絞り込み ＋</button>
+        <div class="result-count" id="resultCount" aria-live="polite">読み込み中</div>
+        <button class="view-toggle" id="viewToggle" type="button">ブロック表示</button>
+      </div>
+      <div class="filters" id="filters">
+        <div class="field"><label for="raritySelect">種別・レアリティ</label><select id="raritySelect"><option value="">すべて</option></select></div>
+        <div class="field"><label for="sortSelect">並び順</label><select id="sortSelect"><option value="default">おすすめ順</option><option value="desc">価格が高い順</option><option value="asc">価格が低い順</option><option value="name_asc">名前 あ→ん</option><option value="name_desc">名前 ん→あ</option></select></div>
+        <div class="price-fields">
+          <div class="field"><label for="minPrice">最低価格</label><input id="minPrice" type="number" min="0" inputmode="numeric" placeholder="指定なし"></div>
+          <div class="range-sep">〜</div>
+          <div class="field"><label for="maxPrice">最高価格</label><input id="maxPrice" type="number" min="0" inputmode="numeric" placeholder="指定なし"></div>
+        </div>
+        <div class="filter-actions"><button class="reset-filter" id="resetFilter" type="button">絞り込みをリセット</button></div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="container" id="list">
-  <div class="skeleton-card animate-pulse"><div class="sk-img"></div><div class="sk-info"><div class="sk-line short"></div><div class="sk-line"></div><div class="sk-line short"></div></div></div>
-  <div class="skeleton-card animate-pulse"><div class="sk-img"></div><div class="sk-info"><div class="sk-line short"></div><div class="sk-line"></div><div class="sk-line short"></div></div></div>
-</div>
+  <main class="main">
+    <div class="history" id="history"></div>
+    <div class="notice"><span>ⓘ</span><span>表示価格は更新時点の価格です。相場・在庫状況や買取上限到達により、減額または返却となる場合があります。</span></div>
+    <section class="store-guide" aria-label="店舗営業時間とアクセス">
+      <div>
+        <div class="store-guide-title">トレカキングダム秋葉原店</div>
+        <div class="store-guide-hours">12:00 OPEN — 19:00 CLOSE</div>
+        <div class="store-guide-deadlines">素体買取 17:00受付終了 ／ BOX買取 18:00受付終了</div>
+      </div>
+      <a class="access-button" href="https://www.google.com/maps/search/?api=1&amp;query=%E3%83%88%E3%83%AC%E3%82%AB%E3%82%AD%E3%83%B3%E3%82%B0%E3%83%80%E3%83%A0%20%E7%A7%8B%E8%91%89%E5%8E%9F" target="_blank" rel="noopener noreferrer">アクセス ↗</a>
+    </section>
+    <div class="cards" id="cards"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+    <div class="sentinel" id="sentinel"></div>
+  </main>
 
-<div id="sentinel"></div>
-<button class="scroll-to-top" id="scrollToTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">↑</button>
-
-<div class="toast" id="toast"></div>
-
-<div id="lightbox" onclick="closeLightbox()">
-  <img id="lb-img" src="" alt="拡大画像">
-</div>
-
-<script>
-  const DATA_URL = "https://mocha0908.github.io/TCK-kaitori/data.json";
-  const fallbackImg = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect fill='%23eeeeee' width='100' height='100'/%3E%3Ctext fill='%23999999' x='50' y='50' font-family='sans-serif' font-size='12' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3C/svg%3E";
-
-  let database = { psa: [], box: [], sotai: [], all: [] };
-  let currentTab = '';
-  let filteredItems = [];
-  let timer;
-  let displayLimit = 30;
-  const INCREMENT = 30;
-  
-  let isGrid = localStorage.getItem('tck_view') === 'grid';
-  let searchHistory = JSON.parse(localStorage.getItem('tck_history') || '[]');
-  let favorites = JSON.parse(localStorage.getItem('tck_favs') || '[]');
-
-  function normalizeText(str) {
-    if (!str) return "";
-    let s = str.replace(/[\u30a1-\u30f6]/g, match => String.fromCharCode(match.charCodeAt(0) - 0x60));
-    s = s.replace(/[！-～]/g, match => String.fromCharCode(match.charCodeAt(0) - 0xFEE0));
-    s = s.replace(/ /g, ' ');
-    return s.toLowerCase();
-  }
-
-  async function init() {
-    try {
-      applyViewState();
-      renderHistory();
-
-      const res = await fetch(DATA_URL + "?v=" + new Date().getTime());
-      if (!res.ok) throw new Error('Network response was not ok');
-      const data = await res.json();
-      
-      // ★修正: 「掲載」に加え「注意」「強化」「超強化」を読み込み対象にする
-      const validStatuses = ["掲載", "注意", "強化", "超強化"];
-      if (data.psa) database.psa = data.psa.filter(item => validStatuses.includes(item.status)).map((item, index) => formatItem(item, index, "PSA10"));
-      if (data.box) database.box = data.box.filter(item => validStatuses.includes(item.status)).map((item, index) => formatItem(item, index, "BOX"));
-      if (data.sotai) database.sotai = data.sotai.map((item, index) => formatItem(item, index, "-"));
-      
-      database.all = [...database.psa, ...database.box, ...database.sotai];
-
-      updateTabCounts();
-
-      if (database.psa.length === 0) document.getElementById('tab-psa').style.display = 'none';
-      if (database.box.length === 0) document.getElementById('tab-box').style.display = 'none';
-      if (database.sotai.length === 0) document.getElementById('tab-sotai').style.display = 'none';
-
-      const params = new URLSearchParams(window.location.search);
-      const urlTab = params.get('tab');
-      const urlQuery = params.get('q');
-      
-      if (urlQuery) {
-        document.getElementById('keyword').value = urlQuery;
-        document.getElementById('btnClear').style.display = 'flex';
-      }
-
-      let targetTab = urlTab || '';
-      if (!targetTab || (targetTab !== 'fav' && (!database[targetTab] || database[targetTab].length === 0))) {
-        if (database.psa.length > 0) targetTab = 'psa';
-        else if (database.box.length > 0) targetTab = 'box';
-        else if (database.sotai.length > 0) targetTab = 'sotai';
-        else targetTab = 'fav';
-      }
-
-      switchTab(targetTab, true);
-
-    } catch(e) { 
-      document.getElementById('list').innerHTML = `<p style="text-align:center; padding:50px; color:red;">データの取得に失敗しました。<br>${e.message}</p>`; 
-    }
-  }
-
-  function formatItem(item, index, defaultRarity) {
-    const safeFavId = `${item.name}::${item.code || ""}::${item.rarity || item.spec || defaultRarity}`;
-    return {
-      name: item.name, 
-      code: item.code || "", 
-      rarity: item.rarity || item.spec || defaultRarity,
-      priceNum: item.sort_price, 
-      priceStr: item.price_max || item.price_a || item.price_after, // ★元の価格（上限）を優先表示に変更
-      limitStr: item.price_limit || null, 
-      image: formatImageUrl(item.img),
-      originalIndex: index,
-      favId: safeFavId,
-      searchTarget: normalizeText(`${item.name} ${item.code || ""} ${item.rarity || item.spec || defaultRarity}`),
-      isCapped: item.is_capped || false // ★追加: 上限リストのフラグを取得
-    };
-  }
-
-  function formatImageUrl(rawUrl) {
-    if (!rawUrl) return fallbackImg;
-    if (rawUrl.startsWith('data:image')) return rawUrl;
-    if (rawUrl.includes('drive.google.com')) {
-      const matches = rawUrl.match(/(?:id=|\/d\/)([a-zA-Z0-9-_]+)/);
-      if (matches && matches[1]) return `https://drive.google.com/thumbnail?id=${matches[1]}`;
-    }
-    return rawUrl;
-  }
-
-  function updateTabCounts() {
-    if (database.psa.length > 0) document.getElementById('tab-psa').innerHTML = `PSA等<br>(${database.psa.length}件)`;
-    if (database.box.length > 0) document.getElementById('tab-box').innerHTML = `BOX<br>(${database.box.length}件)`;
-    if (database.sotai.length > 0) document.getElementById('tab-sotai').innerHTML = `素体<br>(${database.sotai.length}件)`;
-    
-    const validFavs = database.all.filter(item => favorites.includes(item.favId)).length;
-    document.getElementById('tab-fav').innerHTML = `★お気に入り<br>(${validFavs}件)`;
-  }
-
-  function switchTab(tabName, skipUrlUpdate = false) {
-    currentTab = tabName;
-    document.getElementById('tab-psa').classList.toggle('active', tabName === 'psa');
-    document.getElementById('tab-box').classList.toggle('active', tabName === 'box');
-    document.getElementById('tab-sotai').classList.toggle('active', tabName === 'sotai');
-    document.getElementById('tab-fav').classList.toggle('active', tabName === 'fav');
-    
-    document.getElementById('sortSelect').value = 'default';
-    updateRarityOptions();
-    search(skipUrlUpdate);
-  }
-
-  function updateRarityOptions() {
-    const sel = document.getElementById('raritySelect');
-    sel.innerHTML = '<option value="">全種別・レアリティ</option>';
-    let currentData = database[currentTab] || [];
-    if (currentTab === 'fav') currentData = database.all.filter(item => favorites.includes(item.favId));
-    
-    const rarities = [...new Set(currentData.map(i => i.rarity))].filter(r => r && r !== '-').sort();
-    rarities.forEach(r => {
-      const opt = document.createElement('option');
-      opt.value = opt.text = r;
-      sel.appendChild(opt);
-    });
-  }
-
-  function search(skipUrlUpdate = false) {
-    const kwInput = document.getElementById('keyword');
-    const rawKw = kwInput.value.trim();
-    const rar = document.getElementById('raritySelect').value;
-    
-    const minPrice = parseInt(document.getElementById('minPrice').value, 10) || 0;
-    const maxPrice = parseInt(document.getElementById('maxPrice').value, 10) || Infinity;
-    
-    let currentData = database[currentTab] || [];
-    if (currentTab === 'fav') {
-      currentData = database.all.filter(item => favorites.includes(item.favId));
-      currentData = Array.from(new Map(currentData.map(item => [item.favId, item])).values());
-    }
-    
-    document.getElementById('btnClear').style.display = (rawKw || document.getElementById('minPrice').value || document.getElementById('maxPrice').value) ? 'flex' : 'none';
-
-    const keywords = normalizeText(rawKw).split(/\s+/).filter(k => k);
-    
-    filteredItems = currentData.filter(item => {
-      const isMatchKw = keywords.length === 0 || keywords.every(k => item.searchTarget.includes(k));
-      if (!isMatchKw) return false;
-      if (rar && item.rarity !== rar) return false;
-      
-      if (item.priceNum < minPrice || item.priceNum > maxPrice) return false;
-      
-      return true;
-    });
-
-    if (!skipUrlUpdate) {
-      const params = new URLSearchParams();
-      params.set('tab', currentTab);
-      if (rawKw) params.set('q', rawKw);
-      window.history.replaceState(null, '', '?' + params.toString());
-    }
-
-    executeSortAndRender();
-  }
-
-  function onInput() {
-    clearTimeout(timer);
-    timer = setTimeout(search, 300);
-  }
-
-  function handleSearchSubmit(e) {
-    e.preventDefault();
-    clearTimeout(timer); 
-    const kw = document.getElementById('keyword').value.trim();
-    if (kw) saveHistory(kw);
-    search(); 
-    document.getElementById('keyword').blur(); 
-  }
-
-  function saveHistory(kw) {
-    searchHistory = searchHistory.filter(h => h !== kw); 
-    searchHistory.unshift(kw); 
-    if (searchHistory.length > 10) searchHistory.pop(); 
-    localStorage.setItem('tck_history', JSON.stringify(searchHistory));
-    renderHistory();
-  }
-
-  function renderHistory() {
-    const cont = document.getElementById('historyContainer');
-    if (searchHistory.length === 0) { cont.innerHTML = ''; return; }
-    const tagsHtml = searchHistory.map(h => `<span class="history-tag" onclick="searchFromHistory('${h.replace(/'/g, "\\'")}')">${h}</span>`).join('');
-    cont.innerHTML = `${tagsHtml}<span class="history-clear" onclick="clearHistory()">履歴消去</span>`;
-  }
-
-  function searchFromHistory(kw) {
-    document.getElementById('keyword').value = kw;
-    saveHistory(kw); 
-    search();
-    document.getElementById('keyword').blur();
-  }
-
-  function clearHistory() {
-    searchHistory = [];
-    localStorage.removeItem('tck_history');
-    renderHistory();
-  }
-
-  function clearKeyword() {
-    const kwInput = document.getElementById('keyword');
-    kwInput.value = '';
-    document.getElementById('minPrice').value = '';
-    document.getElementById('maxPrice').value = '';
-    search();
-    kwInput.focus();
-  }
-
-  function toggleView() {
-    isGrid = !isGrid;
-    localStorage.setItem('tck_view', isGrid ? 'grid' : 'list');
-    applyViewState();
-  }
-
-  function applyViewState() {
-    const listCont = document.getElementById('list');
-    const btn = document.getElementById('viewToggleBtn');
-    if (isGrid) {
-      listCont.classList.add('grid');
-      btn.innerText = 'リスト表示';
-    } else {
-      listCont.classList.remove('grid');
-      btn.innerText = '画像表示';
-    }
-  }
-
-  function executeSortAndRender() {
-    const sort = document.getElementById('sortSelect').value;
-    filteredItems.sort((a, b) => {
-      switch(sort) {
-        case 'default': return a.originalIndex - b.originalIndex;
-        case 'desc': return b.priceNum - a.priceNum;
-        case 'asc': return a.priceNum - b.priceNum;
-        case 'name_asc': return a.name.localeCompare(b.name, 'ja');
-        case 'name_desc': return b.name.localeCompare(a.name, 'ja');
-        default: return 0;
-      }
-    });
-
-    document.getElementById('hitCount').innerText = `${filteredItems.length} 件`;
-    displayLimit = INCREMENT;
-    renderList();
-  }
-
-  function renderList() {
-    const cont = document.getElementById('list');
-    if (filteredItems.length === 0) {
-      const msg = currentTab === 'fav' ? 'お気に入りに登録されているカードはありません。<br>リストの★マークをタップして追加してください。' : '該当するデータが見つかりませんでした。';
-      cont.innerHTML = `
-        <div style="text-align:center; padding:50px 10px; color:#999; line-height:1.6;">
-          <p>${msg}</p>
-          ${currentTab !== 'fav' ? `<button class="btn-retry" onclick="clearKeyword()">検索条件をクリア</button>` : ''}
-        </div>
-      `;
-      return;
-    }
-    const chunk = filteredItems.slice(0, displayLimit);
-    cont.innerHTML = chunk.map(generateCardHtml).join('');
-  }
-
-  function toggleFav(favId) {
-    if (favorites.includes(favId)) {
-      favorites = favorites.filter(f => f !== favId);
-    } else {
-      favorites.push(favId);
-    }
-    localStorage.setItem('tck_favs', JSON.stringify(favorites));
-    
-    document.querySelectorAll(`[data-favid="${favId}"]`).forEach(btn => {
-      btn.innerHTML = favorites.includes(favId) ? '★' : '☆';
-      btn.classList.toggle('active', favorites.includes(favId));
-    });
-
-    updateTabCounts();
-    
-    if (currentTab === 'fav') {
-      search(true);
-    } else {
-      showToast(favorites.includes(favId) ? 'お気に入りに追加しました' : 'お気に入りから削除しました');
-    }
-  }
-
-  function generateCardHtml(item) {
-    const queryA = item.rarity === "PSA" || item.rarity === "BOX" ? "" : item.rarity;
-    const queryB = item.code || "";
-    let searchQuery = `${queryA} ${queryB}`.trim();
-    if (!searchQuery) searchQuery = item.name;
-    
-    const mercariUrl = `https://jp.mercari.com/search?keyword=${encodeURIComponent(searchQuery)}`;
-    const shopUrl = `https://shop.japan-toreca.com/search?q=${encodeURIComponent(searchQuery)}`;
-    const safeName = item.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-    const isFav = favorites.includes(item.favId);
-
-    const favHtml = `<button class="btn-fav ${isFav ? 'active' : ''}" data-favid="${item.favId}" onclick="toggleFav('${item.favId}')">${isFav ? '★' : '☆'}</button>`;
-
-    let actionsHtml = '';
-    if (currentTab === 'sotai' || currentTab === 'fav') {
-      actionsHtml = `
-        <a href="${mercariUrl}" target="_blank" rel="noopener" class="btn btn-mer">メルカリ</a>
-        <a href="${shopUrl}" target="_blank" rel="noopener" class="btn btn-shp">通販</a>
-        <button type="button" onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
-      `;
-    } else if (currentTab === 'psa') {
-      actionsHtml = `
-        <a href="${mercariUrl}" target="_blank" rel="noopener" class="btn btn-mer">メルカリ</a>
-        <button type="button" onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
-      `;
-    } else if (currentTab === 'box') {
-      actionsHtml = `
-        <button type="button" onclick="share('${safeName}', '${item.priceStr}')" class="btn btn-tw">X共有</button>
-      `;
-    }
-
-    const limitHtml = (item.limitStr && item.limitStr !== '-') ? `<div class="limit">上限: ${item.limitStr}</div>` : `<div style="margin-bottom:10px;"></div>`;
-    
-    // ★追加: 上限リスト特有のクラスとバッジ
-    const cappedClass = item.isCapped ? 'is-capped' : '';
-    const cappedBadge = item.isCapped ? `<span class="capped-badge">価格変動/終了</span>` : '';
-
-    return `
-      <div class="card ${cappedClass}">
-        <img src="${item.image}" class="card-img" referrerpolicy="no-referrer" loading="lazy" onclick="openLightbox('${item.image}')" onerror="this.onerror=null; this.src='${fallbackImg}'">
-        <div class="card-info">
-          <div class="rarity-row">
-            <span class="rarity">${item.rarity}</span>
-            ${favHtml}
-          </div>
-          <span class="name" title="${item.name}">${item.name} ${cappedBadge}</span>
-          <div class="price">${item.priceStr}</div>
-          ${limitHtml}
-          <div class="actions">
-            ${actionsHtml}
-          </div>
+  <div class="plan-bar" id="planBar">
+    <div class="plan-summary"><div class="plan-count" id="planSummaryCount">持ち込み予定 0点</div><div class="plan-total" id="planSummaryTotal">¥0<small>概算</small></div></div>
+    <button class="open-plan" id="openPlan" type="button">予定を見る</button>
+  </div>
+  <div class="modal" id="planModal" role="dialog" aria-modal="true" aria-labelledby="planTitle">
+    <section class="sheet">
+      <div class="sheet-head">
+        <h2 id="planTitle">持ち込み予定リスト</h2>
+        <div class="sheet-head-actions">
+          <button class="clear-plan" id="clearPlan" type="button">すべて削除</button>
+          <button class="sheet-close" id="closePlan" type="button" aria-label="閉じる">×</button>
         </div>
       </div>
-    `;
-  }
+      <div id="planItems"></div>
+      <div class="sheet-total">
+        <div><div class="sheet-total-label">持ち込み予定</div><div class="sheet-total-count" id="modalPlanCount">0種類・合計0枚</div></div>
+        <div><div class="sheet-total-label">概算合計</div><strong id="modalTotal">¥0</strong></div>
+      </div>
+      <div class="share-actions">
+        <button class="share-button line" id="shareLine" type="button">LINEで共有</button>
+        <button class="share-button other" id="sharePlan" type="button">その他で共有</button>
+      </div>
+      <div class="sheet-note">実際の買取金額を保証するものではありません。カードの状態、相場、在庫状況、買取上限などにより査定額は変動します。</div>
+    </section>
+  </div>
+  <div class="lightbox" id="lightbox"><img id="lightboxImage" alt="カード画像の拡大表示"></div>
+  <div class="toast" id="toast" role="status"></div>
 
-  function openLightbox(src) {
-    if (src === fallbackImg) return;
-    const lb = document.getElementById('lightbox');
-    document.getElementById('lb-img').src = src;
-    lb.classList.add('active');
-  }
-  
-  function closeLightbox() {
-    document.getElementById('lightbox').classList.remove('active');
-  }
+  <script>
+    (() => {
+      "use strict";
+      const DATA_URL = "https://mocha0908.github.io/TCK-kaitori/data.json";
+      const SEARCH_LOG_URL = ""; // 検索ログ受信.gsを公開後、ウェブアプリURLをここに設定
+      const VALID_STATUSES = new Set(["掲載","注意","強化","超強化"]);
+      const PAGE_SIZE = 30;
+      const state = {
+        database:{psa:[],box:[],sotai:[],all:[]}, tab:"", filtered:[], rendered:0,
+        view:["block","image"].includes(localStorage.getItem("tck_view_v2"))?"block":"list",
+        theme:localStorage.getItem("tck_theme")||"light",
+        history:readStorage("tck_history_v2",[]),
+        plan:readPlan(),
+        debounce:null, toastTimer:null, searchLogTimer:null, lastLoggedSearch:""
+      };
+      const el = id => document.getElementById(id);
+      const cards = el("cards");
 
-  function showToast(msg) {
-    const toast = document.getElementById('toast');
-    toast.innerText = msg;
-    toast.classList.add('show');
-    setTimeout(() => { toast.classList.remove('show'); }, 2000);
-  }
-
-  function share(name, priceStr) {
-    const cleanName = name.replace(/&quot;/g, '"');
-    const txt = `${cleanName}\n買取価格: ${priceStr}\n#トレカキングダム`;
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(txt)}`, '_blank');
-  }
-
-  const observer = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting && displayLimit < filteredItems.length) {
-      displayLimit += INCREMENT;
-      renderList();
-    }
-  }, { rootMargin: '200px' });
-  
-  window.addEventListener('DOMContentLoaded', () => {
-    observer.observe(document.getElementById('sentinel'));
-  });
-
-  window.onscroll = function() {
-    const btn = document.getElementById('scrollToTop');
-    if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
-      btn.style.display = 'block';
-    } else {
-      btn.style.display = 'none';
-    }
-  };
-
-  init();
-</script>
+      function readStorage(key,fallback) {
+        try { const value=JSON.parse(localStorage.getItem(key)); return Array.isArray(value)?value:fallback; }
+        catch { return fallback; }
+      }
+      function readPlan() {
+        try {
+          const saved=JSON.parse(localStorage.getItem("tck_plan_v2"));
+          if(!Array.isArray(saved)) return [];
+          const merged=new Map();
+          saved.forEach(entry=>{
+            const id=typeof entry==="string"?entry:text(entry?.id);
+            if(!id)return;
+            const qty=typeof entry==="string"?1:Math.max(1,Math.min(999,Math.floor(number(entry.qty)??1)));
+            merged.set(id,Math.max(merged.get(id)||0,qty));
+          });
+          return [...merged].map(([id,qty])=>({id,qty}));
+        } catch { return []; }
+      }
+      function text(value) { return value==null?"":String(value); }
+      function normalize(value) {
+        return text(value).normalize("NFKC")
+          .replace(/[\u30a1-\u30f6]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60))
+          .replace(/[‐‑‒–—―ー−]/g,"-").replace(/\s+/g," ").trim().toLowerCase();
+      }
+      function codeVariants(value) {
+        const normalized=normalize(value);
+        const compact=normalized.replace(/[\s/_-]/g,"");
+        const variants=[normalized,compact];
+        const six=compact.match(/^(\d{3})(\d{3})$/);
+        if(six) variants.push(`${six[1]}/${six[2]}`);
+        return [...new Set(variants.filter(Boolean))];
+      }
+      function number(value) {
+        if(typeof value==="number"&&Number.isFinite(value)) return value;
+        const cleaned=text(value).replace(/[^\d.-]/g,"");
+        if(!cleaned) return null;
+        const parsed=Number(cleaned);
+        return Number.isFinite(parsed)?parsed:null;
+      }
+      function imageUrl(raw) {
+        const value=text(raw).trim();
+        if(!value) return "";
+        if(value.startsWith("data:image")) return value;
+        if(value.includes("drive.google.com")) {
+          const found=value.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
+          return found?`https://drive.google.com/thumbnail?id=${encodeURIComponent(found[1])}`:value;
+        }
+        try { const url=new URL(value); return /^https?:$/.test(url.protocol)?url.href:""; } catch { return ""; }
+      }
+      function formatItem(item,index,type) {
+        const name=text(item.name).trim()||"名称未設定";
+        const code=text(item.code).trim();
+        const rarity=text(item.rarity||item.spec||type).trim()||type;
+        const price=number(item.sort_price??item.price_max??item.price_a??item.price_after);
+        const priceDisplay=text(item.price_max||item.price_a||item.price_after).trim();
+        const id=`${type}::${name}::${code}::${rarity}`;
+        return {id,type,name,code,rarity,price,priceDisplay,image:imageUrl(item.img),limit:text(item.price_limit).trim(),capped:Boolean(item.is_capped),index,
+          search:normalize(`${name} ${code} ${rarity}`), compact:normalize(`${name}${code}${rarity}`).replace(/[\s/_-]/g,"")};
+      }
+      async function init() {
+        applyTheme(); applyView(); bind(); restoreUrl(); renderHistory(); updatePlan();
+        try {
+          const controller=new AbortController();
+          const timeout=setTimeout(()=>controller.abort(),15000);
+          const response=await fetch(`${DATA_URL}?v=${Date.now()}`,{signal:controller.signal,cache:"no-store"});
+          clearTimeout(timeout);
+          if(!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data=await response.json();
+          state.database.psa=Array.isArray(data.psa)?data.psa.filter(i=>VALID_STATUSES.has(i.status)).map((i,n)=>formatItem(i,n,"PSA10")):[];
+          state.database.box=Array.isArray(data.box)?data.box.filter(i=>VALID_STATUSES.has(i.status)).map((i,n)=>formatItem(i,n,"BOX")):[];
+          state.database.sotai=Array.isArray(data.sotai)?data.sotai.map((i,n)=>formatItem(i,n,"素体")):[];
+          state.database.all=[...state.database.psa,...state.database.box,...state.database.sotai];
+          state.plan=state.plan.filter(entry=>state.database.all.some(item=>item.id===entry.id));
+          savePlan();
+          ["psa","box","sotai"].forEach(tab=>el(`count-${tab}`).textContent=`${state.database[tab].length.toLocaleString()}件`);
+          if(!state.tab||!state.database[state.tab]?.length) state.tab=["psa","box","sotai"].find(t=>state.database[t].length)||"plan";
+          selectTab(state.tab,false); updatePlan();
+        } catch(error) { renderError(error); }
+      }
+      function bind() {
+        document.querySelectorAll(".tab").forEach(button=>button.addEventListener("click",()=>selectTab(button.dataset.tab)));
+        el("searchForm").addEventListener("submit",event=>{event.preventDefault();saveHistory();applyFilters();el("keyword").blur()});
+        el("keyword").addEventListener("input",()=>{updateClear();clearTimeout(state.debounce);state.debounce=setTimeout(applyFilters,220)});
+        el("clearSearch").addEventListener("click",()=>{el("keyword").value="";updateClear();applyFilters();el("keyword").focus()});
+        el("filterToggle").addEventListener("click",toggleFilters);
+        ["raritySelect","sortSelect"].forEach(id=>el(id).addEventListener("change",applyFilters));
+        ["minPrice","maxPrice"].forEach(id=>el(id).addEventListener("input",()=>{clearTimeout(state.debounce);state.debounce=setTimeout(applyFilters,220)}));
+        el("resetFilter").addEventListener("click",()=>{el("raritySelect").value="";el("sortSelect").value="default";el("minPrice").value="";el("maxPrice").value="";applyFilters()});
+        el("viewToggle").addEventListener("click",()=>{state.view=state.view==="list"?"block":"list";localStorage.setItem("tck_view_v2",state.view);applyView();renderFresh()});
+        el("themeToggle").addEventListener("click",()=>{state.theme=state.theme==="light"?"dark":"light";localStorage.setItem("tck_theme",state.theme);applyTheme()});
+        el("openPlan").addEventListener("click",openPlan);
+        el("closePlan").addEventListener("click",closePlan);
+        el("clearPlan").addEventListener("click",clearPlan);
+        el("shareLine").addEventListener("click",sharePlanToLine);
+        el("sharePlan").addEventListener("click",sharePlan);
+        el("planModal").addEventListener("click",event=>{if(event.target===el("planModal"))closePlan()});
+        el("lightbox").addEventListener("click",()=>el("lightbox").classList.remove("open"));
+        document.addEventListener("keydown",event=>{if(event.key==="Escape"){closePlan();el("lightbox").classList.remove("open")}});
+        new IntersectionObserver(entries=>{if(entries[0].isIntersecting)appendPage()},{rootMargin:"350px"}).observe(el("sentinel"));
+      }
+      function restoreUrl() {
+        const p=new URLSearchParams(location.search);
+        const tab=p.get("tab"); state.tab=["psa","box","sotai","plan"].includes(tab)?tab:"";
+        el("keyword").value=p.get("q")||"";
+        el("raritySelect").dataset.restore=p.get("rarity")||"";
+        el("sortSelect").value=["default","desc","asc","name_asc","name_desc"].includes(p.get("sort"))?p.get("sort"):"default";
+        el("minPrice").value=/^\d+$/.test(p.get("min")||"")?p.get("min"):"";
+        el("maxPrice").value=/^\d+$/.test(p.get("max")||"")?p.get("max"):"";
+        const view=p.get("view"); if(view==="block"||view==="image")state.view="block"; else if(view==="list")state.view="list";
+        updateClear();
+      }
+      function syncUrl() {
+        const p=new URLSearchParams();
+        p.set("tab",state.tab);
+        const values={q:el("keyword").value.trim(),rarity:el("raritySelect").value,sort:el("sortSelect").value,min:el("minPrice").value,max:el("maxPrice").value};
+        Object.entries(values).forEach(([key,value])=>{if(value&&!(key==="sort"&&value==="default"))p.set(key,value)});
+        if(state.view==="block")p.set("view","block");
+        history.replaceState(null,"",`${location.pathname}?${p.toString()}`);
+      }
+      function selectTab(tab,update=true) {
+        state.tab=tab;
+        document.querySelectorAll(".tab").forEach(button=>{const active=button.dataset.tab===tab;button.classList.toggle("active",active);button.setAttribute("aria-current",active?"page":"false")});
+        updateRarities(); applyFilters(update);
+      }
+      function currentItems() {
+        if(state.tab==="plan") return state.plan.map(entry=>state.database.all.find(item=>item.id===entry.id)).filter(Boolean);
+        return state.database[state.tab]||[];
+      }
+      function updateRarities() {
+        const select=el("raritySelect"),restore=select.dataset.restore||select.value;
+        select.replaceChildren(new Option("すべて",""));
+        [...new Set(currentItems().map(item=>item.rarity).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ja")).forEach(value=>select.add(new Option(value,value)));
+        if([...select.options].some(option=>option.value===restore))select.value=restore;
+        delete select.dataset.restore;
+      }
+      function applyFilters(update=true) {
+        const tokens=normalize(el("keyword").value).split(" ").filter(Boolean).flatMap(codeVariants);
+        const rarity=el("raritySelect").value,min=number(el("minPrice").value),max=number(el("maxPrice").value);
+        state.filtered=currentItems().filter(item=>{
+          const keywordMatch=!tokens.length||tokens.every(token=>item.search.includes(token)||item.compact.includes(token.replace(/[\s/_-]/g,"")));
+          const priceMatch=(min===null||item.price!==null&&item.price>=min)&&(max===null||item.price!==null&&item.price<=max);
+          return keywordMatch&&(!rarity||item.rarity===rarity)&&priceMatch;
+        });
+        const sort=el("sortSelect").value;
+        state.filtered.sort((a,b)=>{
+          if(sort==="desc")return (b.price??-Infinity)-(a.price??-Infinity);
+          if(sort==="asc")return (a.price??Infinity)-(b.price??Infinity);
+          if(sort==="name_asc")return a.name.localeCompare(b.name,"ja");
+          if(sort==="name_desc")return b.name.localeCompare(a.name,"ja");
+          return a.index-b.index;
+        });
+        el("resultCount").textContent=`${state.filtered.length.toLocaleString()}件`;
+        const hasFilter=Boolean(el("raritySelect").value||el("minPrice").value||el("maxPrice").value||el("sortSelect").value!=="default");
+        el("filterToggle").classList.toggle("has-filter",hasFilter);
+        scheduleSearchLog(el("keyword").value.trim(),state.filtered.length);
+        renderFresh(); if(update)syncUrl();
+      }
+      function renderFresh() { cards.replaceChildren(); state.rendered=0; if(!state.filtered.length){renderEmpty();return} appendPage() }
+      function appendPage() {
+        if(state.rendered>=state.filtered.length)return;
+        const fragment=document.createDocumentFragment();
+        state.filtered.slice(state.rendered,state.rendered+PAGE_SIZE).forEach(item=>fragment.appendChild(createCard(item)));
+        cards.appendChild(fragment); state.rendered+=PAGE_SIZE;
+      }
+      function createCard(item) {
+        const article=document.createElement("article"); article.className=`card${item.capped?" capped":""}`;
+        const imageWrap=document.createElement("div"); imageWrap.className="card-image-wrap";
+        const fallback=document.createElement("div"); fallback.className="image-fallback"; fallback.textContent="画像がありません";
+        if(item.image) {
+          const img=document.createElement("img"); img.className="card-image"; img.alt=item.name; img.loading="lazy"; img.decoding="async"; img.referrerPolicy="no-referrer"; img.src=item.image;
+          img.addEventListener("error",()=>{img.remove();fallback.style.display="grid"});
+          img.addEventListener("click",()=>{el("lightboxImage").src=item.image;el("lightboxImage").alt=item.name;el("lightbox").classList.add("open")});
+          imageWrap.append(img);
+        } else fallback.style.display="grid";
+        imageWrap.append(fallback);
+        const content=document.createElement("div"); content.className="card-content";
+        const meta=document.createElement("div"); meta.className="meta-row";
+        const badges=document.createElement("div");badges.className="badges";
+        const category=document.createElement("span"),categoryInfo=categoryMeta(item.type);category.className=`category-badge ${categoryInfo.className}`;category.textContent=categoryInfo.label;
+        const rarity=document.createElement("span"); rarity.className="rarity"; rarity.textContent=item.rarity;
+        badges.append(category,rarity);
+        const planButton=document.createElement("button"),planned=getPlanQty(item.id)>0; planButton.type="button"; planButton.className=`plan-btn${planned?" active":""}`; planButton.textContent=planned?"★":"☆"; planButton.setAttribute("aria-label",`${item.name}を持ち込み予定${planned?"から削除":"に追加"}`);
+        planButton.addEventListener("click",()=>togglePlan(item.id));
+        meta.append(badges,planButton);
+        const name=document.createElement("h2"); name.className="card-name"; name.textContent=item.name;
+        const code=document.createElement("div"); code.className="card-code"; code.textContent=item.code||"";
+        const label=document.createElement("div"); label.className="price-label"; label.textContent="買取価格";
+        const price=document.createElement("div"); price.className=`price${item.price===null&&!item.priceDisplay?" missing":""}`; price.textContent=item.priceDisplay||(item.price!==null?`¥${item.price.toLocaleString()}`:"価格は店頭でご確認ください");
+        content.append(meta,name,code,label,price);
+        if(item.limit&&item.limit!=="-"){const limit=document.createElement("div");limit.className="limit";limit.textContent=`買取上限：${item.limit}`;content.append(limit)}
+        if(item.capped){const badge=document.createElement("div");badge.className="capped-badge";badge.textContent="価格変動・受付終了の可能性あり";content.append(badge)}
+        const planWidget=document.createElement("div");planWidget.className="plan-widget";planWidget.dataset.planId=item.id;
+        if(planned)planWidget.append(createQuantityRow(item.id,getPlanQty(item.id)));
+        content.append(planWidget,createMarketActions(item));
+        article.dataset.itemId=item.id;
+        article.append(imageWrap,content); return article;
+      }
+      function createQuantityRow(id,qty) {
+        const row=document.createElement("div");row.className="quantity-row";
+        const label=document.createElement("span");label.className="quantity-label";label.textContent="持ち込み枚数";
+        row.append(label,createQtyStepper(id,qty));
+        return row;
+      }
+      function createQtyStepper(id,qty) {
+        const stepper=document.createElement("div");stepper.className="qty-stepper";
+        const minus=document.createElement("button");minus.type="button";minus.className="qty-button";minus.textContent="−";minus.disabled=qty<=1;minus.setAttribute("aria-label","枚数を1枚減らす");minus.addEventListener("click",()=>setPlanQty(id,qty-1));
+        const value=document.createElement("input");value.className="qty-input";value.type="number";value.inputMode="numeric";value.min="1";value.max="999";value.value=String(qty);value.setAttribute("aria-label","持ち込み枚数を直接入力");
+        value.addEventListener("focus",()=>value.select());
+        value.addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();value.blur()}});
+        value.addEventListener("change",()=>{const next=number(value.value);if(next===null){value.value=String(qty);return}setPlanQty(id,next)});
+        const plus=document.createElement("button");plus.type="button";plus.className="qty-button";plus.textContent="＋";plus.disabled=qty>=999;plus.setAttribute("aria-label","枚数を1枚増やす");plus.addEventListener("click",()=>setPlanQty(id,qty+1));
+        stepper.append(minus,value,plus);return stepper;
+      }
+      function createMarketActions(item) {
+        const actions=document.createElement("div");actions.className="market-actions";
+        const prefix=item.type==="PSA10"&&!normalize(item.name).includes("psa10")?"PSA10":item.type==="BOX"&&!normalize(item.name).includes("box")?"BOX":"";
+        const query=[prefix,item.name,item.code].filter(Boolean).join(" ");
+        const mercari=document.createElement("a");mercari.className="market-button mercari";mercari.href=`https://jp.mercari.com/search?keyword=${encodeURIComponent(query)}`;mercari.target="_blank";mercari.rel="noopener noreferrer";mercari.textContent="メルカリ";
+        const shop=document.createElement("a");shop.className="market-button shop";shop.href=`https://shop.japan-toreca.com/search?q=${encodeURIComponent(query)}`;shop.target="_blank";shop.rel="noopener noreferrer";shop.textContent="通販";
+        actions.append(mercari,shop);return actions;
+      }
+      function categoryMeta(type) {
+        if(type==="PSA10")return {label:"PSA",className:"psa"};
+        if(type==="BOX")return {label:"BOX",className:"box"};
+        return {label:"素体",className:"sotai"};
+      }
+      function renderEmpty() {
+        const wrap=document.createElement("section");wrap.className="empty";
+        const icon=document.createElement("div");icon.className="empty-icon";icon.textContent=state.tab==="plan"?"☆":"⌕";
+        const title=document.createElement("h2");title.textContent=state.tab==="plan"?"持ち込み予定はまだありません":"一致する商品が見つかりませんでした";
+        const paragraph=document.createElement("p");paragraph.textContent=state.tab==="plan"?"商品一覧の☆を押すと、ここで概算合計を確認できます。":"型番の「/」を外す、カード名を短くする、または別のカテゴリで検索してみてください。";
+        const suggestions=document.createElement("div");suggestions.className="suggestions";
+        if(state.tab!=="plan") {
+          findTypoSuggestions(el("keyword").value).forEach(item=>{
+            const button=document.createElement("button");button.type="button";button.className="suggestion";button.textContent=`もしかして：${item.name}`;
+            button.addEventListener("click",()=>{el("keyword").value=item.name;updateClear();selectTab(categoryMeta(item.type).className)});
+            suggestions.append(button);
+          });
+          ["psa","box","sotai"].filter(tab=>tab!==state.tab&&state.database[tab].length).forEach(tab=>{
+            const button=document.createElement("button");button.type="button";button.className="suggestion";button.textContent=`${{psa:"PSA等",box:"BOX",sotai:"素体"}[tab]}で検索`;button.addEventListener("click",()=>selectTab(tab));suggestions.append(button);
+          });
+          const clear=document.createElement("button");clear.type="button";clear.className="suggestion";clear.textContent="検索条件をクリア";clear.addEventListener("click",()=>{el("keyword").value="";el("raritySelect").value="";el("minPrice").value="";el("maxPrice").value="";applyFilters()});suggestions.append(clear);
+        }
+        wrap.append(icon,title,paragraph,suggestions);cards.append(wrap);
+      }
+      function findTypoSuggestions(query) {
+        const needle=normalize(query).replace(/\s+/g,"");if(needle.length<2)return [];
+        const ranked=state.database.all.map(item=>{
+          const name=normalize(item.name).replace(/\s+/g,""),code=normalize(item.code).replace(/[\s/_-]/g,"");
+          let score=diceScore(needle,name);
+          if(name.includes(needle)||needle.includes(name))score=Math.max(score,.9);
+          if(code&&(code.includes(needle)||needle.includes(code)))score=Math.max(score,.95);
+          return {item,score};
+        }).filter(result=>result.score>=.3).sort((a,b)=>b.score-a.score);
+        const used=new Set(),result=[];
+        for(const candidate of ranked) {
+          const key=`${candidate.item.type}::${candidate.item.name}`;
+          if(used.has(key))continue;
+          used.add(key);result.push(candidate.item);
+          if(result.length===3)break;
+        }
+        return result;
+      }
+      function diceScore(a,b) {
+        if(a===b)return 1;if(a.length<2||b.length<2)return 0;
+        const pairs=new Map();
+        for(let i=0;i<a.length-1;i++){const pair=a.slice(i,i+2);pairs.set(pair,(pairs.get(pair)||0)+1)}
+        let overlap=0;
+        for(let i=0;i<b.length-1;i++){const pair=b.slice(i,i+2),count=pairs.get(pair)||0;if(count){overlap++;pairs.set(pair,count-1)}}
+        return (2*overlap)/((a.length-1)+(b.length-1));
+      }
+      function renderError(error) {
+        cards.replaceChildren();
+        const section=document.createElement("section");section.className="error-state";
+        const title=document.createElement("h2");title.textContent="データを読み込めませんでした";
+        const message=document.createElement("p");message.textContent=error?.name==="AbortError"?"通信に時間がかかっています。接続を確認して再度お試しください。":"一時的な通信エラーの可能性があります。少し時間を置いて再度お試しください。";
+        const retry=document.createElement("button");retry.className="retry";retry.type="button";retry.textContent="もう一度読み込む";retry.addEventListener("click",()=>location.reload());
+        section.append(title,message,retry);cards.append(section);el("resultCount").textContent="取得失敗";
+      }
+      function togglePlan(id) {
+        const planned=getPlanQty(id)>0;
+        state.plan=planned?state.plan.filter(entry=>entry.id!==id):[...state.plan,{id,qty:1}];
+        savePlan();updatePlan();
+        if(state.tab==="plan"){updateRarities();applyFilters()}else refreshPlanCard(id);
+        showToast(planned?"持ち込み予定から削除しました":"1枚で持ち込み予定に追加しました");
+      }
+      function getPlanQty(id) { return state.plan.find(entry=>entry.id===id)?.qty||0 }
+      function setPlanQty(id,qty) {
+        const entry=state.plan.find(value=>value.id===id);if(!entry)return;
+        entry.qty=Math.max(1,Math.min(999,Math.floor(qty)));savePlan();updatePlan();
+        if(state.tab==="plan")applyFilters();else refreshPlanCard(id);
+        if(el("planModal").classList.contains("open"))openPlan();
+      }
+      function savePlan() { localStorage.setItem("tck_plan_v2",JSON.stringify(state.plan)) }
+      function refreshPlanCard(id) {
+        document.querySelectorAll(".card").forEach(card=>{
+          if(card.dataset.itemId!==id)return;
+          const planned=getPlanQty(id)>0,button=card.querySelector(".plan-btn"),widget=card.querySelector(".plan-widget");
+          button.classList.toggle("active",planned);button.textContent=planned?"★":"☆";button.setAttribute("aria-label",`持ち込み予定${planned?"から削除":"に追加"}`);
+          widget.replaceChildren();
+          if(planned)widget.append(createQuantityRow(id,getPlanQty(id)));
+        });
+      }
+      function planData() {
+        return state.plan.map(entry=>{
+          const item=state.database.all.find(value=>value.id===entry.id);
+          return item?{item,qty:entry.qty}:null;
+        }).filter(Boolean);
+      }
+      function updatePlan() {
+        const records=planData(),quantity=records.reduce((sum,record)=>sum+record.qty,0),total=records.reduce((sum,record)=>sum+(record.item.price??0)*record.qty,0);
+        el("count-plan").textContent=`${quantity}枚`;
+        el("planBar").classList.toggle("empty",quantity===0);
+        el("planSummaryCount").textContent=quantity===0?"☆ 持ち込み予定を追加":`持ち込み予定 ${records.length}種類・合計${quantity}枚`;
+        el("modalPlanCount").textContent=`${records.length}種類・合計${quantity}枚`;
+        el("clearPlan").disabled=quantity===0;el("shareLine").disabled=quantity===0;el("sharePlan").disabled=quantity===0;
+        el("planSummaryTotal").firstChild.textContent=`¥${total.toLocaleString()}`;el("modalTotal").textContent=`¥${total.toLocaleString()}`;
+      }
+      function openPlan() {
+        const container=el("planItems");container.replaceChildren();const records=planData();
+        if(!records.length){const empty=document.createElement("div");empty.className="empty";empty.textContent="持ち込み予定はまだありません。";container.append(empty)}
+        records.forEach(({item,qty})=>{
+          const row=document.createElement("div");row.className="plan-item";
+          const image=document.createElement("img");image.src=item.image||"";image.alt="";image.addEventListener("error",()=>image.remove());
+          const info=document.createElement("div"),name=document.createElement("div"),price=document.createElement("div"),subtotal=document.createElement("div");
+          name.className="plan-item-name";name.textContent=item.name;
+          price.className="plan-item-price";price.textContent=`単価 ${item.priceDisplay||(item.price!==null?`¥${item.price.toLocaleString()}`:"価格未設定")}`;
+          subtotal.className="plan-item-subtotal";subtotal.textContent=item.price!==null?`小計 ¥${(item.price*qty).toLocaleString()}`:"小計未計算";info.append(name,price,subtotal);
+          const controls=document.createElement("div");controls.className="plan-item-controls";
+          const remove=document.createElement("button");remove.className="remove-plan";remove.type="button";remove.textContent="削除";remove.setAttribute("aria-label",`${item.name}を削除`);remove.addEventListener("click",()=>{togglePlan(item.id);openPlan()});
+          controls.append(remove,createQtyStepper(item.id,qty));
+          row.append(image,info,controls);container.append(row);
+        });
+        el("planModal").classList.add("open");document.body.style.overflow="hidden";
+      }
+      function clearPlan() {
+        if(!state.plan.length||!window.confirm("持ち込み予定をすべて削除しますか？"))return;
+        const ids=state.plan.map(entry=>entry.id);state.plan=[];savePlan();updatePlan();
+        if(state.tab==="plan"){updateRarities();applyFilters()}else ids.forEach(refreshPlanCard);
+        openPlan();showToast("持ち込み予定をすべて削除しました");
+      }
+      function buildPlanShareText() {
+        const records=planData(),quantity=records.reduce((sum,record)=>sum+record.qty,0),total=records.reduce((sum,record)=>sum+(record.item.price??0)*record.qty,0);
+        if(!quantity)return "";
+        const lines=["【トレカキングダム 持ち込み予定】",...records.map(({item,qty})=>{
+          const subtotal=item.price!==null?` / 小計 ¥${(item.price*qty).toLocaleString()}`:"";
+          return `・${item.name} × ${qty}枚${subtotal}`;
+        }),"",`${records.length}種類・合計${quantity}枚`,`概算合計 ¥${total.toLocaleString()}`,"※実際の査定額はカードの状態・相場・在庫状況などにより変動します。"];
+        return lines.join("\n");
+      }
+      function sharePlanToLine() {
+        const shareText=buildPlanShareText();if(!shareText){showToast("持ち込み予定がありません");return}
+        window.open(`https://line.me/R/msg/text/?${encodeURIComponent(shareText)}`,"_blank","noopener");
+      }
+      async function sharePlan() {
+        const shareText=buildPlanShareText();if(!shareText){showToast("持ち込み予定がありません");return}
+        try {
+          if(navigator.share)await navigator.share({title:"トレカキングダム 持ち込み予定",text:shareText});
+          else {await navigator.clipboard.writeText(shareText);showToast("持ち込み予定をコピーしました")}
+        } catch(error) {
+          if(error?.name!=="AbortError")showToast("共有できませんでした");
+        }
+      }
+      function closePlan(){el("planModal").classList.remove("open");document.body.style.overflow=""}
+      function scheduleSearchLog(query,resultCount) {
+        clearTimeout(state.searchLogTimer);
+        const normalized=normalize(query);if(normalized.length<2)return;
+        state.searchLogTimer=setTimeout(()=>recordSearch(query,resultCount),1200);
+      }
+      function recordSearch(query,resultCount) {
+        const normalized=normalize(query),key=`${state.tab}::${normalized}::${resultCount}`;
+        if(!normalized||key===state.lastLoggedSearch)return;
+        state.lastLoggedSearch=key;
+        const payload={timestamp:new Date().toISOString(),query,normalized_query:normalized,category:state.tab,result_count:resultCount,status:resultCount===0?"not_found":"found"};
+        const localLogs=readStorage("tck_search_logs_v2",[]);localLogs.push(payload);
+        localStorage.setItem("tck_search_logs_v2",JSON.stringify(localLogs.slice(-200)));
+        if(SEARCH_LOG_URL)fetch(SEARCH_LOG_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)}).catch(()=>{});
+      }
+      function saveHistory() {
+        const query=el("keyword").value.trim();if(!query)return;
+        state.history=[query,...state.history.filter(value=>value!==query)].slice(0,8);
+        localStorage.setItem("tck_history_v2",JSON.stringify(state.history));renderHistory();
+      }
+      function renderHistory() {
+        const container=el("history");container.replaceChildren();
+        state.history.forEach(value=>{const button=document.createElement("button");button.className="history-chip";button.type="button";button.textContent=value;button.addEventListener("click",()=>{el("keyword").value=value;updateClear();applyFilters()});container.append(button)});
+        if(state.history.length){const clear=document.createElement("button");clear.className="history-delete";clear.type="button";clear.textContent="履歴を消去";clear.addEventListener("click",()=>{state.history=[];localStorage.removeItem("tck_history_v2");renderHistory()});container.append(clear)}
+      }
+      function toggleFilters(){const open=el("filters").classList.toggle("open");el("filterToggle").setAttribute("aria-expanded",String(open));el("filterToggle").textContent=open?"絞り込み −":"絞り込み ＋"}
+      function updateClear(){el("clearSearch").style.display=el("keyword").value?"block":"none"}
+      function applyView(){cards.classList.toggle("block-view",state.view==="block");el("viewToggle").textContent=state.view==="block"?"リスト表示":"ブロック表示"}
+      function applyTheme(){document.documentElement.dataset.theme=state.theme;el("themeToggle").textContent=state.theme==="light"?"☾":"☀";document.querySelector('meta[name="theme-color"]').content=state.theme==="light"?"#fffaf5":"#131211"}
+      function showToast(message){clearTimeout(state.toastTimer);el("toast").textContent=message;el("toast").classList.add("show");state.toastTimer=setTimeout(()=>el("toast").classList.remove("show"),1800)}
+      init();
+    })();
+  </script>
 </body>
 </html>
