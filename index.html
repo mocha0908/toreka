@@ -547,57 +547,164 @@
         const fragment=document.createDocumentFragment();
         state.filtered.slice(state.rendered,state.rendered+PAGE_SIZE).forEach(item=>fragment.appendChild(createCard(item)));
         cards.appendChild(fragment); state.rendered+=PAGE_SIZE;
-      }
       function createCard(item) {
-        const article=document.createElement("article"); article.className=`card${item.capped?" capped":""}`;
-        const imageWrap=document.createElement("div"); imageWrap.className="card-image-wrap";
-        const fallback=document.createElement("div"); fallback.className="image-fallback"; fallback.textContent="画像がありません";
-        if(item.image) {
-          const img=document.createElement("img"); img.className="card-image"; img.alt=item.name; img.loading="lazy"; img.decoding="async"; img.referrerPolicy="no-referrer"; img.src=item.image;
-          img.addEventListener("error",()=>{img.remove();fallback.style.display="grid"});
-          img.addEventListener("click",()=>{el("lightboxImage").src=item.image;el("lightboxImage").alt=item.name;el("lightbox").classList.add("open")});
-          imageWrap.append(img);
-        } else fallback.style.display="grid";
-        imageWrap.append(fallback);
-        const content=document.createElement("div"); content.className="card-content";
-        const meta=document.createElement("div"); meta.className="meta-row";
-        const badges=document.createElement("div");badges.className="badges";
-        const category=document.createElement("span"),categoryInfo=categoryMeta(item.type);category.className=`category-badge ${categoryInfo.className}`;category.textContent=categoryInfo.label;
-        const rarity=document.createElement("span"); rarity.className="rarity"; rarity.textContent=item.rarity;
-        badges.append(category,rarity);
-        meta.append(badges);
-        const name=document.createElement("h2"); name.className="card-name"; name.textContent=item.name;
-        const code=document.createElement("div"); code.className="card-code"; code.textContent=item.code||"";
-        const label=document.createElement("div"); label.className="price-label"; label.textContent="買取価格";
-        const price=document.createElement("div"); price.className=`price${item.price===null&&!item.priceDisplay?" missing":""}`; price.textContent=item.priceDisplay||(item.price!==null?`¥${item.price.toLocaleString()}`:"価格は店頭でご確認ください");
-        content.append(meta,name,code,label,price);
-        if(item.limit&&item.limit!=="-"){const limit=document.createElement("div");limit.className="limit";limit.textContent=`買取上限：${item.limit}`;content.append(limit)}
-        if(item.capped){const badge=document.createElement("div");badge.className="capped-badge";badge.textContent="価格変動・受付終了の可能性あり";content.append(badge)}
-        const planned=getPlanQty(item.id)>0,planButton=document.createElement("button");
-        planButton.type="button";planButton.className=`plan-primary${planned?" active":""}`;
-        planButton.textContent=planned?"✓ 持込予定に追加済み":"＋ 持込予定に追加";
-        planButton.setAttribute("aria-label",`${item.name}を持ち込み予定${planned?"から削除":"に追加"}`);
-        planButton.addEventListener("click",()=>togglePlan(item.id));
-        content.append(planButton);
-        const planWidget=document.createElement("div");planWidget.className="plan-widget";planWidget.dataset.planId=item.id;
-        if(planned)planWidget.append(createQuantityRow(item.id,getPlanQty(item.id)));
-        content.append(planWidget,createMarketActions(item));
-        article.dataset.itemId=item.id;
-        article.append(imageWrap,content); return article;
-      }
-      function createQuantityRow(id,qty) {
-        const row=document.createElement("div");row.className="quantity-row";
-        const label=document.createElement("span");label.className="quantity-label";label.textContent="持ち込み枚数";
-        row.append(label,createQtyStepper(id,qty));
-        return row;
-      }
-      function createQtyStepper(id,qty) {
-        const stepper=document.createElement("div");stepper.className="qty-stepper";
-        const minus=document.createElement("button");minus.type="button";minus.className="qty-button";minus.textContent="−";minus.disabled=qty<=1;minus.setAttribute("aria-label","枚数を1枚減らす");minus.addEventListener("click",()=>setPlanQty(id,qty-1));
-        const value=document.createElement("input");value.className="qty-input";value.type="number";value.inputMode="numeric";value.min="1";value.max="999";value.value=String(qty);value.setAttribute("aria-label","持ち込み枚数を直接入力");
-        value.addEventListener("focus",()=>value.select());
-        value.addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();value.blur()}});
-        value.addEventListener("change",()=>{const next=number(value.value);if(next===null){value.value=String(qty);return}setPlanQty(id,next)});
+  const article=document.createElement("article");
+  article.className=`card${item.capped?" capped":""}`;
+
+  const imageWrap=document.createElement("div");
+  imageWrap.className="card-image-wrap";
+
+  const fallback=document.createElement("div");
+  fallback.className="image-fallback";
+  fallback.textContent="画像がありません";
+
+  if(item.image) {
+    const img=document.createElement("img");
+    img.className="card-image";
+    img.alt=item.name;
+    img.loading="lazy";
+    img.decoding="async";
+    img.referrerPolicy="no-referrer";
+    img.src=item.image;
+    img.addEventListener("error",()=>{
+      img.remove();
+      fallback.style.display="grid";
+    });
+    img.addEventListener("click",()=>{
+      el("lightboxImage").src=item.image;
+      el("lightboxImage").alt=item.name;
+      el("lightbox").classList.add("open");
+    });
+    imageWrap.append(img);
+  } else {
+    fallback.style.display="grid";
+  }
+
+  imageWrap.append(fallback);
+
+  const content=document.createElement("div");
+  content.className="card-content";
+
+  const meta=document.createElement("div");
+  meta.className="meta-row";
+
+  const badges=document.createElement("div");
+  badges.className="badges";
+
+  const category=document.createElement("span");
+  const categoryInfo=categoryMeta(item.type);
+  category.className=`category-badge ${categoryInfo.className}`;
+  category.textContent=categoryInfo.label;
+
+  const rarity=document.createElement("span");
+  rarity.className="rarity";
+  rarity.textContent=item.rarity;
+
+  badges.append(category,rarity);
+  meta.append(badges);
+
+  const name=document.createElement("h2");
+  name.className="card-name";
+  name.textContent=item.name;
+
+  const code=document.createElement("div");
+  code.className="card-code";
+  code.textContent=item.code||"";
+
+  const label=document.createElement("div");
+  label.className="price-label";
+  label.textContent="買取価格";
+
+  const price=document.createElement("div");
+  price.className=`price${item.price===null&&!item.priceDisplay?" missing":""}`;
+  price.textContent=item.priceDisplay||(item.price!==null?`¥${item.price.toLocaleString()}`:"価格は店頭でご確認ください");
+
+  content.append(meta,name,code,label,price);
+
+  if(item.capped){
+    const badge=document.createElement("div");
+    badge.className="capped-badge";
+    badge.textContent="価格変動・受付終了の可能性あり";
+    content.append(badge);
+  }
+
+  const planned=getPlanQty(item.id)>0;
+  const planButton=document.createElement("button");
+  planButton.type="button";
+  planButton.className=`plan-primary${planned?" active":""}`;
+  planButton.textContent=planned?"✓ 持込予定に追加済み":"＋ 持込予定に追加";
+  planButton.setAttribute("aria-label",`${item.name}を持ち込み予定${planned?"から削除":"に追加"}`);
+  planButton.addEventListener("click",()=>togglePlan(item.id));
+  content.append(planButton);
+
+  const planWidget=document.createElement("div");
+  planWidget.className="plan-widget";
+  planWidget.dataset.planId=item.id;
+
+  if(planned) {
+    planWidget.append(createQuantityRow(item.id,getPlanQty(item.id)));
+  }
+
+  content.append(planWidget,createMarketActions(item));
+
+  article.dataset.itemId=item.id;
+  article.append(imageWrap,content);
+
+  return article;
+}
+
+function createQuantityRow(id,qty) {
+  const row=document.createElement("div");
+  row.className="quantity-row";
+
+  const label=document.createElement("span");
+  label.className="quantity-label";
+  label.textContent="持ち込み枚数";
+
+  row.append(label,createQtyStepper(id,qty));
+  return row;
+}
+
+function createQtyStepper(id,qty) {
+  const stepper=document.createElement("div");
+  stepper.className="qty-stepper";
+
+  const minus=document.createElement("button");
+  minus.type="button";
+  minus.className="qty-button";
+  minus.textContent="−";
+  minus.disabled=qty<=1;
+  minus.setAttribute("aria-label","枚数を1枚減らす");
+  minus.addEventListener("click",()=>setPlanQty(id,qty-1));
+
+  const value=document.createElement("input");
+  value.className="qty-input";
+  value.type="number";
+  value.inputMode="numeric";
+  value.min="1";
+  value.max="999";
+  value.value=String(qty);
+  value.setAttribute("aria-label","持ち込み枚数を直接入力");
+
+  value.addEventListener("focus",()=>value.select());
+  value.addEventListener("keydown",event=>{
+    if(event.key==="Enter"){
+      event.preventDefault();
+      value.blur();
+    }
+  });
+  value.addEventListener("change",()=>{
+    const next=number(value.value);
+    if(next===null){
+      value.value=String(qty);
+      return;
+    }
+    setPlanQty(id,next);
+  });
+
+  stepper.append(minus,value);
+  return stepper;
+}
         const plus=document.createElement("button");plus.type="button";plus.className="qty-button";plus.textContent="＋";plus.disabled=qty>=999;plus.setAttribute("aria-label","枚数を1枚増やす");plus.addEventListener("click",()=>setPlanQty(id,qty+1));
         stepper.append(minus,value,plus);return stepper;
       }
