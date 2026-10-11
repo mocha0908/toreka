@@ -214,8 +214,11 @@
     .guarantee-accordion summary::after { content:"＋"; color:var(--brand); font-size:17px; font-weight:900 }
     .guarantee-accordion[open] summary::after { content:"−" }
     .guarantee-caption { margin-left:auto; color:var(--muted); font-size:11px; font-weight:700 }
-    .guarantee-image-wrap { padding:0 12px 12px; text-align:center }
-    .guarantee-image-wrap img { display:block; width:min(100%,460px); height:auto; margin:0 auto; border:1px solid var(--line); border-radius:10px }
+    .guarantee-images { display:grid; gap:14px; padding:0 12px 12px }
+    .guarantee-image-card { margin:0; text-align:center }
+    .guarantee-image-card figcaption { margin:0 auto 6px; color:var(--muted); font-size:12px; font-weight:800 }
+    .guarantee-image-card img { display:block; width:min(100%,680px); height:auto; margin:0 auto; border:1px solid var(--line); border-radius:10px }
+    .guarantee-image-card.portrait img { width:min(100%,500px) }
 </style>
 </head>
 <body>
@@ -270,9 +273,16 @@
     <div class="history" id="history"></div>
     <div class="notice"><span>ⓘ</span><span>表示価格は更新時点の価格です。相場・在庫状況や買取上限到達により、減額または返却となる場合があります。</span></div>
     <details class="guarantee-accordion">
-      <summary><span>最低保証買取表を見る</span><span class="guarantee-caption">旧弾ポケモンのみ</span></summary>
-      <div class="guarantee-image-wrap">
-        <img src="./assets/min-guarantee-current.webp" alt="旧弾ポケモンカードの最低保証買取表" loading="lazy" decoding="async">
+      <summary><span>最低保証買取表を見る</span><span class="guarantee-caption">2種類</span></summary>
+      <div class="guarantee-images">
+        <figure class="guarantee-image-card">
+          <figcaption>AR／CHR・SAR 最低保証買取</figcaption>
+          <img src="./assets/minimum-guarantee-ar-chr-sar.webp" alt="AR・CHR 230円、SAR 700円の最低保証買取案内" loading="lazy" decoding="async">
+        </figure>
+        <figure class="guarantee-image-card portrait">
+          <figcaption>ポケモンカード最低買取保証表（10/11更新）</figcaption>
+          <img src="./assets/minimum-guarantee-1011.webp" alt="旧弾、151、30thなどのポケモンカード最低買取保証表" loading="lazy" decoding="async">
+        </figure>
       </div>
     </details>
     <section class="store-guide" aria-label="店舗営業時間とアクセス">
