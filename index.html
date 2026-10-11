@@ -206,7 +206,17 @@
       .card-image-wrap { width:88px; height:104px }
     }
     @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; animation:none!important; transition:none!important } }
-  </style>
+  
+    .guarantee-accordion { display:none; margin:12px 0 16px; overflow:hidden; border:1px solid var(--line); border-radius:14px; background:var(--surface); box-shadow:0 3px 12px rgba(0,0,0,.05) }
+    .main.show-guarantee .guarantee-accordion { display:block }
+    .guarantee-accordion summary { display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:50px; padding:12px 15px; color:var(--text); font-size:14px; font-weight:800; cursor:pointer; list-style:none }
+    .guarantee-accordion summary::-webkit-details-marker { display:none }
+    .guarantee-accordion summary::after { content:"＋"; color:var(--brand); font-size:17px; font-weight:900 }
+    .guarantee-accordion[open] summary::after { content:"−" }
+    .guarantee-caption { margin-left:auto; color:var(--muted); font-size:11px; font-weight:700 }
+    .guarantee-image-wrap { padding:0 12px 12px; text-align:center }
+    .guarantee-image-wrap img { display:block; width:min(100%,460px); height:auto; margin:0 auto; border:1px solid var(--line); border-radius:10px }
+</style>
 </head>
 <body>
   <header class="app-header">
@@ -259,6 +269,12 @@
   <main class="main">
     <div class="history" id="history"></div>
     <div class="notice"><span>ⓘ</span><span>表示価格は更新時点の価格です。相場・在庫状況や買取上限到達により、減額または返却となる場合があります。</span></div>
+    <details class="guarantee-accordion">
+      <summary><span>最低保証買取表を見る</span><span class="guarantee-caption">旧弾ポケモンのみ</span></summary>
+      <div class="guarantee-image-wrap">
+        <img src="./assets/min-guarantee-current.webp" alt="旧弾ポケモンカードの最低保証買取表" loading="lazy" decoding="async">
+      </div>
+    </details>
     <section class="store-guide" aria-label="店舗営業時間とアクセス">
       <div>
         <div class="store-guide-title">トレカキングダム秋葉原店</div>
@@ -483,6 +499,7 @@
           button.setAttribute("aria-current",active?"page":"false");
           button.setAttribute("aria-pressed",String(active));
         });
+        document.querySelector(".main").classList.toggle("show-guarantee",state.tab==="sotai");
       }
       function currentItems() {
         if(state.tab==="plan") return state.plan.map(entry=>state.database.all.find(item=>item.id===entry.id)).filter(Boolean);
