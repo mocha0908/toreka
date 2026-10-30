@@ -429,7 +429,11 @@
         await loadData();
         state.refreshTimer=setInterval(()=>loadData({silent:true}),REFRESH_INTERVAL);
       }
-      async function loadData({silent=false}={}) {
+      function hasListingGroup(item){
+         const value=item&&(item.listing_group??item.listingGroup??item["掲載グループ"]);
+         return value!==null&&value!==undefined&&String(value).trim()!=="";
+       }
+       async function loadData({silent=false}={}) {
         if(state.isFetching)return;
         state.isFetching=true;
         try {
@@ -439,8 +443,8 @@
           clearTimeout(timeout);
           if(!response.ok) throw new Error(`HTTP ${response.status}`);
           const data=await response.json();
-          state.database.psa=Array.isArray(data.psa)?data.psa.filter(i=>VALID_STATUSES.has(i.status)).map((i,n)=>formatItem(i,n,"PSA10")):[];
-          state.database.box=Array.isArray(data.box)?data.box.filter(i=>VALID_STATUSES.has(i.status)).map((i,n)=>formatItem(i,n,"BOX")):[];
+          state.database.psa=Array.isArray(data.psa)?data.psa.filter(i=>VALID_STATUSES.has(i.status)&&hasListingGroup(i)).map((i,n)=>formatItem(i,n,"PSA10")):[];
+          state.database.box=Array.isArray(data.box)?data.box.filter(i=>VALID_STATUSES.has(i.status)&&hasListingGroup(i)).map((i,n)=>formatItem(i,n,"BOX")):[];
           state.database.sotai=Array.isArray(data.sotai)?data.sotai.map((i,n)=>formatItem(i,n,"素体")):[];
           state.database.all=[...state.database.psa,...state.database.box,...state.database.sotai];
           state.plan=state.plan.filter(entry=>state.database.all.some(item=>item.id===entry.id));
